@@ -1,0 +1,33 @@
+﻿@* @page "/HRmanagement"
+@using MudBlazor
+
+<MudPaper Class="pa-4">
+    <MudText Typo="Typo.h5">Human Resources</MudText>
+
+    <MudTable Dense="true" Hover="true">
+        <HeaderContent>
+            <MudTh>Name</MudTh>
+            <MudTh>Phone</MudTh>
+            <MudTh>Email</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>Alice</MudTd>
+            <MudTd>123-456-7890</MudTd>
+            <MudTd>alice@example.com</MudTd>
+        </RowTemplate>
+        <RowTemplate>
+            <MudTd>Bob</MudTd>
+            <MudTd>987-654-3210</MudTd>
+            <MudTd>bob@example.com</MudTd>
+        </RowTemplate>
+        <RowTemplate>
+            <MudTd>Charlie</MudTd>
+            <MudTd>555-555-5555</MudTd>
+            <MudTd>charlie@example.com</MudTd>
+        </RowTemplate>
+        <!-- Add more static rows as needed -->
+    </MudTable>
+</MudPaper>
+@{
+
+} *@

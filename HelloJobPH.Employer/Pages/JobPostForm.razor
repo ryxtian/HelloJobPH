@@ -1,0 +1,64 @@
+﻿@page "/JobPostForm"
+@using HelloJobPH.Employer.Services.JobPosting
+@using HelloJobPH.Shared.DTOs
+@using HelloJobPH.Shared.Enums
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject IJobPosting _jobpost
+
+    <MudText Typo="Typo.h5" GutterBottom>Job Post Form</MudText>
+
+    <MudForm @ref="_form" OnValidSubmit="HandleValidSubmit">
+        <MudTextField Label="Title" @bind-Value="jobpost.Title" Required="true" />
+
+        <MudTextField Label="Description" @bind-Value="jobpost.Description" Required="true" Lines="3" TextArea="true" />
+    <MudSelect T="EmploymentType" Label="Employment Type" @bind-Value="jobpost.EmploymentType" Required="true">
+        @foreach (var type in Enum.GetValues<EmploymentType>())
+        {
+            <MudSelectItem Value="type">@type.ToString()</MudSelectItem>
+        }
+    </MudSelect>
+
+    <MudTextField Label="Location" @bind-Value="jobpost.Location" Required="true" />
+
+
+
+        <MudTextField Label="Salary From"@bind-Value="jobpost.SalaryFrom" Required="true" />
+        <MudTextField Label="Salary To" @bind-Value="jobpost.SalaryTo" Required="true" />
+
+        <MudTextField Label="Job Requirement" @bind-Value="jobpost.JobRequirements" Lines="3" TextArea="true" Required="true" />
+
+         <MudDatePicker Label="Expire Date" @bind-Date="jobpost.ExpiredDate" Required="true" />
+
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SubmitForm" Class="mt-3">
+        Submit
+    </MudButton>
+    </MudForm>
+
+@code {
+    private JobPostingDtos jobpost = new();
+    private MudForm _form;
+    private async Task SubmitForm()
+    {
+        await _form.Validate();
+        if (_form.IsValid)
+        {
+            try
+            {
+                var message = await _jobpost.AddAsync(jobpost);
+                Snackbar.Add(message, Severity.Success);
+                Console.WriteLine("success");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("badrequest");
+                Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+            }
+        }
+        else
+        {
+            Snackbar.Add("Please fill all required fields.", Severity.Error);
+        }
+    }
+
+}

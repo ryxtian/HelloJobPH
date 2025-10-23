@@ -1,12 +1,14 @@
-﻿using HelloJobPH.Shared.Model;
+﻿using HelloJobPH.Shared.DTOs;
+using HelloJobPH.Shared.Model;
 
 namespace HelloJobPH.Server.Service.JobPost
 {
     public interface IJobPostRepository
     {
-        Task AddAsync(JobPosting jobPost);
-        Task<JobPosting?> GetByIdAsync(int id);
         Task<List<JobPosting>> RetrieveAllAsync();
-        void Update(JobPosting jobPost);
+        Task<JobPosting> GetByIdAsync(int id);
+        Task<JobPosting> AddAsync(JobPosting jobPosting);
+        Task<JobPosting> UpdateAsync(JobPosting jobPosting);
+        Task<bool> DeleteAsync(int id);
     }
 }
