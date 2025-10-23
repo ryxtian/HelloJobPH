@@ -25,6 +25,7 @@ namespace HelloJobPH.Shared.DTOs
         [Required(ErrorMessage = "Title is required.")]
         public string JobRequirements { get; set; }
         public byte IsDeleted { get; set; } = 0;
+        public int HumanResourceId { get; set; }
         //public int HumanResourceId { get; set; } = 0;
         //public HumanResource HumanResource { get; set; }
         public DateTime PostedDate { get; set; }

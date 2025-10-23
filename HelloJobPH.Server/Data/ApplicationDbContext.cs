@@ -10,7 +10,7 @@ namespace HelloJobPH.Server.Data
         public DbSet<UserAccount> UserAccount { get; set; }
         public DbSet<Applicant> Applicant { get; set; }
         public DbSet<JobPosting> JobPosting { get; set; }
-
+        public DbSet<HumanResources> HumanResource { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

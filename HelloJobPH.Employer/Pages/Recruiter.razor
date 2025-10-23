@@ -1,6 +1,7 @@
 ﻿@page "/Recruiter"
-@using HelloJobPH.Shared.DTOs
 @using MudBlazor
+@inject NavigationManager NavigationManager
+@inject IHumanResource _humanService
 
 <MudButton OnClick="AddNewRecruiter" Variant="Variant.Filled" Color="Color.Primary" Class="mb-4">Add New Job Post</MudButton>
 
@@ -14,22 +15,22 @@
 
     <HeaderContent>
         <MudTh>Firstname</MudTh>
-        <MudTh>Description</MudTh>
-        <MudTh>Salary Range</MudTh>
-        <MudTh>Date Posted</MudTh>
+        <MudTh>Email</MudTh>
+        <MudTh>Phone</MudTh>
+        <MudTh>Position</MudTh>
         <MudTh>Options</MudTh>
     </HeaderContent>
 
     <RowTemplate>
-        <MudTd DataLabel="Title">@context.First</MudTd>
-        <MudTd DataLabel="Description">@context.Description</MudTd>
-        <MudTd DataLabel="Salary Range">@($"{context.SalaryFrom:C} - {context.SalaryTo:N2}")</MudTd>
-        <MudTd DataLabel="Date Posted">@context.PostedDate.ToLocalTime().ToString("MM/dd/yyyy")</MudTd>
+        <MudTd DataLabel="Firstname">@context.Firstname</MudTd>
+        <MudTd DataLabel="Email">@context.Email</MudTd>
+        <MudTd DataLabel="Phone">@context.PhoneNumber</MudTd>
+        <MudTd DataLabel="Position">@context.JobTitle</MudTd>
         <MudTd DataLabel="Options">
-            <MudButton Color="Color.Primary" Variant="Variant.Outlined" OnClick="@(() => OnEdit(context.JobPostingId))" Size="Size.Small">
+            <MudButton Color="Color.Primary" Variant="Variant.Outlined" OnClick="@(() => OnEdit(context.HumanResourceId))" Size="Size.Small">
                 Edit
             </MudButton>
-            <MudButton Color="Color.Error" Variant="Variant.Outlined" Size="Size.Small" Disabled="@isDeleting" OnClick="@(() => OnDelete(context.JobPostingId))" Class="ml-2">
+            <MudButton Color="Color.Error" Variant="Variant.Outlined" Size="Size.Small" Disabled="@isDeleting" OnClick="@(() => OnDelete(context.HumanResourceId))" Class="ml-2">
                 Delete
             </MudButton>
         </MudTd>
@@ -39,23 +40,48 @@
         <MudTablePager />
     </PagerContent>
 </MudTable>
-@code{
+
+@code {
     private string searchString1 = string.Empty;
     private bool isDeleting = false;
-    private HumanResourceDtos selectedItem1;
-    protected List<JobPostingDtos> JobPostings;
-    private bool FilterFunc1(JobPostingDtos element)
+    private HumanResourceDtos? selectedItem1;
+    protected List<HumanResourceDtos>? HumanResources;
+
+    private bool FilterFunc1(HumanResourceDtos element)
     {
         if (string.IsNullOrWhiteSpace(searchString1))
             return true;
 
-        return (element.Title?.Contains(searchString1, StringComparison.OrdinalIgnoreCase) ?? false)
-            || (element.Description?.Contains(searchString1, StringComparison.OrdinalIgnoreCase) ?? false)
-            || (element.JobRequirements?.Contains(searchString1, StringComparison.OrdinalIgnoreCase) ?? false)
-            || $"{element.SalaryFrom} {element.SalaryTo}".Contains(searchString1);
+        return (element.Firstname?.Contains(searchString1, StringComparison.OrdinalIgnoreCase) ?? false)
+            || (element.Lastname?.Contains(searchString1, StringComparison.OrdinalIgnoreCase) ?? false)
+            || (element.Email?.Contains(searchString1, StringComparison.OrdinalIgnoreCase) ?? false)
+            || (element.PhoneNumber?.Contains(searchString1, StringComparison.OrdinalIgnoreCase) ?? false)
+            || (element.JobTitle?.Contains(searchString1, StringComparison.OrdinalIgnoreCase) ?? false);
     }
+
     public void AddNewRecruiter()
     {
-        
+        NavigationManager.NavigateTo("/addNewRecruiter");
+    }
+
+    public void OnEdit(int id)
+    {
+        NavigationManager.NavigateTo($"/editRecruiter/{id}");
+    }
+
+    public async void OnDelete(int id)
+    {
+        isDeleting = true;
+        // Example: implement delete logic here, call API, etc.
+        // After deletion, refresh the data
+        await _humanService.SoftDeleteJobPost(id);  // assuming this method exists
+        HumanResources = await _humanService.RetrieveAllAsync();
+        isDeleting = false;
+        StateHasChanged();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        HumanResources = await _humanService.RetrieveAllAsync();
     }
 }

@@ -14,6 +14,7 @@ namespace HelloJobPH.Server.Mapper
         public Mapping()
         {
             CreateMap<JobPosting, JobPostingDtos>().ReverseMap() ;
+            CreateMap<HumanResources, HumanResourceDtos>().ReverseMap();
         }
     }
 }

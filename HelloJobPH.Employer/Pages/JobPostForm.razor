@@ -5,6 +5,7 @@
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject IJobPosting _jobpost
+@inject NavigationManager NavigationManager
 
     <MudText Typo="Typo.h5" GutterBottom>Job Post Form</MudText>
 
@@ -46,13 +47,15 @@
             try
             {
                 var message = await _jobpost.AddAsync(jobpost);
-                Snackbar.Add(message, Severity.Success);
+
+                Snackbar.Add("Successfully saved", Severity.Success);
                 Console.WriteLine("success");
+                NavigationManager.NavigateTo("/jobPost");
             }
             catch (Exception ex)
             {
                 Console.WriteLine("badrequest");
-                Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+                //Snackbar.Add($"Error: {ex.Message}", Severity.Error);
             }
         }
         else

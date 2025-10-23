@@ -4,6 +4,7 @@ using HelloJobPH.Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HelloJobPH.Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251023072637_applicantAndHrJoin")]
+    partial class applicantAndHrJoin
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -44,9 +47,6 @@ namespace HelloJobPH.Server.Migrations
                     b.Property<int?>("HumanResourceId")
                         .HasColumnType("int");
 
-                    b.Property<int>("HumanResourcesHumanResourceId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Middlename")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -61,12 +61,12 @@ namespace HelloJobPH.Server.Migrations
 
                     b.HasKey("ApplicantId");
 
-                    b.HasIndex("HumanResourcesHumanResourceId");
+                    b.HasIndex("HumanResourceId");
 
                     b.ToTable("Applicant");
                 });
 
-            modelBuilder.Entity("HelloJobPH.Shared.Model.HumanResources", b =>
+            modelBuilder.Entity("HelloJobPH.Shared.Model.HumanResource", b =>
                 {
                     b.Property<int>("HumanResourceId")
                         .ValueGeneratedOnAdd()
@@ -82,22 +82,11 @@ namespace HelloJobPH.Server.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<byte>("IsDeleted")
-                        .HasColumnType("tinyint");
-
-                    b.Property<string>("JobTitle")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Lastname")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PhoneNumber")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ProfilePhotoUrl")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -125,7 +114,7 @@ namespace HelloJobPH.Server.Migrations
                     b.Property<DateTime>("ExpiredDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("HumanResourceId")
+                    b.Property<int>("HumanResourceId")
                         .HasColumnType("int");
 
                     b.Property<byte>("IsDeleted")
@@ -199,20 +188,20 @@ namespace HelloJobPH.Server.Migrations
 
             modelBuilder.Entity("HelloJobPH.Shared.Model.Applicant", b =>
                 {
-                    b.HasOne("HelloJobPH.Shared.Model.HumanResources", "HumanResources")
+                    b.HasOne("HelloJobPH.Shared.Model.HumanResource", "HumanResources")
                         .WithMany("Applicants")
-                        .HasForeignKey("HumanResourcesHumanResourceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("HumanResourceId");
 
                     b.Navigation("HumanResources");
                 });
 
             modelBuilder.Entity("HelloJobPH.Shared.Model.JobPosting", b =>
                 {
-                    b.HasOne("HelloJobPH.Shared.Model.HumanResources", "HumanResource")
+                    b.HasOne("HelloJobPH.Shared.Model.HumanResource", "HumanResource")
                         .WithMany("JobPostings")
-                        .HasForeignKey("HumanResourceId");
+                        .HasForeignKey("HumanResourceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("HumanResource");
                 });
@@ -234,7 +223,7 @@ namespace HelloJobPH.Server.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("HelloJobPH.Shared.Model.HumanResources", b =>
+            modelBuilder.Entity("HelloJobPH.Shared.Model.HumanResource", b =>
                 {
                     b.Navigation("Applicants");
 

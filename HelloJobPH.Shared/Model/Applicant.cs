@@ -15,6 +15,8 @@ namespace HelloJobPH.Shared.Model
         public string Address { get; set; }
         public string Phone { get; set; }
         public DateTime Birthday { get; set; }
+        public int? HumanResourceId { get; set; }
+        public HumanResources HumanResources { get; set; }
         public UserAccount UserAccount { get; set; }
     }
 }

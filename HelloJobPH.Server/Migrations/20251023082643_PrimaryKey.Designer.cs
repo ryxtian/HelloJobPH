@@ -4,6 +4,7 @@ using HelloJobPH.Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HelloJobPH.Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251023082643_PrimaryKey")]
+    partial class PrimaryKey
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -125,7 +128,7 @@ namespace HelloJobPH.Server.Migrations
                     b.Property<DateTime>("ExpiredDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("HumanResourceId")
+                    b.Property<int>("HumanResourceId")
                         .HasColumnType("int");
 
                     b.Property<byte>("IsDeleted")
@@ -212,7 +215,9 @@ namespace HelloJobPH.Server.Migrations
                 {
                     b.HasOne("HelloJobPH.Shared.Model.HumanResources", "HumanResource")
                         .WithMany("JobPostings")
-                        .HasForeignKey("HumanResourceId");
+                        .HasForeignKey("HumanResourceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("HumanResource");
                 });
