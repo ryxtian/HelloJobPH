@@ -69,8 +69,8 @@ namespace HelloJobPH.Server.Controllers
         }
 
         // DELETE: api/JobPosting/{id}
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        [HttpPut("soft-delete/{id}")]
+        public async Task<IActionResult> SoftDelete(int id)
         {
             var deleted = await _jobPostService.DeleteAsync(id);
             if (!deleted)

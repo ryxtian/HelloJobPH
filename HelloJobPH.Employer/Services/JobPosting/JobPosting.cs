@@ -33,22 +33,26 @@ namespace HelloJobPH.Employer.Services.JobPosting
                 throw new HttpRequestException($"Error posting job: {request.StatusCode} - {error}");
             }
         }
-
         public async Task<bool> SoftDeleteJobPost(int id)
         {
-
-         
-
-            // Send PUT request
-            var response = await _http.PutAsJsonAsync($"", softDeleteData);
-
-            // Return true if successful, false otherwise
+            // We’re not sending a body, just calling the endpoint
+            var response = await _http.PutAsync($"{BaseUrl}/soft-delete/{id}", null);
             return response.IsSuccessStatusCode;
         }
 
-        public Task<JobPostingDtos> GetSingleJobPost(int id)
+        public async Task<JobPostingDtos> GetSingleJobPost(int id)
         {
-            throw new NotImplementedException();
+            var response = await _http.GetAsync($"{BaseUrl}/{id}");
+            if (response.IsSuccessStatusCode)
+            {
+                var jobPost = await response.Content.ReadFromJsonAsync<JobPostingDtos>();
+                return jobPost;
+            }
+            else
+            {
+                // Handle not found or error, maybe return null or throw
+                return null;
+            }
         }
 
         public async Task<List<JobPostingDtos>> RetrieveAllAsync()
@@ -57,9 +61,21 @@ namespace HelloJobPH.Employer.Services.JobPosting
             return result ?? [];
         }
 
-        public Task<string> UpdateAsync(JobPostingDtos jobpost)
+        public async Task<string> UpdateAsync(JobPostingDtos jobpost)
         {
-            throw new NotImplementedException();
+            var response = await _http.PutAsJsonAsync($"{BaseUrl}/{jobpost.JobPostingId}", jobpost);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return "Job post updated successfully.";
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                return $"Failed to update job post. Server responded with: {error}";
+            }
         }
+
+
     }
 }

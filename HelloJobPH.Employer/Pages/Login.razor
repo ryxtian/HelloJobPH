@@ -1,13 +1,13 @@
-﻿@page "/"
+﻿@* @page "/"
 @using System.ComponentModel.DataAnnotations
 
 @using HelloJobPH.Shared.DTOs
 
-@* @inject IEmployerRepository _EmployerRepo; *@
+@inject IEmployerRepository _EmployerRepo;
 
 <PageTitle>Dashboard</PageTitle>
 
-@* <EditForm Model="@model" OnValidSubmit="OnValidSubmit">
+ <EditForm Model="@model" OnValidSubmit="OnValidSubmit">
     <DataAnnotationsValidator />
     <MudGrid>
         <MudItem xs="12" sm="7">
@@ -61,4 +61,4 @@
     {
         //bool success = await EmployerAuthService.LoginAsync(login.Email, login.Password);
     }
-}*@
+} *@

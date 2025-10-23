@@ -13,5 +13,6 @@ namespace HelloJobPH.Shared.Model
 
         public string Email { get; set; }
         public string PhoneNumber { get; set; }
+        public List<JobPosting> JobPostings { get; set; }
     }
 }

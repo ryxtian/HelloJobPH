@@ -1,0 +1,97 @@
+﻿@page "/editjobPost/{id:int}"
+
+@using HelloJobPH.Employer.Services.JobPosting
+@using HelloJobPH.Shared.DTOs
+@using HelloJobPH.Shared.Enums
+@inject IJobPosting JobService
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+
+<MudText Typo="Typo.h5" GutterBottom>Edit Job Post")</MudText>
+
+<MudForm @ref="_form" OnValidSubmit="HandleValidSubmit">
+    <MudTextField Label="Title" @bind-Value="jobpost.Title" Required="true" />
+
+    <MudTextField Label="Description" @bind-Value="jobpost.Description" Required="true" Lines="3" TextArea="true" />
+
+    <MudSelect T="EmploymentType" Label="Employment Type" @bind-Value="jobpost.EmploymentType" Required="true">
+        @foreach (var type in Enum.GetValues<EmploymentType>())
+        {
+            <MudSelectItem Value="type">@type.ToString()</MudSelectItem>
+        }
+    </MudSelect>
+
+    <MudTextField Label="Location" @bind-Value="jobpost.Location" Required="true" />
+
+    <MudTextField Label="Salary From" @bind-Value="jobpost.SalaryFrom" Required="true" />
+    <MudTextField Label="Salary To" @bind-Value="jobpost.SalaryTo" Required="true" />
+
+    <MudTextField Label="Job Requirements" @bind-Value="jobpost.JobRequirements" Lines="3" TextArea="true" Required="true" />
+
+    <MudDatePicker Label="Expire Date" @bind-Date="jobpost.ExpiredDate" Required="true" />
+
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SubmitForm" Class="mt-3">
+      Update"
+    </MudButton>
+
+    <MudButton Variant="Variant.Text" Color="Color.Secondary" OnClick="Cancel" Class="mt-3 ml-2">
+        Cancel
+    </MudButton>
+</MudForm>
+
+@code {
+    [Parameter]
+    public int? id { get; set; }
+
+    private JobPostingDtos jobpost = new();
+    private MudForm _form;
+
+    
+    protected override async Task OnInitializedAsync()
+    {
+
+        try
+        {
+            jobpost = await JobService.GetSingleJobPost(id.Value);
+            if (jobpost == null)
+            {
+                Snackbar.Add($"Job post with ID {id} not found.", Severity.Error);
+                NavigationManager.NavigateTo("/jobpost");
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading job post: {ex.Message}", Severity.Error);
+            NavigationManager.NavigateTo("/jobpost");
+        }
+    }
+    private async Task SubmitForm()
+    {
+        await _form.Validate();
+
+        if (!_form.IsValid)
+        {
+            Snackbar.Add("Please fill all required fields.", Severity.Error);
+            return;
+        }
+
+        try
+        {
+        
+                var message = await JobService.UpdateAsync(jobpost);
+                await _form.ResetAsync();
+                Snackbar.Add(message, Severity.Success);
+          
+     NavigationManager.NavigateTo("/jobpost"); // redirect after success
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/jobpost");
+    }
+}

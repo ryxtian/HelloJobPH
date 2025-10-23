@@ -1,16 +1,10 @@
-﻿@page "/jobpost"
-@using HelloJobPH.Employer.Services.JobPosting
+﻿@page "/Recruiter"
 @using HelloJobPH.Shared.DTOs
 @using MudBlazor
-@inject IJobPosting JobPostingService
 
-@inject IDialogService DialogService
-@inject ISnackbar Snackbar
-@inject NavigationManager Navigation
+<MudButton OnClick="AddNewRecruiter" Variant="Variant.Filled" Color="Color.Primary" Class="mb-4">Add New Job Post</MudButton>
 
-<MudButton OnClick="AddNewJob" Variant="Variant.Filled" Color="Color.Primary" Class="mb-4">Add New Job Post</MudButton>
-
-<MudTable Items="@jobPostings" Filter="FilterFunc1" @bind-SelectedItem="selectedItem1" Hover="true" Elevation="1">
+<MudTable Items="@HumanResources" Filter="FilterFunc1" @bind-SelectedItem="selectedItem1" Hover="true" Elevation="1">
     <ToolBarContent>
         <MudText Typo="Typo.h6">Job Postings</MudText>
         <MudSpacer />
@@ -19,7 +13,7 @@
     </ToolBarContent>
 
     <HeaderContent>
-        <MudTh>Title</MudTh>
+        <MudTh>Firstname</MudTh>
         <MudTh>Description</MudTh>
         <MudTh>Salary Range</MudTh>
         <MudTh>Date Posted</MudTh>
@@ -27,7 +21,7 @@
     </HeaderContent>
 
     <RowTemplate>
-        <MudTd DataLabel="Title">@context.Title</MudTd>
+        <MudTd DataLabel="Title">@context.First</MudTd>
         <MudTd DataLabel="Description">@context.Description</MudTd>
         <MudTd DataLabel="Salary Range">@($"{context.SalaryFrom:C} - {context.SalaryTo:N2}")</MudTd>
         <MudTd DataLabel="Date Posted">@context.PostedDate.ToLocalTime().ToString("MM/dd/yyyy")</MudTd>
@@ -45,19 +39,11 @@
         <MudTablePager />
     </PagerContent>
 </MudTable>
-
-
-@code {
+@code{
     private string searchString1 = string.Empty;
     private bool isDeleting = false;
-    private JobPostingDtos selectedItem1;
-    protected List<JobPostingDtos>? jobPostings;
-
-    protected override async Task OnInitializedAsync()
-    {
-        jobPostings = await JobPostingService.RetrieveAllAsync();
-    }
-
+    private HumanResourceDtos selectedItem1;
+    protected List<JobPostingDtos> JobPostings;
     private bool FilterFunc1(JobPostingDtos element)
     {
         if (string.IsNullOrWhiteSpace(searchString1))
@@ -68,41 +54,8 @@
             || (element.JobRequirements?.Contains(searchString1, StringComparison.OrdinalIgnoreCase) ?? false)
             || $"{element.SalaryFrom} {element.SalaryTo}".Contains(searchString1);
     }
-    public void AddNewJob()
+    public void AddNewRecruiter()
     {
-        Navigation.NavigateTo("/JobPostForm");
-    }
-
-
-    public void OnEdit(int id)
-    {
-        Navigation.NavigateTo($"/editjobPost/{id}");
-    }
-    public async Task OnDelete(int id)
-    {
-        isDeleting = true;
-        try
-        {
-            var success = await JobPostingService.SoftDeleteJobPost(id);
-
-            if (success)
-            {
-                Snackbar.Add("Job post deleted successfully.", Severity.Success);
-                jobPostings = await JobPostingService.RetrieveAllAsync();
-            }
-            else
-            {
-                Snackbar.Add("Failed to delete job post.", Severity.Error);
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Exception during soft delete: {ex.Message}");
-            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
-        }
-        finally
-        {
-            isDeleting = false;
-        }
+        
     }
 }
