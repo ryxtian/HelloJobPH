@@ -1,4 +1,5 @@
-﻿using HelloJobPH.Shared.DTOs;
+﻿using HelloJobPH.Employer.Pages;
+using HelloJobPH.Shared.DTOs;
 using System.Net.Http.Json;
 
 namespace HelloJobPH.Employer.Services.HumanResource
@@ -12,9 +13,21 @@ namespace HelloJobPH.Employer.Services.HumanResource
             _http = http;
         }
 
-        public Task<string> AddAsync(JobPostingDtos jobPost)
+        public async Task<string> AddAsync(HumanResourceDtos entity)
         {
-            throw new NotImplementedException();
+            var request = await _http.PostAsJsonAsync($"{BaseUrl}", entity);
+            if (request.IsSuccessStatusCode)
+            {
+                // Read and return the response body as string
+                var result = await request.Content.ReadAsStringAsync();
+                return result;
+            }
+            else
+            {
+                // You can throw or handle this as needed
+                var error = await request.Content.ReadAsStringAsync();
+                throw new HttpRequestException($"Error posting job: {request.StatusCode} - {error}");
+            }
         }
 
         public Task<JobPostingDtos> GetSingle(int id)

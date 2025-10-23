@@ -1,5 +1,6 @@
 ﻿
 using HelloJobPH.Server.Service.HumanResource;
+using HelloJobPH.Shared.DTOs;
 using HelloJobPH.Shared.Model;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -39,6 +40,27 @@ namespace HelloJobPH.Server.Controllers
             }
 
             return NoContent();
+        }
+        [HttpPost]
+        public async Task<ActionResult<HumanResourceDtos>> Create(HumanResourceDtos jobPostDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var createdJobPost = await _humanService.AddAsync(jobPostDto);
+            return CreatedAtAction(nameof(GetById), new { id = createdJobPost.HumanResourceId }, createdJobPost);
+        }
+        [HttpGet("{id}")]
+        public async Task<ActionResult<HumanResourceDtos>> GetById(int id)
+        {
+            var jobPost = await _humanService.GetByIdAsync(id);
+            if (jobPost == null)
+            {
+                return NotFound($"Job post with ID {id} not found.");
+            }
+            return Ok(jobPost);
         }
     }
 }

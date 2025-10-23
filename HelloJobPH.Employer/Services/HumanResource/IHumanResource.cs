@@ -4,7 +4,7 @@ namespace HelloJobPH.Employer.Services.HumanResource
 {
     public interface IHumanResource
     {
-        Task<string> AddAsync(JobPostingDtos jobPost);
+        Task<string> AddAsync(HumanResourceDtos jobPost);
         Task<bool> SoftDeleteJobPost(int id);
         Task<JobPostingDtos> GetSingle(int id);
         Task<List<HumanResourceDtos>> RetrieveAllAsync();

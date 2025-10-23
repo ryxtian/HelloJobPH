@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using HelloJobPH.Server.Data;
 using HelloJobPH.Shared.DTOs;
+using HelloJobPH.Shared.Model;
 using Microsoft.EntityFrameworkCore;
 
 namespace HelloJobPH.Server.Service.HumanResource
@@ -14,10 +15,35 @@ namespace HelloJobPH.Server.Service.HumanResource
             _context = context;
    
         }
-        public Task<HumanResourceDtos> AddAsync(HumanResourceDtos jobPostingDto)
+        public async Task<HumanResourceDtos> AddAsync(HumanResourceDtos humanResourceDto)
         {
-            throw new NotImplementedException();
+            var entity = new HumanResources
+            {
+                Firstname = humanResourceDto.Firstname,
+                Lastname = humanResourceDto.Lastname,
+                Email = humanResourceDto.Email,
+                PhoneNumber = humanResourceDto.PhoneNumber,
+                IsDeleted = humanResourceDto.IsDeleted,
+                ProfilePhotoUrl = humanResourceDto.ProfilePhotoUrl,
+                JobTitle = humanResourceDto.JobTitle
+            };
+
+            await _context.HumanResource.AddAsync(entity);
+            await _context.SaveChangesAsync();
+
+            return new HumanResourceDtos
+            {
+                HumanResourceId = entity.HumanResourceId,
+                Firstname = entity.Firstname,
+                Lastname = entity.Lastname,
+                Email = entity.Email,
+                PhoneNumber = entity.PhoneNumber,
+                IsDeleted = entity.IsDeleted,
+                ProfilePhotoUrl = entity.ProfilePhotoUrl,
+                JobTitle = entity.JobTitle
+            };
         }
+
 
         public async Task<bool> DeleteAsync(int id)
         {
@@ -35,9 +61,25 @@ namespace HelloJobPH.Server.Service.HumanResource
             return true;
         }
 
-        public Task<HumanResourceDtos> GetByIdAsync(int id)
+        public async Task<HumanResourceDtos> GetByIdAsync(int id)
         {
-            throw new NotImplementedException();
+            var entity = await _context.HumanResource.FirstOrDefaultAsync(i => i.HumanResourceId == id);
+
+            if (entity == null)
+                return null; // or throw exception, depending on your design
+
+            return new HumanResourceDtos
+            {
+                HumanResourceId = entity.HumanResourceId,
+                Firstname = entity.Firstname,
+                Lastname = entity.Lastname,
+                Email = entity.Email,
+                PhoneNumber = entity.PhoneNumber,
+                IsDeleted = entity.IsDeleted,
+                ProfilePhotoUrl = entity.ProfilePhotoUrl,
+                JobTitle = entity.JobTitle
+            };
+
         }
 
         public async Task<List<HumanResourceDtos>> RetrieveAllAsync()
@@ -68,9 +110,40 @@ namespace HelloJobPH.Server.Service.HumanResource
         }
 
 
-        public Task<HumanResourceDtos> UpdateAsync(HumanResourceDtos jobPostingDto)
+        public async Task<HumanResourceDtos?> UpdateAsync(HumanResourceDtos humanResourceDto)
         {
-            throw new NotImplementedException();
+            var existing = await _context.HumanResource
+                .FirstOrDefaultAsync(hr => hr.HumanResourceId == humanResourceDto.HumanResourceId);
+
+            if (existing == null)
+                return null; // or throw new Exception("Human resource not found");
+
+            // Map fields from DTO to entity
+            existing.Firstname = humanResourceDto.Firstname;
+            existing.Lastname = humanResourceDto.Lastname;
+            existing.Email = humanResourceDto.Email;
+            existing.PhoneNumber = humanResourceDto.PhoneNumber;
+            existing.IsDeleted = humanResourceDto.IsDeleted;
+            existing.ProfilePhotoUrl = humanResourceDto.ProfilePhotoUrl;
+            existing.JobTitle = humanResourceDto.JobTitle;
+
+            _context.HumanResource.Update(existing);
+            await _context.SaveChangesAsync();
+
+            // Return updated DTO
+            return new HumanResourceDtos
+            {
+                HumanResourceId = existing.HumanResourceId,
+                Firstname = existing.Firstname,
+                Lastname = existing.Lastname,
+                Email = existing.Email,
+                PhoneNumber = existing.PhoneNumber,
+                IsDeleted = existing.IsDeleted,
+                ProfilePhotoUrl = existing.ProfilePhotoUrl,
+                JobTitle = existing.JobTitle
+            };
         }
+
+
     }
 }

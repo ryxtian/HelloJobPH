@@ -2,12 +2,14 @@
 @using MudBlazor
 @inject NavigationManager NavigationManager
 @inject IHumanResource _humanService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
 
 <MudButton OnClick="AddNewRecruiter" Variant="Variant.Filled" Color="Color.Primary" Class="mb-4">Add New Job Post</MudButton>
 
 <MudTable Items="@HumanResources" Filter="FilterFunc1" @bind-SelectedItem="selectedItem1" Hover="true" Elevation="1">
     <ToolBarContent>
-        <MudText Typo="Typo.h6">Job Postings</MudText>
+        <MudText Typo="Typo.h6">Human Resource</MudText>
         <MudSpacer />
         <MudTextField @bind-Value="searchString1" Placeholder="Search" Adornment="Adornment.Start"
                       AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0" />
@@ -61,23 +63,38 @@
 
     public void AddNewRecruiter()
     {
-        NavigationManager.NavigateTo("/addNewRecruiter");
+        NavigationManager.NavigateTo("/addHumanResource");
     }
-
-    public void OnEdit(int id)
+  public void OnEdit(int id)
     {
-        NavigationManager.NavigateTo($"/editRecruiter/{id}");
+        NavigationManager.NavigateTo($"/editjobPost/{id}");
     }
-
-    public async void OnDelete(int id)
+    public async Task OnDelete(int id)
     {
         isDeleting = true;
-        // Example: implement delete logic here, call API, etc.
-        // After deletion, refresh the data
-        await _humanService.SoftDeleteJobPost(id);  // assuming this method exists
-        HumanResources = await _humanService.RetrieveAllAsync();
-        isDeleting = false;
-        StateHasChanged();
+        try
+        {
+            var success = await _humanService.SoftDeleteJobPost(id);
+
+            if (success)
+            {
+                Snackbar.Add("Job post deleted successfully.", Severity.Success);
+                HumanResources = await _humanService.RetrieveAllAsync();
+            }
+            else
+            {
+                Snackbar.Add("Failed to delete job post.", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Exception during soft delete: {ex.Message}");
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isDeleting = false;
+        }
     }
 
     protected override async Task OnInitializedAsync()

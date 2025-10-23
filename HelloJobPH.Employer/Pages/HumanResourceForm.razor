@@ -1,0 +1,58 @@
+﻿@page "/addHumanResource"
+@using MudBlazor
+@inject NavigationManager NavigationManager
+@inject IHumanResource _humanService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+
+    <MudText Typo="Typo.h5" Class="mb-4">Add New Human Resource</MudText>
+
+    <MudForm @ref="_form" OnValidSubmit="HandleValidSubmit">
+        <MudTextField @bind-Value="humanResource.Firstname" Label="Firstname" Required="true" For="@(() => humanResource.Firstname)" />
+        <MudTextField @bind-Value="humanResource.Lastname" Label="Lastname" Required="true" For="@(() => humanResource.Lastname)" />
+        <MudTextField @bind-Value="humanResource.Email" Label="Email" Required="true" For="@(() => humanResource.Email)" />
+        <MudTextField @bind-Value="humanResource.PhoneNumber" Label="Phone Number" For="@(() => humanResource.PhoneNumber)" />
+@*         <MudTextField @bind-Value="humanResource.ProfilePhotoUrl" Label="Profile Photo URL" For="@(() => humanResource.ProfilePhotoUrl)" />
+ *@        <MudTextField @bind-Value="humanResource.JobTitle" Label="Job Title" For="@(() => humanResource.JobTitle)" />
+
+        <MudButton Type="Submit" Variant="Variant.Filled" Color="Color.Primary" Class="mt-4">Save</MudButton>
+        <MudButton Variant="Variant.Text" Color="Color.Secondary" Class="mt-4 ml-2" OnClick="Cancel">Cancel</MudButton>
+    </MudForm>
+
+
+@code {
+    private MudForm form;
+    private HumanResourceDtos humanResource = new();
+
+    private MudForm _form;
+    private async Task SubmitForm()
+    {
+        await _form.Validate();
+        if (_form.IsValid)
+        {
+            try
+            {
+                var message = await _humanService.AddAsync(humanResource);
+
+                Snackbar.Add("Successfully saved", Severity.Success);
+                Console.WriteLine("success");
+                NavigationManager.NavigateTo("/jobPost");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("badrequest");
+                //Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+            }
+        }
+        else
+        {
+            Snackbar.Add("Please fill all required fields.", Severity.Error);
+        }
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/Recruiter");
+    }
+}
