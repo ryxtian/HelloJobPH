@@ -7,8 +7,6 @@ namespace HelloJobPH.Server.Service.Auth
     {
         Task<string> LoginAsync(string email, string password);
         Task LogoutAsync();
-        string CreateToken(UserAccount user, Applicant applicantdetail);
-        Task<string?> GetToken();
-        Task<string> RegisterAsync(RegisterDtos register);
+        string CreateToken(UserAccount user, HumanResources HRDetails);
     }
 }

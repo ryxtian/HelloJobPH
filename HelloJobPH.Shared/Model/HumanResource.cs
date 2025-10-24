@@ -18,8 +18,12 @@ namespace HelloJobPH.Shared.Model
         public byte IsDeleted { get; set; } = 0;
         public string ProfilePhotoUrl { get; set; }
         public string JobTitle { get; set; }
+
+        // Add this:
+        public int UserAccountId { get; set; }
+        public UserAccount UserAccount { get; set; }
+
         public List<JobPosting> JobPostings { get; set; }
         public List<Applicant> Applicants { get; set; }
     }
-
 }

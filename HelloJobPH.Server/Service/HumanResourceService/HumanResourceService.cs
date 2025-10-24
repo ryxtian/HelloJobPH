@@ -3,6 +3,7 @@ using HelloJobPH.Server.Data;
 using HelloJobPH.Shared.DTOs;
 using HelloJobPH.Shared.Model;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Win32;
 
 namespace HelloJobPH.Server.Service.HumanResource
 {
@@ -17,19 +18,33 @@ namespace HelloJobPH.Server.Service.HumanResource
         }
         public async Task<HumanResourceDtos> AddAsync(HumanResourceDtos humanResourceDto)
         {
+
+            string passwordHash = BCrypt.Net.BCrypt.HashPassword(humanResourceDto.Password);
+            var useracc = new UserAccount
+            {
+                Email = humanResourceDto.Email,
+                Password = passwordHash,
+                Role = "Admin"
+            };
+
+            await _context.UserAccount.AddAsync(useracc);
+            await _context.SaveChangesAsync();
             var entity = new HumanResources
             {
                 Firstname = humanResourceDto.Firstname,
                 Lastname = humanResourceDto.Lastname,
-                Email = humanResourceDto.Email,
                 PhoneNumber = humanResourceDto.PhoneNumber,
                 IsDeleted = humanResourceDto.IsDeleted,
                 ProfilePhotoUrl = humanResourceDto.ProfilePhotoUrl,
-                JobTitle = humanResourceDto.JobTitle
+                JobTitle = humanResourceDto.JobTitle,
+                UserAccountId = useracc.UserAccountId,
+                Email = useracc.Email,
             };
 
             await _context.HumanResource.AddAsync(entity);
             await _context.SaveChangesAsync();
+
+
 
             return new HumanResourceDtos
             {

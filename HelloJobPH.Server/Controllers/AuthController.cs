@@ -4,6 +4,7 @@ using HelloJobPH.Server.Service.Auth;
 using HelloJobPH.Server.Service.UserAccountRepository;
 using HelloJobPH.Shared.DTOs;
 using HelloJobPH.Shared.Model;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -17,22 +18,18 @@ namespace HelloJobPH.Server.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
-        private readonly IConfiguration _configuration;
-        private readonly IUserAccountRepository _userRepo;
-        private readonly IApplicantRepository _applicantRepo;
+
         public AuthController(IAuthService authService,IConfiguration configuration, IUserAccountRepository userRepo, IApplicantRepository applicantRepo)
         {
             _authService = authService;
-            _configuration = configuration;
-            _userRepo = userRepo;
-            _applicantRepo = applicantRepo;
+
         }
         [HttpPost("login")]
-        public async Task<IActionResult> Login(string email,string passsword)
+        public async Task<IActionResult> Login(LoginDtos user)
         {
             try
             {
-                var token = await _authService.LoginAsync(email, passsword);
+                var token = await _authService.LoginAsync(user.Email, user.Password);
                 return Ok(new { token });
             }
             catch (Exception ex)
@@ -41,20 +38,22 @@ namespace HelloJobPH.Server.Controllers
                 return BadRequest(ex.Message);
             }
         }
-        [HttpPost("register")]
-        public async Task<IActionResult>Register(RegisterDtos user)
+        [HttpGet("claims")]
+        [Authorize] // Require valid token
+        public IActionResult GetClaims()
         {
-            try
-            {
-                var request = await _authService.RegisterAsync(user);
-                return Ok();
+            // Ensure user is authenticated
+            if (User.Identity is not ClaimsIdentity identity || !identity.IsAuthenticated)
+                return Unauthorized();
 
-            }
-            catch (Exception ex)
+            // Extract claims from token
+            var claims = identity.Claims.Select(c => new
             {
+                Type = c.Type,
+                Value = c.Value
+            });
 
-                return BadRequest(ex.Message);
-            }
+            return Ok(claims);
         }
     }
 }

@@ -21,7 +21,7 @@ namespace HelloJobPH.Shared.Model
         public byte IsDeleted { get; set; } = 0;
         public string JobRequirements { get; set; }
         public int? HumanResourceId { get; set; } 
-        public HumanResources HumanResource { get; set; }
+        public HumanResources? HumanResource { get; set; }
         public DateTime PostedDate { get; set; }
         public DateTime ExpiredDate { get; set; }
     }

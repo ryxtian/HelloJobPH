@@ -12,27 +12,32 @@ namespace HelloJobPH.Employer.Services.HumanResource
         {
             _http = http;
         }
-
-        public async Task<string> AddAsync(HumanResourceDtos entity)
+        public async Task<HumanResourceDtos> AddAsync(HumanResourceDtos entity)
         {
-            var request = await _http.PostAsJsonAsync($"{BaseUrl}", entity);
-            if (request.IsSuccessStatusCode)
+            var response = await _http.PostAsJsonAsync("api/HumanResource/create", entity);
+
+            if (!response.IsSuccessStatusCode)
             {
-                // Read and return the response body as string
-                var result = await request.Content.ReadAsStringAsync();
-                return result;
+                var error = await response.Content.ReadAsStringAsync();
+                throw new HttpRequestException($"Error posting HumanResource: {response.StatusCode} - {error}");
+            }
+
+            return await response.Content.ReadFromJsonAsync<HumanResourceDtos>();
+        }
+
+        public async Task<HumanResourceDtos> GetSingle(int id)
+        {
+            var response = await _http.GetAsync($"{BaseUrl}/{id}");
+            if (response.IsSuccessStatusCode)
+            {
+                var jobPost = await response.Content.ReadFromJsonAsync<HumanResourceDtos>();
+                return jobPost;
             }
             else
             {
-                // You can throw or handle this as needed
-                var error = await request.Content.ReadAsStringAsync();
-                throw new HttpRequestException($"Error posting job: {request.StatusCode} - {error}");
+                // Handle not found or error, maybe return null or throw
+                return null;
             }
-        }
-
-        public Task<JobPostingDtos> GetSingle(int id)
-        {
-            throw new NotImplementedException();
         }
 
         public async Task<List<HumanResourceDtos>> RetrieveAllAsync()
@@ -48,9 +53,19 @@ namespace HelloJobPH.Employer.Services.HumanResource
             return response.IsSuccessStatusCode;
         }
 
-        public Task<string> UpdateAsync(JobPostingDtos jobpost)
+        public async Task<string> UpdateAsync(HumanResourceDtos hr)
         {
-            throw new NotImplementedException();
+            var response = await _http.PutAsJsonAsync($"{BaseUrl}/{hr.HumanResourceId}", hr);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return "Job post updated successfully.";
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                return $"Failed to update job post. Server responded with: {error}";
+            }
         }
     }
 }

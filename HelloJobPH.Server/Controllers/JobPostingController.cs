@@ -6,6 +6,7 @@ namespace HelloJobPH.Server.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+
     public class JobPostingController : ControllerBase
     {
         private readonly IJobPostService _jobPostService;
@@ -39,13 +40,13 @@ namespace HelloJobPH.Server.Controllers
         // POST: api/JobPosting
         [HttpPost]
         public async Task<ActionResult<JobPostingDtos>> Create(JobPostingDtos jobPostDto)
-        {
+         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var createdJobPost = await _jobPostService.AddAsync(jobPostDto);
+                          var createdJobPost = await _jobPostService.AddAsync(jobPostDto);
             return CreatedAtAction(nameof(GetById), new { id = createdJobPost.JobPostingId }, createdJobPost);
         }
 

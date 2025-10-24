@@ -1,24 +1,27 @@
-﻿using HelloJobPH.Shared.DTOs;
+﻿using AutoMapper;
+using HelloJobPH.Server.Data;
+using HelloJobPH.Shared.DTOs;
 using HelloJobPH.Shared.Model;  // Assuming JobPosting entity is here
 using Microsoft.EntityFrameworkCore;
-using AutoMapper;
-using HelloJobPH.Server.Data;
+using System.Security.Claims;
 
 namespace HelloJobPH.Server.Service.JobPost
 {
     public class JobPostService : IJobPostService
     {
         private readonly ApplicationDbContext _context;
-            private readonly JobPostRepository _repository;
-        private readonly IMapper _mapper;
+            //private readonly JobPostRepository _repository;
+     
+        IHttpContextAccessor _httpContextAccessor;
 
-        public JobPostService(JobPostRepository repository, IMapper mapper,ApplicationDbContext context)
+        public JobPostService(ApplicationDbContext context, IHttpContextAccessor httpContextAccessor)
         {
-            _repository = repository;
-            _mapper = mapper;
+          
+          
             _context = context;
+            _httpContextAccessor = httpContextAccessor;
         }
-
+      
         public async Task<List<JobPostingDtos>> RetrieveAllAsync()
         {
             List<JobPostingDtos> response = await _context.JobPosting
@@ -59,48 +62,64 @@ namespace HelloJobPH.Server.Service.JobPost
                 SalaryTo = entity.SalaryTo,
             };
 
-
-            //var jobEntity = await _repository.GetByIdAsync(id);
-            //return _mapper.Map<JobPostingDtos>(jobEntity);
         }
 
         public async Task<JobPostingDtos> AddAsync(JobPostingDtos jobPostingDto)
         {
 
-
-            var saving = new JobPosting
+            try
             {
-                Title = jobPostingDto.Title,
-                Description = jobPostingDto.Description,
-                Location = jobPostingDto.Location,
-                EmploymentType = jobPostingDto.EmploymentType,
-                JobRequirements = jobPostingDto.JobRequirements,
-                PostedDate = DateTime.Now,
-                ExpiredDate = jobPostingDto.ExpiredDate ?? DateTime.Now,
-                HumanResourceId=1,
-            };
-            await _context.AddAsync(saving);
-            await _context.SaveChangesAsync();
+                var user = _httpContextAccessor.HttpContext?.User;
 
-            return new JobPostingDtos
+                // ✅ Get the user’s ID from claims
+                var userIdClaim = user?.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (!int.TryParse(userIdClaim, out int userId))
+                    throw new Exception("Invalid or missing user ID in claims.");
 
+                var saving = new JobPosting
+                {
+                    Title = jobPostingDto.Title,
+                    Description = jobPostingDto.Description,
+                    Location = jobPostingDto.Location,
+                    EmploymentType = jobPostingDto.EmploymentType,
+                    JobRequirements = jobPostingDto.JobRequirements,
+                    PostedDate = DateTime.Now,
+                    ExpiredDate = jobPostingDto.ExpiredDate ?? DateTime.Now,
+                    HumanResourceId = userId,
+                };
+
+                await _context.AddAsync(saving);
+                await _context.SaveChangesAsync();
+
+                return new JobPostingDtos
+                {
+                    JobPostingId = saving.JobPostingId,
+                    Title = saving.Title,
+                    Description = saving.Description,
+                    Location = saving.Location,
+                    EmploymentType = saving.EmploymentType,
+                    PostedDate = saving.PostedDate,
+                    ExpiredDate = saving.ExpiredDate
+                };
+            }
+            catch (Exception)
             {
-                JobPostingId = saving.JobPostingId,
-                Title = saving.Title,
-                Description = saving.Description,
-                Location = saving.Location,
-                EmploymentType = saving.EmploymentType,
-                PostedDate = saving.PostedDate,
-                ExpiredDate = saving.ExpiredDate
-            };
 
-            //var entity = _mapper.Map<JobPosting>(jobPostingDto);
-            //var createdEntity = await _repository.AddAsync(entity);
-            //return _mapper.Map<JobPostingDtos>(createdEntity);
+                throw;
+            }
+
         }
+
 
         public async Task<JobPostingDtos> UpdateAsync(JobPostingDtos jobPostingDto)
            {
+
+            var user = _httpContextAccessor.HttpContext?.User;
+
+            // ✅ Get the user’s ID from claims
+            var userIdClaim = user?.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdClaim, out int userId))
+                throw new Exception("Invalid or missing user ID in claims.");
             var existing = await _context.JobPosting
                 .FirstOrDefaultAsync(j => j.JobPostingId == jobPostingDto.JobPostingId);
 
@@ -116,7 +135,7 @@ namespace HelloJobPH.Server.Service.JobPost
             existing.SalaryTo = jobPostingDto.SalaryTo;
             existing.JobRequirements = jobPostingDto.JobRequirements;
             existing.IsDeleted = jobPostingDto.IsDeleted;
-            existing.HumanResourceId = 1;
+            existing.HumanResourceId = userId;
             existing.PostedDate = DateTime.Now;
             existing.ExpiredDate = jobPostingDto.ExpiredDate ?? DateTime.Now;
 
@@ -135,7 +154,7 @@ namespace HelloJobPH.Server.Service.JobPost
                 SalaryTo = existing.SalaryTo,
                 JobRequirements = existing.JobRequirements,
                 IsDeleted = existing.IsDeleted,
-                HumanResourceId = 1,
+                HumanResourceId = 6,
                 PostedDate = existing.PostedDate,
                 ExpiredDate = existing.ExpiredDate
             };

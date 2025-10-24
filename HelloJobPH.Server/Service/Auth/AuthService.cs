@@ -12,6 +12,7 @@ using System.Text;
 
 namespace HelloJobPH.Employer.Services.Repository
 {
+
     public class AuthService : IAuthService
     {
         private readonly ApplicationDbContext _context;
@@ -26,7 +27,6 @@ namespace HelloJobPH.Employer.Services.Repository
         {
             throw new NotImplementedException();
         }
-
         public async Task<string> LoginAsync(string email, string password)
         {
             var user = await _context.UserAccount.FirstOrDefaultAsync(x => x.Email == email);
@@ -37,58 +37,25 @@ namespace HelloJobPH.Employer.Services.Repository
             if (!BCrypt.Net.BCrypt.Verify(password, user.Password))
                 throw new Exception("Wrong password.");
 
-            var applicant = await _context.Applicant.FirstOrDefaultAsync(a => a.ApplicantId == user.ApplicantId);
+            var applicant = await _context.HumanResource.FirstOrDefaultAsync(a => a.UserAccountId == user.UserAccountId);
 
             if (applicant == null)
                 throw new Exception("Applicant details not found.");
 
             return CreateToken(user, applicant);
         }
-        public async Task<string> RegisterAsync(RegisterDtos register)
-        {
-            if (await _context.UserAccount.FirstOrDefaultAsync(x=>x.Email == register.Email) is not null)
-                throw new Exception("Email is already registered.");
-            var applicant = new Applicant
-            {
-                Firstname = register.Firstname,
-                Middlename = register.Middlename,
-                Surname = register.Surname,
-                Address = register.Address,
-                Phone = register.Phone,
-                Birthday = register.Birthday,
-            };
 
-            await _context.Applicant.AddAsync(applicant);
-            await _context.SaveChangesAsync(); 
 
-           
-            string passwordHash = BCrypt.Net.BCrypt.HashPassword(register.PasswordHash);
 
-         
-            var userAccount = new UserAccount
-            {
-                Email = register.Email,
-                Password = passwordHash,
-                ConfirmPassword = passwordHash,
-                Role = "Applicant",
-                ApplicantId = applicant.ApplicantId
-            };
-
-            await _context.UserAccount.AddAsync(userAccount);
-            await _context.SaveChangesAsync();
-
-            return CreateToken(userAccount, applicant);
-        }
-
-        public string CreateToken(UserAccount user, Applicant applicantdetail)
-        {
+        public string CreateToken(UserAccount user, HumanResources HRDetails)
+                                          {
             List<Claim> claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, applicantdetail.ApplicantId.ToString()),
+                new Claim(ClaimTypes.NameIdentifier, HRDetails.HumanResourceId.ToString()),
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim(ClaimTypes.Role, user.Role),
-                new Claim(ClaimTypes.Name, applicantdetail.Firstname),
-                new Claim(ClaimTypes.Surname, applicantdetail.Surname),
+                new Claim(ClaimTypes.Name, HRDetails.Firstname),
+                new Claim(ClaimTypes.Surname, HRDetails.Lastname),
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
@@ -108,5 +75,6 @@ namespace HelloJobPH.Employer.Services.Repository
         {
             throw new NotImplementedException();
         }
+
     }
 }

@@ -41,15 +41,15 @@ namespace HelloJobPH.Server.Controllers
 
             return NoContent();
         }
-        [HttpPost]
-        public async Task<ActionResult<HumanResourceDtos>> Create(HumanResourceDtos jobPostDto)
+        [HttpPost("create")]
+        public async Task<ActionResult<HumanResourceDtos>> Create(HumanResourceDtos hr)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var createdJobPost = await _humanService.AddAsync(jobPostDto);
+            var createdJobPost = await _humanService.AddAsync(hr);
             return CreatedAtAction(nameof(GetById), new { id = createdJobPost.HumanResourceId }, createdJobPost);
         }
         [HttpGet("{id}")]
@@ -61,6 +61,25 @@ namespace HelloJobPH.Server.Controllers
                 return NotFound($"Job post with ID {id} not found.");
             }
             return Ok(jobPost);
+        }
+
+        // PUT: api/JobPosting/{id}
+        [HttpPut("{id}")]
+        public async Task<ActionResult<HumanResourceDtos>> Update(int id, HumanResourceDtos hr)
+        {
+            if (id != hr.HumanResourceId)
+            {
+                return BadRequest("ID mismatch.");
+            }
+
+            var existing = await _humanService.GetByIdAsync(id);
+            if (existing == null)
+            {
+                return NotFound($"Job post with ID {id} not found.");
+            }
+
+            var updatedJobPost = await _humanService.UpdateAsync(hr);
+            return Ok(updatedJobPost);
         }
     }
 }

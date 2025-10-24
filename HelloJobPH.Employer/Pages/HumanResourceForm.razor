@@ -1,4 +1,5 @@
 ﻿@page "/addHumanResource"
+@page "/addHumanResource/{HumanResourceId:int}"
 @using MudBlazor
 @inject NavigationManager NavigationManager
 @inject IHumanResource _humanService
@@ -13,19 +14,63 @@
         <MudTextField @bind-Value="humanResource.Lastname" Label="Lastname" Required="true" For="@(() => humanResource.Lastname)" />
         <MudTextField @bind-Value="humanResource.Email" Label="Email" Required="true" For="@(() => humanResource.Email)" />
         <MudTextField @bind-Value="humanResource.PhoneNumber" Label="Phone Number" For="@(() => humanResource.PhoneNumber)" />
-@*         <MudTextField @bind-Value="humanResource.ProfilePhotoUrl" Label="Profile Photo URL" For="@(() => humanResource.ProfilePhotoUrl)" />
- *@        <MudTextField @bind-Value="humanResource.JobTitle" Label="Job Title" For="@(() => humanResource.JobTitle)" />
+        <MudTextField @bind-Value="humanResource.ProfilePhotoUrl" Label="Profile Photo URL" For="@(() => humanResource.ProfilePhotoUrl)" />
+       <MudTextField @bind-Value="humanResource.JobTitle" Label="Job Title" For="@(() => humanResource.JobTitle)" />
+    <MudTextField @bind-Value="humanResource.Password"
+                  Label="Password"
+                  For="@(() => humanResource.Password)"
+                  InputType="InputType.Password"
+                  Adornment="Adornment.End"
+                  AdornmentIcon="@Icons.Material.Filled.Visibility"
+                  OnAdornmentClick="@TogglePasswordVisibility" />
 
-        <MudButton Type="Submit" Variant="Variant.Filled" Color="Color.Primary" Class="mt-4">Save</MudButton>
+    <MudButton Type="button" OnClick="SubmitForm" Variant="Variant.Filled" Color="Color.Primary" Class="mt-4">Save</MudButton>
         <MudButton Variant="Variant.Text" Color="Color.Secondary" Class="mt-4 ml-2" OnClick="Cancel">Cancel</MudButton>
     </MudForm>
 
 
 @code {
-    private MudForm form;
     private HumanResourceDtos humanResource = new();
-
+    [Parameter] public int? HumanResourceId { get; set; }
+    private bool isPasswordVisible;
     private MudForm _form;
+    private bool _loading = true;
+    private string _pageTitle = "Add New Human Resource";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (HumanResourceId.HasValue)
+        {
+            try
+            {
+                _pageTitle = "Edit Human Resource";
+
+               
+                humanResource = await _humanService.GetSingle(HumanResourceId.Value);
+
+                if (humanResource == null)
+                {
+                    Snackbar.Add($"Human resource with ID {HumanResourceId} not found.", Severity.Error);
+                    NavigationManager.NavigateTo("/Recruiter");
+                    return;
+                }
+
+                Snackbar.Add($"Editing {humanResource.Firstname} {humanResource.Lastname}", Severity.Info);
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Error loading data: {ex.Message}", Severity.Error);
+                NavigationManager.NavigateTo("/Recruiter");
+            }
+        }
+
+        _loading = false;
+    }
+    private void TogglePasswordVisibility()
+    {
+        isPasswordVisible = !isPasswordVisible;
+    }
+
     private async Task SubmitForm()
     {
         await _form.Validate();
@@ -33,16 +78,28 @@
         {
             try
             {
-                var message = await _humanService.AddAsync(humanResource);
+                if (HumanResourceId.HasValue)
+                {
+                    // Update existing record
+                    await _humanService.UpdateAsync(humanResource);
+                    Snackbar.Add("Successfully updated!", Severity.Success);
+                }
+                else
+                {
+                    // Add new record
+                    await _humanService.AddAsync(humanResource);
+                    Snackbar.Add("Successfully created!", Severity.Success);
+                }
 
-                Snackbar.Add("Successfully saved", Severity.Success);
-                Console.WriteLine("success");
-                NavigationManager.NavigateTo("/jobPost");
+                NavigationManager.NavigateTo("/Recruiter");
+            }
+            catch (HttpRequestException ex)
+            {
+                Snackbar.Add($"HTTP Error: {ex.Message}", Severity.Error);
             }
             catch (Exception ex)
             {
-                Console.WriteLine("badrequest");
-                //Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+                Snackbar.Add($"Unexpected error: {ex.Message}", Severity.Error);
             }
         }
         else
@@ -56,3 +113,4 @@
         NavigationManager.NavigateTo("/Recruiter");
     }
 }
+

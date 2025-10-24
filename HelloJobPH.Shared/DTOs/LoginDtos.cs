@@ -9,8 +9,10 @@ namespace HelloJobPH.Shared.DTOs
 {
     public class LoginDtos
     {
+        [Required(ErrorMessage = "Title is required.")]
         public string Email { get; set; }
-       
+        [Required(ErrorMessage = "Title is required.")]
         public string Password { get; set; }
+        public string? Token { get; set; }
     }
 }
