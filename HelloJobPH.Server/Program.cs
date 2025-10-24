@@ -3,7 +3,6 @@ using HelloJobPH.Employer.JwtAuthStateProviders;
 using HelloJobPH.Employer.Services.Repository;
 using HelloJobPH.Server.Data;
 using HelloJobPH.Server.Mapper;
-using HelloJobPH.Server.Service.ApplicantRepo;
 using HelloJobPH.Server.Service.Auth;
 using HelloJobPH.Server.Service.HumanResource;
 using HelloJobPH.Server.Service.JobPost;
@@ -52,11 +51,11 @@ builder.Services.AddAuthorizationCore();
 
 
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IUserAccountRepository, UserAccountRepository>();
-builder.Services.AddScoped<IApplicantRepository, ApplicantRepository>();
+//builder.Services.AddScoped<IUserAccountRepository, UserAccountRepository>();
+//builder.Services.AddScoped<IApplicantRepository, ApplicantRepository>();
 builder.Services.AddScoped<IJobPostService, JobPostService>();
 builder.Services.AddScoped<IHumanResourceService, HumanResourceService>();
-builder.Services.AddScoped<IAuthService, AuthService>();
+
 //builder.Services.AddScoped<AuthenticationStateProvider, JwtAuthStateProvider>();
 
 builder.Services.AddHttpContextAccessor();

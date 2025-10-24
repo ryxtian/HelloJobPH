@@ -14,7 +14,7 @@ namespace HelloJobPH.Employer.JwtAuthStateProviders
         {
             _localStorage = localStorage;
         }
-
+        public ClaimsPrincipal? CurrentUser { get; private set; }
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
             var token = await _localStorage.GetItemAsync<string>("authToken");

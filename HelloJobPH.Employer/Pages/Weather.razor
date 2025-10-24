@@ -1,57 +1,59 @@
 ﻿@page "/weather"
-@inject HttpClient Http
+@using MudBlazor
 
-<PageTitle>Weather</PageTitle>
+<PageTitle>Interview Management</PageTitle>
 
-<h1>Weather</h1>
+<MudText Typo="Typo.h4" GutterBottom="true">Interview Management</MudText>
+<MudText Typo="Typo.subtitle1" GutterBottom="true">List of scheduled interviews.</MudText>
 
-<p>This component demonstrates fetching data from the server.</p>
-
-@if (forecasts == null)
-{
-    <p><em>Loading...</em></p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Temp. (C)</th>
-                <th>Temp. (F)</th>
-                <th>Summary</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var forecast in forecasts)
+<MudTable Items="@interviews" Hover="true" Bordered="true" Striped="true">
+    <HeaderContent>
+        <MudTh>Candidate Name</MudTh>
+        <MudTh>Position</MudTh>
+        <MudTh>Interviewer</MudTh>
+        <MudTh>Date</MudTh>
+        <MudTh>Time</MudTh>
+        <MudTh>Status</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Candidate Name">@context.CandidateName</MudTd>
+        <MudTd DataLabel="Position">@context.Position</MudTd>
+        <MudTd DataLabel="Interviewer">@context.Interviewer</MudTd>
+        <MudTd DataLabel="Date">@context.Date.ToShortDateString()</MudTd>
+        <MudTd DataLabel="Time">@context.Time</MudTd>
+        <MudTd DataLabel="Status">
+            @switch (context.Status)
             {
-                <tr>
-                    <td>@forecast.Date.ToShortDateString()</td>
-                    <td>@forecast.TemperatureC</td>
-                    <td>@forecast.TemperatureF</td>
-                    <td>@forecast.Summary</td>
-                </tr>
+                case "Pending":
+                    <MudBadge Color="Color.Warning">@context.Status</MudBadge>
+                    break;
+                case "Completed":
+                    <MudBadge Color="Color.Success">@context.Status</MudBadge>
+                    break;
+                case "Cancelled":
+                    <MudBadge Color="Color.Error">@context.Status</MudBadge>
+                    break;
             }
-        </tbody>
-    </table>
-}
+        </MudTd>
+    </RowTemplate>
+</MudTable>
 
 @code {
-    private WeatherForecast[]? forecasts;
-
-    protected override async Task OnInitializedAsync()
+    private List<Interview> interviews = new List<Interview>
     {
-        forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("sample-data/weather.json");
-    }
+        new Interview { CandidateName="John Doe", Position="Software Developer", Interviewer="Alice Smith", Date=DateTime.Today.AddDays(1), Time="10:00 AM", Status="Pending" },
+        new Interview { CandidateName="Jane Roe", Position="QA Tester", Interviewer="Bob Johnson", Date=DateTime.Today.AddDays(2), Time="2:00 PM", Status="Completed" },
+        new Interview { CandidateName="Mark Spencer", Position="UI/UX Designer", Interviewer="Alice Smith", Date=DateTime.Today.AddDays(3), Time="11:00 AM", Status="Pending" },
+        new Interview { CandidateName="Lucy Brown", Position="Project Manager", Interviewer="Charlie Lee", Date=DateTime.Today.AddDays(1), Time="3:00 PM", Status="Cancelled" },
+    };
 
-    public class WeatherForecast
+    public class Interview
     {
-        public DateOnly Date { get; set; }
-
-        public int TemperatureC { get; set; }
-
-        public string? Summary { get; set; }
-
-        public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+        public string CandidateName { get; set; } = string.Empty;
+        public string Position { get; set; } = string.Empty;
+        public string Interviewer { get; set; } = string.Empty;
+        public DateTime Date { get; set; }
+        public string Time { get; set; } = string.Empty;
+        public string Status { get; set; } = "Pending";
     }
 }

@@ -1,0 +1,43 @@
+@page "/claims"
+@inject JwtAuthStateProvider AuthProvider
+@inject NavigationManager Navigation
+@using System.Security.Claims
+@using HelloJobPH.Employer.JwtAuthStateProviders
+
+<h3>Dashboard</h3>
+
+@if (userIsAuthenticated)
+{
+    <p>Hello, @userName!</p>
+    <p>Email: @userEmail</p>
+    <p>Role: @userRole</p>
+}
+else
+{
+    <p>User is not logged in.</p>
+}
+
+@code {
+    private bool userIsAuthenticated = false;
+    private string userName = "";
+    private string userEmail = "";
+    private string userRole = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Ensure CurrentUser is populated
+        await AuthProvider.GetAuthenticationStateAsync();
+
+        var user = AuthProvider.CurrentUser;
+
+        if (user?.Identity != null && user.Identity.IsAuthenticated)
+        {
+            userIsAuthenticated = true;
+
+            // Read claims directly from the JWT
+            userName = user.FindFirst(c => c.Type == ClaimTypes.Name)?.Value ?? "";
+            userEmail = user.FindFirst(c => c.Type == ClaimTypes.Email)?.Value ?? "";
+            userRole = user.FindFirst(c => c.Type == ClaimTypes.Role)?.Value ?? "";
+        }
+    }
+}

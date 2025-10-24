@@ -1,5 +1,4 @@
 ﻿
-using HelloJobPH.Server.Service.ApplicantRepo;
 using HelloJobPH.Server.Service.Auth;
 using HelloJobPH.Server.Service.UserAccountRepository;
 using HelloJobPH.Shared.DTOs;
@@ -19,7 +18,7 @@ namespace HelloJobPH.Server.Controllers
     {
         private readonly IAuthService _authService;
 
-        public AuthController(IAuthService authService,IConfiguration configuration, IUserAccountRepository userRepo, IApplicantRepository applicantRepo)
+        public AuthController(IAuthService authService,IConfiguration configuration)
         {
             _authService = authService;
 

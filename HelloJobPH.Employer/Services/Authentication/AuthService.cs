@@ -1,7 +1,6 @@
 ﻿using HelloJobPH.Employer.JwtAuthStateProviders;
 using HelloJobPH.Shared.DTOs;
 using Microsoft.AspNetCore.Components.Authorization;
-using System.Net.Http;
 using System.Net.Http.Json;
 
 namespace HelloJobPH.Employer.Services.Authentication
@@ -25,7 +24,6 @@ namespace HelloJobPH.Employer.Services.Authentication
                 var error = await response.Content.ReadAsStringAsync();
                 throw new HttpRequestException($"Error posting HumanResource: {response.StatusCode} - {error}");
             }
-            var result = await response.Content.ReadFromJsonAsync<LoginDtos>();
        
            return await response.Content.ReadFromJsonAsync<LoginDtos>();
         }

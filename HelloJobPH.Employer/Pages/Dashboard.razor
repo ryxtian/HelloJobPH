@@ -8,14 +8,14 @@
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
     <MudText Typo="Typo.h4" GutterBottom="true">Dashboard</MudText>
 
-    @if (userFullName is not null)
+    @if (!string.IsNullOrEmpty(userFullName))
     {
         <MudText Typo="Typo.h6" GutterBottom="true">Hello, <b>@userFullName</b>!</MudText>
     }
-
+    <p>@userName @userEmail</p>
     <MudGrid Class="mt-3" GutterSize="3">
         <MudItem xs="12" sm="6" md="4">
-            <MudCard>
+            <MudCard Color="Color.Info">
                 <MudCardContent>
                     <MudText Typo="Typo.subtitle1">Total Users</MudText>
                     <MudText Typo="Typo.h5">@totalUsers</MudText>
@@ -24,7 +24,7 @@
         </MudItem>
 
         <MudItem xs="12" sm="6" md="4">
-            <MudCard>
+            <MudCard Color="Color.Primary">
                 <MudCardContent>
                     <MudText Typo="Typo.subtitle1">Newly Hired</MudText>
                     <MudText Typo="Typo.h5">@newOrders</MudText>
@@ -33,9 +33,9 @@
         </MudItem>
 
         <MudItem xs="12" sm="12" md="4">
-            <MudCard>
+            <MudCard Color="Color.Success">
                 <MudCardContent>
-                    <MudText Typo="Typo.subtitle1">zxc</MudText>
+                    <MudText Typo="Typo.subtitle1">Revenue</MudText>
                     <MudText Typo="Typo.h5">@revenue.ToString("C")</MudText>
                 </MudCardContent>
             </MudCard>
@@ -47,34 +47,41 @@
         <MudChart ChartType="ChartType.Line" Labels="@months" Values="@monthlySales" />
     </MudPaper>
 
-    <MudButton Variant="Variant.Filled" Color="Color.Error" Class="mt-4" OnClick="@Logout">Logout</MudButton>
+    <MudButton Variant="Variant.Filled" Color="Color.Error" Class="mt-4" >Logout</MudButton>
 </MudContainer>
 
 @code {
     private string? userFullName;
-
     private int totalUsers = 128;
     private int newOrders = 24;
     private decimal revenue = 5432.75m;
-
     private string[] months = new[] { "Jan", "Feb", "Mar", "Apr", "May", "Jun" };
     private double[] monthlySales = new double[] { 1200, 1500, 1800, 2000, 1700, 2200 };
+
+    private ClaimsPrincipal? user;
+    private string userName = "";
+    private string userEmail = "";
+    private string userRole = "";
 
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
+        user = authState.User;
 
-        if (user.Identity?.IsAuthenticated == true)
+        if (user.Identity != null && user.Identity.IsAuthenticated)
         {
-            var firstName = user.FindFirst(c => c.Type == ClaimTypes.Name)?.Value;
-            var lastName = user.FindFirst(c => c.Type == ClaimTypes.Surname)?.Value;
-            userFullName = $"{firstName} {lastName}";
+            userName = user.FindFirst(c => c.Type == ClaimTypes.Name)?.Value ?? "";
+            userEmail = user.FindFirst(c => c.Type == ClaimTypes.Email)?.Value ?? "";
+            userRole = user.FindFirst(c => c.Type == ClaimTypes.Role)?.Value ?? "";
+
+            userFullName = userName; // show first name in greeting
         }
     }
 
-    private void Logout()
-    {
-        Navigation.NavigateTo("/login", true);
-    }
+    // private async Task Logout()
+    // {
+    //     // Clear local storage token
+    //     await Blazored.LocalStorage.ILocalStorageService.RemoveItemAsync("authToken");
+    //     Navigation.NavigateTo("/login", true);
+    // }
 }

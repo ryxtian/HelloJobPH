@@ -24,7 +24,9 @@ builder.Services.AddAuthorizationCore();
 builder.Services.AddMudServices();
 
 
+builder.Services.AddScoped<JwtAuthStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider, JwtAuthStateProvider>();
+
 
 
 builder.Services.AddScoped<IJobPosting, JobPosting>();
