@@ -1,12 +1,12 @@
 ﻿@page "/jobpost"
-@using HelloJobPH.Employer.Services.JobPosting
-@using HelloJobPH.Shared.DTOs
+
 @using MudBlazor
 @inject IJobPosting JobPostingService
-
+@attribute [Authorize]
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthProvider
 
 <MudButton OnClick="AddNewJob" Variant="Variant.Filled" Color="Color.Primary" Class="mb-4">Add New Job Post</MudButton>
 
@@ -29,7 +29,7 @@
     <RowTemplate>
         <MudTd DataLabel="Title">@context.Title</MudTd>
         <MudTd DataLabel="Description">@context.Description</MudTd>
-        <MudTd DataLabel="Salary Range">@($"{context.SalaryFrom:C} - {context.SalaryTo:N2}")</MudTd>
+        <MudTd DataLabel="Salary Range">@($"{context.SalaryFrom} - {context.SalaryTo}")</MudTd>
         <MudTd DataLabel="Date Posted">@context.PostedDate.ToLocalTime().ToString("MM/dd/yyyy")</MudTd>
         <MudTd DataLabel="Options">
             <MudButton Color="Color.Primary" Variant="Variant.Outlined" OnClick="@(() => OnEdit(context.JobPostingId))" Size="Size.Small">
@@ -53,8 +53,35 @@
     private JobPostingDtos selectedItem1;
     protected List<JobPostingDtos>? jobPostings;
 
+
+    private ClaimsPrincipal? user;
+    private string? fullName;
+    private string? email;
+    private string? role;
+    private string? userId;
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthProvider.GetAuthenticationStateAsync();
+        user = authState.User;
+
+        if (user.Identity != null && user.Identity.IsAuthenticated)
+        {
+            // Extract values from claims
+            var firstName = user.FindFirst(c => c.Type == ClaimTypes.Name)?.Value;
+            var lastName = user.FindFirst(c => c.Type == ClaimTypes.Surname)?.Value;
+            fullName = $"{firstName} {lastName}";
+            email = user.FindFirst(c => c.Type == ClaimTypes.Email)?.Value;
+            role = user.FindFirst(c => c.Type == ClaimTypes.Role)?.Value;
+            userId = user.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+        }
+        else
+        {
+            Navigation.NavigateTo("/login", true);
+        }
+
+
+
+
         jobPostings = await JobPostingService.RetrieveAllAsync();
     }
 

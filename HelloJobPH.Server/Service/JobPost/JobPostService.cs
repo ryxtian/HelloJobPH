@@ -33,6 +33,7 @@ namespace HelloJobPH.Server.Service.JobPost
                     Location = i.Location,
                     EmploymentType = i.EmploymentType,
                     SalaryFrom = i.SalaryFrom,
+                    SalaryTo = i.SalaryTo,
                     JobRequirements = i.JobRequirements,
                     PostedDate = i.PostedDate,
                     IsDeleted = i.IsDeleted
@@ -64,7 +65,7 @@ namespace HelloJobPH.Server.Service.JobPost
 
         }
 
-        public async Task<JobPostingDtos> AddAsync(JobPostingDtos jobPostingDto)
+        public async Task<bool> AddAsync(JobPostingDtos jobPostingDto)
         {
 
             try
@@ -90,17 +91,17 @@ namespace HelloJobPH.Server.Service.JobPost
 
                 await _context.AddAsync(saving);
                 await _context.SaveChangesAsync();
-
-                return new JobPostingDtos
-                {
-                    JobPostingId = saving.JobPostingId,
-                    Title = saving.Title,
-                    Description = saving.Description,
-                    Location = saving.Location,
-                    EmploymentType = saving.EmploymentType,
-                    PostedDate = saving.PostedDate,
-                    ExpiredDate = saving.ExpiredDate
-                };
+                return true;
+                //return new JobPostingDtos
+                //{
+                //    JobPostingId = saving.JobPostingId,
+                //    Title = saving.Title,
+                //    Description = saving.Description,
+                //    Location = saving.Location,
+                //    EmploymentType = saving.EmploymentType,
+                //    PostedDate = saving.PostedDate,
+                //    ExpiredDate = saving.ExpiredDate
+                //};
             }
             catch (Exception)
             {
@@ -111,7 +112,7 @@ namespace HelloJobPH.Server.Service.JobPost
         }
 
 
-        public async Task<JobPostingDtos> UpdateAsync(JobPostingDtos jobPostingDto)
+        public async Task<bool> UpdateAsync(JobPostingDtos jobPostingDto)
            {
 
             var user = _httpContextAccessor.HttpContext?.User;
@@ -124,7 +125,7 @@ namespace HelloJobPH.Server.Service.JobPost
                 .FirstOrDefaultAsync(j => j.JobPostingId == jobPostingDto.JobPostingId);
 
             if (existing == null)
-                return null; // or throw new Exception("Job posting not found");
+                return false; // or throw new Exception("Job posting not found");
 
             // ✅ Manually map allowed fields
             existing.Title = jobPostingDto.Title;
@@ -143,21 +144,22 @@ namespace HelloJobPH.Server.Service.JobPost
             _context.JobPosting.Update(existing);
             await _context.SaveChangesAsync();
 
-            return new JobPostingDtos
-            {
-                JobPostingId = existing.JobPostingId,
-                Title = existing.Title,
-                Description = existing.Description,
-                Location = existing.Location,
-                EmploymentType = existing.EmploymentType,
-                SalaryFrom = existing.SalaryFrom,
-                SalaryTo = existing.SalaryTo,
-                JobRequirements = existing.JobRequirements,
-                IsDeleted = existing.IsDeleted,
-                HumanResourceId = 6,
-                PostedDate = existing.PostedDate,
-                ExpiredDate = existing.ExpiredDate
-            };
+            return true;
+            //return new JobPostingDtos
+            //{
+            //    JobPostingId = existing.JobPostingId,
+            //    Title = existing.Title,
+            //    Description = existing.Description,
+            //    Location = existing.Location,
+            //    EmploymentType = existing.EmploymentType,
+            //    SalaryFrom = existing.SalaryFrom,
+            //    SalaryTo = existing.SalaryTo,
+            //    JobRequirements = existing.JobRequirements,
+            //    IsDeleted = existing.IsDeleted,
+            //    HumanResourceId = 6,
+            //    PostedDate = existing.PostedDate,
+            //    ExpiredDate = existing.ExpiredDate
+            //};
         }
 
 

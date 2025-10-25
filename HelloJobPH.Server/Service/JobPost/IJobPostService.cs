@@ -7,8 +7,8 @@ namespace HelloJobPH.Server.Service.JobPost
     {
         Task<List<JobPostingDtos>> RetrieveAllAsync();
         Task<JobPostingDtos> GetByIdAsync(int id);
-        Task<JobPostingDtos> AddAsync(JobPostingDtos jobPostingDto);
-        Task<JobPostingDtos> UpdateAsync(JobPostingDtos jobPostingDto);
+        Task<bool> AddAsync(JobPostingDtos jobPostingDto);
+        Task<bool> UpdateAsync(JobPostingDtos jobPostingDto);
         Task<bool> DeleteAsync(int id);
     }
 

@@ -39,7 +39,7 @@ namespace HelloJobPH.Server.Controllers
 
         // POST: api/JobPosting
         [HttpPost]
-        public async Task<ActionResult<JobPostingDtos>> Create(JobPostingDtos jobPostDto)
+        public async Task<ActionResult<bool>> Create(JobPostingDtos jobPostDto)
          {
             if (!ModelState.IsValid)
             {
@@ -47,7 +47,8 @@ namespace HelloJobPH.Server.Controllers
             }
 
                           var createdJobPost = await _jobPostService.AddAsync(jobPostDto);
-            return CreatedAtAction(nameof(GetById), new { id = createdJobPost.JobPostingId }, createdJobPost);
+            return true;
+            //return CreatedAtAction(nameof(GetById), new { id = createdJobPost.JobPostingId }, createdJobPost);
         }
 
         // PUT: api/JobPosting/{id}
