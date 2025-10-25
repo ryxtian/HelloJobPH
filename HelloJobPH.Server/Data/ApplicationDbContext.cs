@@ -11,11 +11,12 @@ namespace HelloJobPH.Server.Data
         public DbSet<Applicant> Applicant { get; set; }
         public DbSet<JobPosting> JobPosting { get; set; }
         public DbSet<HumanResources> HumanResource { get; set; }
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-            modelBuilder.Entity<JobPosting>().
-                Property(u => u.EmploymentType).HasConversion<string>();
-        }
+        public DbSet<Application> Application { get; set; }
+        //protected override void OnModelCreating(ModelBuilder modelBuilder)
+        //{
+        //    base.OnModelCreating(modelBuilder);
+        //    modelBuilder.Entity<JobPosting>().
+        //        Property(u => u.EmploymentType).HasConversion<string>();
+        //}
     }
 }

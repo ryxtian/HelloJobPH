@@ -4,6 +4,7 @@ using HelloJobPH.Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HelloJobPH.Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251025160805_ApplicationAdded")]
+    partial class ApplicationAdded
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -80,9 +83,6 @@ namespace HelloJobPH.Server.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ApplicationId"));
 
-                    b.Property<int>("ApplicantId")
-                        .HasColumnType("int");
-
                     b.Property<int>("ApplicationStatus")
                         .HasColumnType("int");
 
@@ -100,8 +100,6 @@ namespace HelloJobPH.Server.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("ApplicationId");
-
-                    b.HasIndex("ApplicantId");
 
                     b.HasIndex("JobPostingId");
 
@@ -256,19 +254,11 @@ namespace HelloJobPH.Server.Migrations
 
             modelBuilder.Entity("HelloJobPH.Shared.Model.Application", b =>
                 {
-                    b.HasOne("HelloJobPH.Shared.Model.Applicant", "Applicant")
-                        .WithMany("Appications")
-                        .HasForeignKey("ApplicantId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("HelloJobPH.Shared.Model.JobPosting", "JobPosting")
                         .WithMany("Application")
                         .HasForeignKey("JobPostingId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Applicant");
 
                     b.Navigation("JobPosting");
                 });
@@ -291,11 +281,6 @@ namespace HelloJobPH.Server.Migrations
                         .HasForeignKey("HumanResourceId");
 
                     b.Navigation("HumanResource");
-                });
-
-            modelBuilder.Entity("HelloJobPH.Shared.Model.Applicant", b =>
-                {
-                    b.Navigation("Appications");
                 });
 
             modelBuilder.Entity("HelloJobPH.Shared.Model.HumanResources", b =>

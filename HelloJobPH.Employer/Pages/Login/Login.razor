@@ -1,4 +1,4 @@
-﻿@page "/login"
+﻿@page "/"
 @layout LandingLayout
 
 @using HelloJobPH.Employer.Services.Authentication
@@ -22,21 +22,4 @@
     </MudPaper>
 </MudContainer>
 
-@code {
-    private LoginDtos model = new();
 
-    private async Task HandleLogin()
-    {
-        var success = await AuthService.LoginAsync(model);
-
-        if (success)
-        {
-            Snackbar.Add("Login successful!", Severity.Success);
-            Nav.NavigateTo("/dashboard");
-        }
-        else
-        {
-            Snackbar.Add("Invalid email or password.", Severity.Error);
-        }
-    }
-}

@@ -1,4 +1,4 @@
-﻿@page "/jobpost"
+﻿@page "/jobpost/jobpost"
 
 @using MudBlazor
 @inject IJobPosting JobPostingService
@@ -97,13 +97,13 @@
     }
     public void AddNewJob()
     {
-        Navigation.NavigateTo("/JobPostForm");
+        Navigation.NavigateTo("/JobPost/JobPostForm");
     }
 
 
     public void OnEdit(int id)
     {
-        Navigation.NavigateTo($"/editjobPost/{id}");
+        Navigation.NavigateTo($"/JobPost/editjobPost/{id}");
     }
     public async Task OnDelete(int id)
     {

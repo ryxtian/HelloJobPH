@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace HelloJobPH.Shared.Enums
 {
-    public enum EmploymentType
+    public enum ApplicationStatus
     {
-        FullTime,
-        PartTime,
+        Pending,
+        Rejected,
+        Hired,
     }
 }

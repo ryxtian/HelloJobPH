@@ -20,7 +20,8 @@ namespace HelloJobPH.Shared.Model
         public decimal? SalaryTo { get; set; }
         public byte IsDeleted { get; set; } = 0;
         public string JobRequirements { get; set; }
-        public int? HumanResourceId { get; set; } 
+        public int? HumanResourceId { get; set; }
+        public List<Application>? Application { get; set; }
         public HumanResources? HumanResource { get; set; }
         public DateTime PostedDate { get; set; }
         public DateTime ExpiredDate { get; set; }

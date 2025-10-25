@@ -1,4 +1,4 @@
-﻿@page "/JobPostForm"
+﻿@page "/jobpost/JobPostForm"
 @using HelloJobPH.Employer.Services.JobPosting
 @using HelloJobPH.Shared.DTOs
 @using HelloJobPH.Shared.Enums
@@ -6,6 +6,7 @@
 @inject ISnackbar Snackbar
 @inject IJobPosting _jobpost
 @inject NavigationManager NavigationManager
+@attribute [Authorize]
 
     <MudText Typo="Typo.h5" GutterBottom>Job Post Form</MudText>
 

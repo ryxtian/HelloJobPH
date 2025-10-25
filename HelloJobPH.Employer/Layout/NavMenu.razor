@@ -1,53 +1,45 @@
-﻿<link href="https://use.fontawesome.com/releases/v5.14.0/css/all.css" rel="stylesheet">
-
-<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">HelloJobPH.Employer</a>
-        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-    </div>
-</div>
-
-<div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
-    <nav class="flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/dashboard" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Dashboard
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="JobPost">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Job Post
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Interview Management
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="Recruiter">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> HR Management
-
-            </NavLink>
-        </div>
-            <div class="nav-item px-3">
-        <MudNavGroup Title="Settings" Icon="@Icons.Material.Filled.Settings" Expanded="true">
-            <NavLink Href="/initial" Icon="@Icons.Material.Filled.People"></NavLink>
-        </MudNavGroup>
-        </div>
-    </nav>
-</div>
-
-@code {
-    private bool collapseNavMenu = true;
-
-    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
-
-    private void ToggleNavMenu()
-    {
-        collapseNavMenu = !collapseNavMenu;
+﻿@* --- Inline CSS --- *@
+<style>
+    .mud-drawer {
+        background-color: #1E1E2F; /* Dark navy background */
+        color: #fff;
     }
-}
+
+    .mud-drawer-header {
+        background-color: #25253A;
+        font-weight: 600;
+    }
+
+    .mud-nav-link {
+        color: #dcdcdc !important;
+        border-radius: 8px;
+        margin: 2px 6px;
+        padding: 10px;
+        transition: background-color 0.2s ease;
+    }
+
+    .mud-nav-link:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .mud-nav-link.active {
+        background-color: #3F51B5;
+        color: #fff !important;
+    }
+</style>
+
+@* --- Navigation Drawer Layout --- *@
+<MudDrawer Elevation="4" Class="mud-drawer" Open="true" Anchor="Anchor.Start" ClipMode="DrawerClipMode.Always">
+    <MudDrawerHeader Class="mud-drawer-header">
+        <MudText Typo="Typo.h6">HelloJobPH Employer</MudText>
+    </MudDrawerHeader>
+
+    <MudNavMenu>
+        <MudNavLink Href="/dashboard/dashboard" Icon="@Icons.Material.Filled.Dashboard">Dashboard</MudNavLink>
+        <MudNavLink Href="/jobpost/JobPost" Icon="@Icons.Material.Filled.AddBox">Job Post</MudNavLink>
+        <MudNavLink Href="/Candidate/Candidate" Icon="@Icons.Material.Filled.PersonSearch">Candidates</MudNavLink>
+        <MudNavLink Href="/interview/interview" Icon="@Icons.Material.Filled.EventNote">Interview Management</MudNavLink>
+        <MudNavLink Href="/HumanResource/Recruiter" Icon="@Icons.Material.Filled.People">HR Management</MudNavLink>
+
+    </MudNavMenu>
+</MudDrawer>

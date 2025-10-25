@@ -1,5 +1,5 @@
-﻿@page "/addHumanResource"
-@page "/addHumanResource/{HumanResourceId:int}"
+﻿@page "/humanresource/addHumanResource"
+@page "/humanresource/addHumanResource/{HumanResourceId:int}"
 @using MudBlazor
 @inject NavigationManager NavigationManager
 @inject IHumanResource _humanService
@@ -51,7 +51,7 @@
                 if (humanResource == null)
                 {
                     Snackbar.Add($"Human resource with ID {HumanResourceId} not found.", Severity.Error);
-                    NavigationManager.NavigateTo("/Recruiter");
+                    NavigationManager.NavigateTo("/humanresource/HRlist");
                     return;
                 }
 
@@ -60,7 +60,7 @@
             catch (Exception ex)
             {
                 Snackbar.Add($"Error loading data: {ex.Message}", Severity.Error);
-                NavigationManager.NavigateTo("/Recruiter");
+                NavigationManager.NavigateTo("//humanresource/HRlist");
             }
         }
 
@@ -91,7 +91,7 @@
                     Snackbar.Add("Successfully created!", Severity.Success);
                 }
 
-                NavigationManager.NavigateTo("/Recruiter");
+                NavigationManager.NavigateTo("/humanresource/HRlist");
             }
             catch (HttpRequestException ex)
             {
@@ -110,7 +110,7 @@
 
     private void Cancel()
     {
-        NavigationManager.NavigateTo("/Recruiter");
+        NavigationManager.NavigateTo("/humanresource/HRlist");
     }
 }
 
