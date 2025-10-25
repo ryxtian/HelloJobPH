@@ -25,13 +25,13 @@ builder.Services.AddMudServices();
 
 
 builder.Services.AddScoped<JwtAuthStateProvider>();
-builder.Services.AddScoped<AuthenticationStateProvider, JwtAuthStateProvider>();
+builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<JwtAuthStateProvider>());
 
 
 
 builder.Services.AddScoped<IJobPosting, JobPosting>();
 builder.Services.AddScoped<IHumanResource, HumanResource>();
-builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IClientIAuthService, ClientAuthService>();
 
 
 

@@ -1,67 +1,40 @@
 ﻿@page "/dashboard"
+@using HelloJobPH.Employer.JwtAuthStateProviders
+@using Microsoft.AspNetCore.Components.Authorization
 @inject AuthenticationStateProvider AuthProvider
 @inject NavigationManager Navigation
 @using MudBlazor
-@using System.Security.Claims
 @attribute [Authorize]
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
-    <MudText Typo="Typo.h4" GutterBottom="true">Dashboard</MudText>
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-6">
+    <MudPaper Class="pa-6">
+        <MudText Typo="Typo.h4" GutterBottom="true" Color="Color.Primary">Dashboard</MudText>
 
-    @if (!string.IsNullOrEmpty(userFullName))
-    {
-        <MudText Typo="Typo.h6" GutterBottom="true">Hello, <b>@userFullName</b>!</MudText>
-    }
-    <p>@userName @userEmail</p>
-    <MudGrid Class="mt-3" GutterSize="3">
-        <MudItem xs="12" sm="6" md="4">
-            <MudCard Color="Color.Info">
-                <MudCardContent>
-                    <MudText Typo="Typo.subtitle1">Total Users</MudText>
-                    <MudText Typo="Typo.h5">@totalUsers</MudText>
-                </MudCardContent>
-            </MudCard>
-        </MudItem>
+        @if (user != null && user.Identity != null && user.Identity.IsAuthenticated)
+        {
+            <MudDivider Class="mb-3" />
+            <MudText Typo="Typo.h6">Welcome, <b>@fullName</b> 👋</MudText>
+            <MudText Typo="Typo.body1">Email: @email</MudText>
+            <MudText Typo="Typo.body1">Role: @role</MudText>
+            <MudText Typo="Typo.body1">User ID: @userId</MudText>
 
-        <MudItem xs="12" sm="6" md="4">
-            <MudCard Color="Color.Primary">
-                <MudCardContent>
-                    <MudText Typo="Typo.subtitle1">Newly Hired</MudText>
-                    <MudText Typo="Typo.h5">@newOrders</MudText>
-                </MudCardContent>
-            </MudCard>
-        </MudItem>
-
-        <MudItem xs="12" sm="12" md="4">
-            <MudCard Color="Color.Success">
-                <MudCardContent>
-                    <MudText Typo="Typo.subtitle1">Revenue</MudText>
-                    <MudText Typo="Typo.h5">@revenue.ToString("C")</MudText>
-                </MudCardContent>
-            </MudCard>
-        </MudItem>
-    </MudGrid>
-
-    <MudPaper Class="mt-5 p-4">
-        <MudText Typo="Typo.h6" GutterBottom="true">Monthly Applicants Chart</MudText>
-        <MudChart ChartType="ChartType.Line" Labels="@months" Values="@monthlySales" />
+            <MudButton Color="Color.Error" Variant="Variant.Filled" Class="mt-3" OnClick="Logout">
+                Logout
+            </MudButton>
+        }
+        else
+        {
+            <MudText Typo="Typo.h6" Color="Color.Error">Not authenticated. Redirecting...</MudText>
+        }
     </MudPaper>
-
-    <MudButton Variant="Variant.Filled" Color="Color.Error" Class="mt-4" >Logout</MudButton>
 </MudContainer>
 
 @code {
-    private string? userFullName;
-    private int totalUsers = 128;
-    private int newOrders = 24;
-    private decimal revenue = 5432.75m;
-    private string[] months = new[] { "Jan", "Feb", "Mar", "Apr", "May", "Jun" };
-    private double[] monthlySales = new double[] { 1200, 1500, 1800, 2000, 1700, 2200 };
-
     private ClaimsPrincipal? user;
-    private string userName = "";
-    private string userEmail = "";
-    private string userRole = "";
+    private string? fullName;
+    private string? email;
+    private string? role;
+    private string? userId;
 
     protected override async Task OnInitializedAsync()
     {
@@ -70,18 +43,27 @@
 
         if (user.Identity != null && user.Identity.IsAuthenticated)
         {
-            userName = user.FindFirst(c => c.Type == ClaimTypes.Name)?.Value ?? "";
-            userEmail = user.FindFirst(c => c.Type == ClaimTypes.Email)?.Value ?? "";
-            userRole = user.FindFirst(c => c.Type == ClaimTypes.Role)?.Value ?? "";
-
-            userFullName = userName; // show first name in greeting
+            // Extract values from claims
+            var firstName = user.FindFirst(c => c.Type == ClaimTypes.Name)?.Value;
+            var lastName = user.FindFirst(c => c.Type == ClaimTypes.Surname)?.Value;
+            fullName = $"{firstName} {lastName}";
+            email = user.FindFirst(c => c.Type == ClaimTypes.Email)?.Value;
+            role = user.FindFirst(c => c.Type == ClaimTypes.Role)?.Value;
+            userId = user.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+        }
+        else
+        {
+            Navigation.NavigateTo("/login", true);
         }
     }
 
-    // private async Task Logout()
-    // {
-    //     // Clear local storage token
-    //     await Blazored.LocalStorage.ILocalStorageService.RemoveItemAsync("authToken");
-    //     Navigation.NavigateTo("/login", true);
-    // }
+    private async Task Logout()
+    {
+        if (AuthProvider is JwtAuthStateProvider jwtAuth)
+        {
+            await jwtAuth.MarkUserAsLoggedOut();
+        }
+
+        Navigation.NavigateTo("/login", true);
+    }
 }

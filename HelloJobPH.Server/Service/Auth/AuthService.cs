@@ -1,80 +1,63 @@
 ﻿using HelloJobPH.Server.Data;
 using HelloJobPH.Server.Service.Auth;
-using HelloJobPH.Shared.DTOs;
 using HelloJobPH.Shared.Model;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace HelloJobPH.Employer.Services.Repository
+namespace HelloJobPH.Server.Services
 {
-
     public class AuthService : IAuthService
     {
         private readonly ApplicationDbContext _context;
-        private readonly IConfiguration _configuration;
-        public AuthService(IConfiguration configuration, ApplicationDbContext context)
+        private readonly IConfiguration _config;
+
+        public AuthService(ApplicationDbContext context, IConfiguration config)
         {
             _context = context;
-            _configuration = configuration;
+            _config = config;
         }
 
-        public Task<string?> GetToken()
-        {
-            throw new NotImplementedException();
-        }
         public async Task<string> LoginAsync(string email, string password)
         {
-            var user = await _context.UserAccount.FirstOrDefaultAsync(x => x.Email == email);
+            var user = await _context.UserAccount.FirstOrDefaultAsync(u => u.Email == email);
 
             if (user == null)
-                throw new Exception("User Not Found.");
+                throw new Exception("User not found.");
 
             if (!BCrypt.Net.BCrypt.Verify(password, user.Password))
-                throw new Exception("Wrong password.");
+                throw new Exception("Invalid password.");
 
-            var applicant = await _context.HumanResource.FirstOrDefaultAsync(a => a.UserAccountId == user.UserAccountId);
+            var hr = await _context.HumanResource.FirstOrDefaultAsync(h => h.UserAccountId == user.UserAccountId);
+            if (hr == null)
+                throw new Exception("User details not found.");
 
-            if (applicant == null)
-                throw new Exception("Applicant details not found.");
-
-            return CreateToken(user, applicant);
+            return CreateToken(user, hr);
         }
 
-
-
-        public string CreateToken(UserAccount user, HumanResources HRDetails)
-                                          {
-            List<Claim> claims = new List<Claim>
+        public string CreateToken(UserAccount user, HumanResources hr)
+        {
+            var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, HRDetails.HumanResourceId.ToString()),
+                new Claim(ClaimTypes.NameIdentifier, hr.HumanResourceId.ToString()),
                 new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Role, user.Role),
-                new Claim(ClaimTypes.Name, HRDetails.Firstname),
-                new Claim(ClaimTypes.Surname, HRDetails.Lastname),
+                new Claim(ClaimTypes.Name, hr.Firstname),
+                new Claim(ClaimTypes.Surname, hr.Lastname),
+                new Claim(ClaimTypes.Role, user.Role)
             };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
-                _configuration.GetSection("AppSettings:Token").Value!));
-
-            var cred = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["AppSettings:Token"]!));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
 
             var token = new JwtSecurityToken(
                 claims: claims,
                 expires: DateTime.Now.AddDays(1),
-                signingCredentials: cred
+                signingCredentials: creds
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
-        public Task LogoutAsync()
-        {
-            throw new NotImplementedException();
-        }
-
     }
 }

@@ -1,49 +1,23 @@
 ﻿@page "/login"
 @layout LandingLayout
-@using System.ComponentModel.DataAnnotations
+
 @using HelloJobPH.Employer.Services.Authentication
-@using MudBlazor
-@inject IAuthService _auth
+@using HelloJobPH.Shared.DTOs
+@inject IClientIAuthService AuthService
 @inject ISnackbar Snackbar
-@inject NavigationManager NavigationManager
+@inject NavigationManager Nav
 
 <MudContainer MaxWidth="MaxWidth.ExtraSmall" Class="mt-12">
     <MudPaper Elevation="4" Class="pa-6">
         <MudText Typo="Typo.h5" Align="Align.Center" GutterBottom="true" Class="mb-4">
             Welcome Admin
         </MudText>
-        <MudDivider Class="mb-4" />
 
-        <EditForm Model="@model" OnValidSubmit="OnValidSubmit">
+        <EditForm Model="@model" OnValidSubmit="HandleLogin">
             <DataAnnotationsValidator />
-            <ValidationSummary />
-
-            <MudTextField @bind-Value="model.Email"
-                          Label="Email"
-                          Required="true"
-                          Variant="Variant.Outlined"
-                          Margin="Margin.Dense"
-                          Adornment="Adornment.Start"
-                          AdornmentIcon="@Icons.Material.Filled.Email"
-                          Class="mb-3" />
-
-            <MudTextField @bind-Value="model.Password"
-                          Label="Password"
-                          InputType="InputType.Password"
-                          Required="true"
-                          Variant="Variant.Outlined"
-                          Margin="Margin.Dense"
-                          Adornment="Adornment.Start"
-                          AdornmentIcon="@Icons.Material.Filled.Lock"
-                          Class="mb-4" />
-
-            <MudButton ButtonType="ButtonType.Submit"
-                       Variant="Variant.Filled"
-                       Color="Color.Primary"
-                       FullWidth="true"
-                       Class="mb-2">
-                Login
-            </MudButton>
+            <MudTextField Label="Email" @bind-Value="model.Email" Required="true" />
+            <MudTextField Label="Password" @bind-Value="model.Password" InputType="InputType.Password" Required="true" />
+            <MudButton ButtonType="ButtonType.Submit" FullWidth="true" Color="Color.Primary">Login</MudButton>
         </EditForm>
     </MudPaper>
 </MudContainer>
@@ -51,26 +25,18 @@
 @code {
     private LoginDtos model = new();
 
-    private async Task OnValidSubmit()
+    private async Task HandleLogin()
     {
-        try
-        {
-            var response = await _auth.Login(model);
+        var success = await AuthService.LoginAsync(model);
 
-            if (response!=null)
-            {
-                Snackbar.Add("Login successful!", Severity.Success);
-                // TODO: Store token, set auth state
-                NavigationManager.NavigateTo("/dashboard"); // Redirect after login
-            }
-            else
-            {
-                Snackbar.Add("Invalid email or password.", Severity.Error);
-            }
-        }
-        catch (Exception ex)
+        if (success)
         {
-           Console.WriteLine($"Login failed");
+            Snackbar.Add("Login successful!", Severity.Success);
+            Nav.NavigateTo("/dashboard");
+        }
+        else
+        {
+            Snackbar.Add("Invalid email or password.", Severity.Error);
         }
     }
 }

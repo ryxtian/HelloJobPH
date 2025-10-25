@@ -1,12 +1,12 @@
 using AutoMapper;
 using HelloJobPH.Employer.JwtAuthStateProviders;
-using HelloJobPH.Employer.Services.Repository;
 using HelloJobPH.Server.Data;
 using HelloJobPH.Server.Mapper;
 using HelloJobPH.Server.Service.Auth;
 using HelloJobPH.Server.Service.HumanResource;
 using HelloJobPH.Server.Service.JobPost;
 using HelloJobPH.Server.Service.UserAccountRepository;
+using HelloJobPH.Server.Services;
 using HelloJobPH.Shared.Model;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -24,26 +24,20 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-var key = builder.Configuration["Jwt:Key"];
-var issuer = builder.Configuration["Jwt:Issuer"];
 
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
+var key = builder.Configuration["AppSettings:Token"];
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
     {
-        ValidateIssuer = true,
-        ValidateAudience = false,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = issuer,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key))
-    };
-});
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key!))
+        };
+    });
+
 
 builder.Services.AddAuthorization();
 builder.Services.AddAuthorizationCore();

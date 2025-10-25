@@ -14,4 +14,13 @@
         </LayoutView>
     </NotFound>
 </Router>
+<AuthorizeView>
+    <Authorized>
+        <p>Welcome, authenticated user!</p>
+    </Authorized>
+    <NotAuthorized>
+        <p>You are not authorized to view this content.</p>
+    </NotAuthorized>
+</AuthorizeView>
+
 <script src="_content/MudBlazor/MudBlazor.min.js?v=@(MudBlazor.Metadata.Version)"></script>

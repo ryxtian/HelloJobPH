@@ -13,6 +13,10 @@ namespace HelloJobPH.Shared.DTOs
         public string Email { get; set; }
         [Required(ErrorMessage = "Title is required.")]
         public string Password { get; set; }
-        //public string? Token { get; set; }
+      string? Token { get; set; }
+    }
+    public class TokenResponse
+    {
+        public string Token { get; set; } = "";
     }
 }

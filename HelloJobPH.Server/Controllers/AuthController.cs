@@ -1,30 +1,23 @@
-﻿
+﻿using HelloJobPH.Employer.Services.Authentication;
 using HelloJobPH.Server.Service.Auth;
-using HelloJobPH.Server.Service.UserAccountRepository;
+using HelloJobPH.Server.Services;
 using HelloJobPH.Shared.DTOs;
-using HelloJobPH.Shared.Model;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 
 namespace HelloJobPH.Server.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
-
-        public AuthController(IAuthService authService,IConfiguration configuration)
+        public AuthController(IAuthService authService)
         {
             _authService = authService;
-
         }
+
         [HttpPost("login")]
-        public async Task<IActionResult> Login(LoginDtos user)
+        public async Task<IActionResult> Login([FromBody] LoginDtos user)
         {
             try
             {
@@ -33,26 +26,8 @@ namespace HelloJobPH.Server.Controllers
             }
             catch (Exception ex)
             {
-
-                return BadRequest(ex.Message);
+                return BadRequest(new { message = ex.Message });
             }
-        }
-        [HttpGet("claims")]
-        [Authorize] // Require valid token
-        public IActionResult GetClaims()
-        {
-            // Ensure user is authenticated
-            if (User.Identity is not ClaimsIdentity identity || !identity.IsAuthenticated)
-                return Unauthorized();
-
-            // Extract claims from token
-            var claims = identity.Claims.Select(c => new
-            {
-                Type = c.Type,
-                Value = c.Value
-            });
-
-            return Ok(claims);
         }
     }
 }

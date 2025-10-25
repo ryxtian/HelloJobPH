@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Components.Authorization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text.Json;
 
 namespace HelloJobPH.Employer.JwtAuthStateProviders
 {
@@ -14,7 +13,7 @@ namespace HelloJobPH.Employer.JwtAuthStateProviders
         {
             _localStorage = localStorage;
         }
-        public ClaimsPrincipal? CurrentUser { get; private set; }
+
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
             var token = await _localStorage.GetItemAsync<string>("authToken");
@@ -31,17 +30,18 @@ namespace HelloJobPH.Employer.JwtAuthStateProviders
             return new AuthenticationState(user);
         }
 
-        public void NotifyUserAuthentication(string token)
+        public async Task MarkUserAsAuthenticated(string token)
         {
+            await _localStorage.SetItemAsync("authToken", token);
             var handler = new JwtSecurityTokenHandler();
             var jwt = handler.ReadJwtToken(token);
-            var identity = new ClaimsIdentity(jwt.Claims, "jwt");
-            var user = new ClaimsPrincipal(identity);
+            var user = new ClaimsPrincipal(new ClaimsIdentity(jwt.Claims, "jwt"));
             NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(user)));
         }
 
-        public void NotifyUserLogout()
+        public async Task MarkUserAsLoggedOut()
         {
+            await _localStorage.RemoveItemAsync("authToken");
             var anonymous = new ClaimsPrincipal(new ClaimsIdentity());
             NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(anonymous)));
         }

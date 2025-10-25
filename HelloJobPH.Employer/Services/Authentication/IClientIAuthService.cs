@@ -2,9 +2,9 @@
 
 namespace HelloJobPH.Employer.Services.Authentication
 {
-    public interface IAuthService
+    public interface IClientIAuthService
     {
-        Task<LoginDtos> Login(LoginDtos user);
+        Task<bool> LoginAsync(LoginDtos user);
        // Task<IEnumerable<ClaimsDtos>> GetClaims();
     }
 
