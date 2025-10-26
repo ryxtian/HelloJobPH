@@ -56,13 +56,13 @@
             if (jobpost == null)
             {
                 Snackbar.Add($"Job post with ID {id} not found.", Severity.Error);
-                NavigationManager.NavigateTo("/jobpost");
+                NavigationManager.NavigateTo("/jobpost/jobpost");
             }
         }
         catch (Exception ex)
         {
             Snackbar.Add($"Error loading job post: {ex.Message}", Severity.Error);
-            NavigationManager.NavigateTo("/jobpost");
+            NavigationManager.NavigateTo("/jobpost/jobpost");
         }
     }
     private async Task SubmitForm()

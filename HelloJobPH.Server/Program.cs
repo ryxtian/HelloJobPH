@@ -4,6 +4,7 @@ using HelloJobPH.Server.Data;
 using HelloJobPH.Server.Mapper;
 using HelloJobPH.Server.Service.Auth;
 using HelloJobPH.Server.Service.Candidate;
+using HelloJobPH.Server.Service.Email;
 using HelloJobPH.Server.Service.HumanResource;
 using HelloJobPH.Server.Service.JobPost;
 using HelloJobPH.Server.Service.UserAccountRepository;
@@ -38,6 +39,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key!))
         };
     });
+
+
+builder.Services.Configure<EmailService.EmailSettings>(
+    builder.Configuration.GetSection("EmailSettings"));
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 
 builder.Services.AddAuthorization();
