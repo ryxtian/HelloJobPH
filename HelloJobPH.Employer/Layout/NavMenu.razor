@@ -38,7 +38,12 @@
         <MudNavLink Href="/dashboard/dashboard" Icon="@Icons.Material.Filled.Dashboard">Dashboard</MudNavLink>
         <MudNavLink Href="/jobpost/JobPost" Icon="@Icons.Material.Filled.AddBox">Job Post</MudNavLink>
         <MudNavLink Href="/Candidate/Candidate" Icon="@Icons.Material.Filled.PersonSearch">Candidates</MudNavLink>
-        <MudNavLink Href="/interview/interview" Icon="@Icons.Material.Filled.EventNote">Interview Management</MudNavLink>
+        <MudNavGroup Text="Interview Management" Icon="@Icons.Material.Filled.EventNote" Dense="true" Expanded="true">
+            <MudNavLink Href="/interview/initial" Icon="@Icons.Material.Filled.PersonAdd">Initial Interview</MudNavLink>
+            <MudNavLink Href="/interview/technical" Icon="@Icons.Material.Filled.Engineering">Technical Interview</MudNavLink>
+            <MudNavLink Href="/interview/final" Icon="@Icons.Material.Filled.ThumbUp">Final Interview</MudNavLink>
+        </MudNavGroup>
+
         <MudNavLink Href="/HumanResource/Recruiter" Icon="@Icons.Material.Filled.People">HR Management</MudNavLink>
 
     </MudNavMenu>

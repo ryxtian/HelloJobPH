@@ -18,8 +18,8 @@ namespace HelloJobPH.Server.Controllers
         {
             try
             {
-                var request = await _candidateService.RetriveAllCandidate();
-                return Ok();
+                var request = await _candidateService.RetrieveAllCandidate();
+                return Ok(request);
             }
             catch (Exception ex)
             {

@@ -3,6 +3,7 @@ using Blazored.LocalStorage;
 using HelloJobPH.Employer;
 using HelloJobPH.Employer.JwtAuthStateProviders;
 using HelloJobPH.Employer.Services.Authentication;
+using HelloJobPH.Employer.Services.Candidate;
 using HelloJobPH.Employer.Services.HumanResource;
 using HelloJobPH.Employer.Services.JobPosting;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -32,6 +33,7 @@ builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredServ
 builder.Services.AddScoped<IJobPosting, JobPosting>();
 builder.Services.AddScoped<IHumanResource, HumanResource>();
 builder.Services.AddScoped<IClientIAuthService, ClientAuthService>();
+builder.Services.AddScoped<IClientCandidateService, ClientCandidateService>();
 
 
 

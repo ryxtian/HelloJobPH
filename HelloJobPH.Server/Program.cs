@@ -3,6 +3,7 @@ using HelloJobPH.Employer.JwtAuthStateProviders;
 using HelloJobPH.Server.Data;
 using HelloJobPH.Server.Mapper;
 using HelloJobPH.Server.Service.Auth;
+using HelloJobPH.Server.Service.Candidate;
 using HelloJobPH.Server.Service.HumanResource;
 using HelloJobPH.Server.Service.JobPost;
 using HelloJobPH.Server.Service.UserAccountRepository;
@@ -45,10 +46,12 @@ builder.Services.AddAuthorizationCore();
 
 
 builder.Services.AddScoped<IAuthService, AuthService>();
-//builder.Services.AddScoped<IUserAccountRepository, UserAccountRepository>();
-//builder.Services.AddScoped<IApplicantRepository, ApplicantRepository>();
 builder.Services.AddScoped<IJobPostService, JobPostService>();
 builder.Services.AddScoped<IHumanResourceService, HumanResourceService>();
+builder.Services.AddScoped<ICandidateService, CandidateService>();
+//builder.Services.AddScoped<IUserAccountRepository, UserAccountRepository>();
+//builder.Services.AddScoped<IApplicantRepository, ApplicantRepository>();
+
 
 //builder.Services.AddScoped<AuthenticationStateProvider, JwtAuthStateProvider>();
 
@@ -56,10 +59,10 @@ builder.Services.AddHttpContextAccessor();
 
 //builder.Services.AddTransient<IConfiguration, IConfiguration>();
 builder.Services.AddAutoMapper(typeof(Mapping).Assembly);
-builder.Services.AddControllers().AddJsonOptions(options =>
-{
-    options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
-});
+//builder.Services.AddControllers().AddJsonOptions(options =>
+//{
+//    options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+//});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

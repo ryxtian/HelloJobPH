@@ -21,10 +21,27 @@ namespace HelloJobPH.Employer.Services.Candidate
             throw new NotImplementedException();
         }
 
-        public async Task<List<ApplicationDtos>> RetriveAllCandidate()
+        public async Task<List<ApplicationListDtos>> RetrieveAllCandidate()
         {
-            var request = await _http.GetFromJsonAsync<List<ApplicationDtos>>("api/Candidate");
-            return request ?? [];
+            try
+            {
+                var response = await _http.GetAsync("api/Candidate");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine($"⚠️ Failed to fetch candidates: {response.StatusCode}");
+                    return new List<ApplicationListDtos>();
+                }
+
+                var data = await response.Content.ReadFromJsonAsync<List<ApplicationListDtos>>();
+                return data ?? new List<ApplicationListDtos>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Error retrieving candidates: {ex.Message}");
+                return new List<ApplicationListDtos>();
+            }
         }
+
     }
 }

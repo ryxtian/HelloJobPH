@@ -21,6 +21,7 @@
     <HeaderContent>
         <MudTh>Title</MudTh>
         <MudTh>Description</MudTh>
+        <MudTh>Type</MudTh>
         <MudTh>Salary Range</MudTh>
         <MudTh>Date Posted</MudTh>
         <MudTh>Options</MudTh>
@@ -29,6 +30,7 @@
     <RowTemplate>
         <MudTd DataLabel="Title">@context.Title</MudTd>
         <MudTd DataLabel="Description">@context.Description</MudTd>
+        <MudTd DataLabel="Type">@context.EmploymentType</MudTd>
         <MudTd DataLabel="Salary Range">@($"{context.SalaryFrom} - {context.SalaryTo}")</MudTd>
         <MudTd DataLabel="Date Posted">@context.PostedDate.ToLocalTime().ToString("MM/dd/yyyy")</MudTd>
         <MudTd DataLabel="Options">

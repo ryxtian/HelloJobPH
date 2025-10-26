@@ -24,20 +24,27 @@ namespace HelloJobPH.Server.Service.Candidate
 
         public async Task<List<ApplicationListDtos>> RetrieveAllCandidate()
         {
-            return await _context.Application
-                .Include(a => a.Applicant)
-                .Include(a => a.JobPosting
-                .Select(a => new ApplicationListDtos
+            var result = await (
+                from app in _context.Application
+                join applicant in _context.Applicant on app.ApplicantId equals applicant.ApplicantId
+                join user in _context.UserAccount on applicant.UserAccountId equals user.UserAccountId
+                join job in _context.JobPosting on app.JobPostId equals job.JobPostingId
+                select new ApplicationListDtos
                 {
-                    ApplicationId = a.ApplicationId,
-                    Firstname = a.Applicant.Firstname,
-                    Email = a.Applicant.Email,
-                    JobTitle = a.JobPosting.JobTitle,
-                    CompanyName = a.JobPosting.CompanyName,
-                    DateApplied = a.DateApplied,
-                    Status = a.Status
-                })
-                .ToListAsync();
+                    ApplicationId = app.ApplicationId,
+                    ResumeUrl = app.ResumeUrl,
+                    Firstname = applicant.Firstname,
+                    Lastname = applicant.Surname,
+                    Email = user.Email,
+                    JobTitle = job.Title,
+                    //CompanyName = job.CompanyName,
+                    DateApplied = app.DateApply,
+                    Status = app.ApplicationStatus
+                }
+            ).ToListAsync();
+
+            return result;
         }
+
     }
 }

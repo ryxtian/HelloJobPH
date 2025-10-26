@@ -9,7 +9,15 @@ namespace HelloJobPH.Shared.Enums
     public enum ApplicationStatus
     {
         Pending,
+        Viewed,
         Rejected,
+        Initial,
+        Technical,
+        Final,
+        JobOffer,
         Hired,
+        Withdrawn,
+        OfferDeclined,
+        Reschedule
     }
 }

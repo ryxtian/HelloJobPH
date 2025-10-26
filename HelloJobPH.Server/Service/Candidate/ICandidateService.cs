@@ -6,6 +6,6 @@ namespace HelloJobPH.Server.Service.Candidate
     {
         Task<bool> CandidateAccepttAsync(int id);
         Task<bool> CandidateRejectAsync(int id);
-        Task<List<ApplicationListDtos>> RetriveAllCandidate();
+        Task<List<ApplicationListDtos>> RetrieveAllCandidate();
     }
 }
