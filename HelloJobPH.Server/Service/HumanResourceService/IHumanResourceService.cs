@@ -6,8 +6,8 @@ namespace HelloJobPH.Server.Service.HumanResource
     {
         Task<List<HumanResourceDtos>> RetrieveAllAsync();
         Task<HumanResourceDtos> GetByIdAsync(int id);
-        Task<HumanResourceDtos> AddAsync(HumanResourceDtos jobPostingDto);
-        Task<HumanResourceDtos> UpdateAsync(HumanResourceDtos jobPostingDto);
+        Task<bool> AddAsync(HumanResourceDtos jobPostingDto);
+        Task<bool> UpdateAsync(HumanResourceDtos jobPostingDto);
         Task<bool> DeleteAsync(int id);
     }
 }

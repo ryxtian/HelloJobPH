@@ -7,7 +7,7 @@
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
 
-<MudText Typo="Typo.h5" GutterBottom>Edit Job Post")</MudText>
+<MudText Typo="Typo.h5" GutterBottom>Edit Job Post</MudText>
 
 <MudForm @ref="_form" OnValidSubmit="HandleValidSubmit">
     <MudTextField Label="Title" @bind-Value="jobpost.Title" Required="true" />
@@ -22,16 +22,23 @@
     </MudSelect>
 
     <MudTextField Label="Location" @bind-Value="jobpost.Location" Required="true" />
+    <MudSelect T="JobCategory" Label="Job Category" @bind-Value="jobpost.JobCategory" Required="true">
+        @foreach (var type in Enum.GetValues<JobCategory>())
+        {
+            <MudSelectItem Value="type">@type.ToString()</MudSelectItem>
+        }
+    </MudSelect>
 
     <MudTextField Label="Salary From" @bind-Value="jobpost.SalaryFrom" Required="true" />
     <MudTextField Label="Salary To" @bind-Value="jobpost.SalaryTo" Required="true" />
 
     <MudTextField Label="Job Requirements" @bind-Value="jobpost.JobRequirements" Lines="3" TextArea="true" Required="true" />
 
+
     <MudDatePicker Label="Expire Date" @bind-Date="jobpost.ExpiredDate" Required="true" />
 
     <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SubmitForm" Class="mt-3">
-      Update"
+      Update
     </MudButton>
 
     <MudButton Variant="Variant.Text" Color="Color.Secondary" OnClick="Cancel" Class="mt-3 ml-2">
@@ -77,12 +84,11 @@
 
         try
         {
-        
                 var message = await JobService.UpdateAsync(jobpost);
                 await _form.ResetAsync();
                 Snackbar.Add(message, Severity.Success);
           
-     NavigationManager.NavigateTo("/jobpost"); // redirect after success
+     NavigationManager.NavigateTo("/jobpost/jobpost");
         }
         catch (Exception ex)
         {

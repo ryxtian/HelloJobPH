@@ -5,9 +5,50 @@
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 
-<MudButton OnClick="AddNewRecruiter" Variant="Variant.Filled" Color="Color.Primary" Class="mb-4">Add New Job Post</MudButton>
+<MudButton OnClick="AddNewRecruiter" Variant="Variant.Filled" Color="Color.Primary" Class="mb-4">Add New Recruiter</MudButton>
 
-<MudTable Items="@HumanResources" Filter="FilterFunc1" @bind-SelectedItem="selectedItem1" Hover="true" Elevation="1">
+
+
+
+<MudContainer Class="mt-4">
+    <MudText Typo="Typo.h5" GutterBottom="true">Human Resource</MudText>
+
+    @if (HumanResources == null)
+    {
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+    }
+    else if (!HumanResources.Any())
+    {
+        <MudText>No available.</MudText>
+    }
+    else
+    {
+        <MudGrid>
+            @foreach (var hr in HumanResources)
+            {
+                <MudItem xs="12" sm="6" md="4" lg="3">
+                    <MudCard Class="mb-4">
+                        <MudCardMedia Image="images/door.jpg" Height="200" /> @* -----------IMAGE OF HUMAN RESOURCE----------------- *@             
+                        <MudCardContent>
+                            <MudText Typo="Typo.h6">@hr.Firstname @hr.Lastname</MudText>
+                            <MudText Typo="Typo.body2" Class="mb-2">@hr.JobTitle</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                @hr.Email
+                            </MudText>
+                        </MudCardContent>
+                        <MudCardActions>
+                            <MudButton Variant="Variant.Text" OnClick="@(() => OnEdit(@hr.HumanResourceId))" Color="Color.Primary">Edit</MudButton>
+                            <MudButton Variant="Variant.Text" OnClick="@(() => OnDelete(hr.HumanResourceId))" Color="Color.Error">Remove</MudButton>
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+    }
+</MudContainer>
+
+
+@* <MudTable Items="@HumanResources" Filter="FilterFunc1" @bind-SelectedItem="selectedItem1" Hover="true" Elevation="1">
     <ToolBarContent>
         <MudText Typo="Typo.h6">Human Resource</MudText>
         <MudSpacer />
@@ -41,7 +82,7 @@
     <PagerContent>
         <MudTablePager />
     </PagerContent>
-</MudTable>
+</MudTable> *@
 
 @code{
                  private string searchString1 = string.Empty;

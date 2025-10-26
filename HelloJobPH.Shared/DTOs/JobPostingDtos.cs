@@ -23,6 +23,7 @@ namespace HelloJobPH.Shared.DTOs
         public decimal? SalaryFrom { get; set; }
         public decimal? SalaryTo { get; set; }
         [Required(ErrorMessage = "Title is required.")]
+        public JobCategory JobCategory { get; set; }
         public string JobRequirements { get; set; }
         public byte IsDeleted { get; set; } = 0;
         public int HumanResourceId { get; set; }

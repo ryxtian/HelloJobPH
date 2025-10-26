@@ -51,7 +51,7 @@
                 if (humanResource == null)
                 {
                     Snackbar.Add($"Human resource with ID {HumanResourceId} not found.", Severity.Error);
-                    NavigationManager.NavigateTo("/humanresource/HRlist");
+                    NavigationManager.NavigateTo("/HumanResource/Recruiter");
                     return;
                 }
 
@@ -60,7 +60,7 @@
             catch (Exception ex)
             {
                 Snackbar.Add($"Error loading data: {ex.Message}", Severity.Error);
-                NavigationManager.NavigateTo("//humanresource/HRlist");
+                NavigationManager.NavigateTo("/HumanResource/Recruiter");
             }
         }
 

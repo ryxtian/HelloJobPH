@@ -1,6 +1,7 @@
 ﻿
 using HelloJobPH.Server.Data;
 using HelloJobPH.Shared.DTOs;
+using HelloJobPH.Shared.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace HelloJobPH.Server.Service.Candidate
@@ -29,6 +30,7 @@ namespace HelloJobPH.Server.Service.Candidate
                 join applicant in _context.Applicant on app.ApplicantId equals applicant.ApplicantId
                 join user in _context.UserAccount on applicant.UserAccountId equals user.UserAccountId
                 join job in _context.JobPosting on app.JobPostId equals job.JobPostingId
+                where app.ApplicationStatus == ApplicationStatus.Initial
                 select new ApplicationListDtos
                 {
                     ApplicationId = app.ApplicationId,

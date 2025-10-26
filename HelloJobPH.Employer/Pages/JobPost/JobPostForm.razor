@@ -21,7 +21,12 @@
 
     <MudTextField Label="Location" @bind-Value="jobpost.Location" Required="true" />
 
-
+    <MudSelect T="JobCategory" Label="Job Category" @bind-Value="jobpost.JobCategory" Required="true">
+        @foreach (var type in Enum.GetValues<JobCategory>())
+        {
+            <MudSelectItem Value="type">@type.ToString()</MudSelectItem>
+        }
+    </MudSelect>
 
         <MudTextField Label="Salary From"@bind-Value="jobpost.SalaryFrom" Required="true" />
         <MudTextField Label="Salary To" @bind-Value="jobpost.SalaryTo" Required="true" />

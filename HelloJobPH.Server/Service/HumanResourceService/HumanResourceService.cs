@@ -14,9 +14,9 @@ namespace HelloJobPH.Server.Service.HumanResource
         public HumanResourceService(ApplicationDbContext context)
         {
             _context = context;
-   
+
         }
-        public async Task<HumanResourceDtos> AddAsync(HumanResourceDtos humanResourceDto)
+        public async Task<bool> AddAsync(HumanResourceDtos humanResourceDto)
         {
 
             string passwordHash = BCrypt.Net.BCrypt.HashPassword(humanResourceDto.Password);
@@ -38,7 +38,7 @@ namespace HelloJobPH.Server.Service.HumanResource
                 ProfilePhotoUrl = humanResourceDto.ProfilePhotoUrl,
                 JobTitle = humanResourceDto.JobTitle,
                 UserAccountId = useracc.UserAccountId,
-                Email = useracc.Email,
+                //Email = useracc.Email,
             };
 
             await _context.HumanResource.AddAsync(entity);
@@ -46,17 +46,7 @@ namespace HelloJobPH.Server.Service.HumanResource
 
 
 
-            return new HumanResourceDtos
-            {
-                HumanResourceId = entity.HumanResourceId,
-                Firstname = entity.Firstname,
-                Lastname = entity.Lastname,
-                Email = entity.Email,
-                PhoneNumber = entity.PhoneNumber,
-                IsDeleted = entity.IsDeleted,
-                ProfilePhotoUrl = entity.ProfilePhotoUrl,
-                JobTitle = entity.JobTitle
-            };
+            return true;
         }
 
 
@@ -78,8 +68,9 @@ namespace HelloJobPH.Server.Service.HumanResource
 
         public async Task<HumanResourceDtos> GetByIdAsync(int id)
         {
-            var entity = await _context.HumanResource.FirstOrDefaultAsync(i => i.HumanResourceId == id);
-
+            var entity = await _context.HumanResource
+                      .Include(hr => hr.UserAccount).FirstOrDefaultAsync(i => i.HumanResourceId == id);
+      
             if (entity == null)
                 return null; // or throw exception, depending on your design
 
@@ -88,7 +79,7 @@ namespace HelloJobPH.Server.Service.HumanResource
                 HumanResourceId = entity.HumanResourceId,
                 Firstname = entity.Firstname,
                 Lastname = entity.Lastname,
-                Email = entity.Email,
+                Email = entity.UserAccount.Email,
                 PhoneNumber = entity.PhoneNumber,
                 IsDeleted = entity.IsDeleted,
                 ProfilePhotoUrl = entity.ProfilePhotoUrl,
@@ -101,62 +92,72 @@ namespace HelloJobPH.Server.Service.HumanResource
         {
             try
             {
-                List<HumanResourceDtos> response = await _context.HumanResource
-                .Select(i => new HumanResourceDtos
-                {
-                    HumanResourceId= i.HumanResourceId,
-                    Firstname = i.Firstname,
-                    Lastname = i.Lastname,
-                    Email = i.Email,
-                    PhoneNumber = i.PhoneNumber,
-                    IsDeleted = i.IsDeleted,
-                    ProfilePhotoUrl = i.ProfilePhotoUrl,
-                    JobTitle = i.JobTitle,
-                }).Where(i=>i.IsDeleted ==0)
-                .ToListAsync();
+                var response = await _context.HumanResource
+                    .Include(hr => hr.UserAccount) // include related UserAccount
+                    .Where(hr => hr.IsDeleted == 0)
+                    .Select(hr => new HumanResourceDtos
+                    {
+                        HumanResourceId = hr.HumanResourceId,
+                        Firstname = hr.Firstname,
+                        Lastname = hr.Lastname,
+                        PhoneNumber = hr.PhoneNumber,
+                        IsDeleted = hr.IsDeleted,
+                        ProfilePhotoUrl = hr.ProfilePhotoUrl,
+                        JobTitle = hr.JobTitle,
+
+                        Email = hr.UserAccount.Email,
+
+                    })
+                    .ToListAsync();
+
                 return response;
-                //return _mapper.Map<List<HumanResourceDtos>>(response);
             }
             catch (Exception)
             {
-                // Log the exception here if you want
+                // Optionally log the exception
                 throw;
             }
         }
 
 
-        public async Task<HumanResourceDtos?> UpdateAsync(HumanResourceDtos humanResourceDto)
+
+        public async Task<bool> UpdateAsync(HumanResourceDtos humanResourceDto)
         {
+
             var existing = await _context.HumanResource
                 .FirstOrDefaultAsync(hr => hr.HumanResourceId == humanResourceDto.HumanResourceId);
 
-            if (existing == null)
-                return null; // or throw new Exception("Human resource not found");
+            var useracc = await _context.UserAccount
+       .FirstOrDefaultAsync(u => u.UserAccountId == existing.UserAccountId);
+
+            if (existing == null || useracc == null)
+                return false;
+
+
+            string passwordHash = BCrypt.Net.BCrypt.HashPassword(humanResourceDto.Password);
+
+            useracc.Email = humanResourceDto.Email;
+            useracc.Password = passwordHash;
+           
+
+            _context.UserAccount.Update(useracc);
+            await _context.SaveChangesAsync();
 
             // Map fields from DTO to entity
             existing.Firstname = humanResourceDto.Firstname;
             existing.Lastname = humanResourceDto.Lastname;
-            existing.Email = humanResourceDto.Email;
+            //existing.Email = humanResourceDto.Email;
             existing.PhoneNumber = humanResourceDto.PhoneNumber;
             existing.IsDeleted = humanResourceDto.IsDeleted;
             existing.ProfilePhotoUrl = humanResourceDto.ProfilePhotoUrl;
             existing.JobTitle = humanResourceDto.JobTitle;
+            existing.UserAccountId = useracc.UserAccountId;
 
             _context.HumanResource.Update(existing);
             await _context.SaveChangesAsync();
 
             // Return updated DTO
-            return new HumanResourceDtos
-            {
-                HumanResourceId = existing.HumanResourceId,
-                Firstname = existing.Firstname,
-                Lastname = existing.Lastname,
-                Email = existing.Email,
-                PhoneNumber = existing.PhoneNumber,
-                IsDeleted = existing.IsDeleted,
-                ProfilePhotoUrl = existing.ProfilePhotoUrl,
-                JobTitle = existing.JobTitle
-            };
+            return true;
         }
 
 

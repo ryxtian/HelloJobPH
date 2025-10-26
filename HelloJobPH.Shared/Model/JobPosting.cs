@@ -19,6 +19,7 @@ namespace HelloJobPH.Shared.Model
         public decimal? SalaryFrom { get; set; }
         public decimal? SalaryTo { get; set; }
         public byte IsDeleted { get; set; } = 0;
+        public JobCategory JobCategory { get; set; }
         public string JobRequirements { get; set; }
         public int? HumanResourceId { get; set; }
         public List<Application>? Application { get; set; }

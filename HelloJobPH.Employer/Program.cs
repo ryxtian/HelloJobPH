@@ -5,6 +5,7 @@ using HelloJobPH.Employer.JwtAuthStateProviders;
 using HelloJobPH.Employer.Services.Authentication;
 using HelloJobPH.Employer.Services.Candidate;
 using HelloJobPH.Employer.Services.HumanResource;
+using HelloJobPH.Employer.Services.Interview;
 using HelloJobPH.Employer.Services.JobPosting;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
@@ -34,6 +35,7 @@ builder.Services.AddScoped<IJobPosting, JobPosting>();
 builder.Services.AddScoped<IHumanResource, HumanResource>();
 builder.Services.AddScoped<IClientIAuthService, ClientAuthService>();
 builder.Services.AddScoped<IClientCandidateService, ClientCandidateService>();
+builder.Services.AddScoped<IClientInterviewService, ClientInterviewService>();
 
 
 

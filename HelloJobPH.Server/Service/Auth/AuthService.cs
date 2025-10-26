@@ -1,6 +1,7 @@
 ﻿using HelloJobPH.Server.Data;
 using HelloJobPH.Server.Service.Auth;
 using HelloJobPH.Shared.Model;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -31,8 +32,12 @@ namespace HelloJobPH.Server.Services
                 throw new Exception("Invalid password.");
 
             var hr = await _context.HumanResource.FirstOrDefaultAsync(h => h.UserAccountId == user.UserAccountId);
+       
             if (hr == null)
                 throw new Exception("User details not found.");
+
+            if (hr.IsDeleted == 1)
+                throw new Exception("Account has been deleted or disabled.");
 
             return CreateToken(user, hr);
         }

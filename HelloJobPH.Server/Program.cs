@@ -6,6 +6,7 @@ using HelloJobPH.Server.Service.Auth;
 using HelloJobPH.Server.Service.Candidate;
 using HelloJobPH.Server.Service.Email;
 using HelloJobPH.Server.Service.HumanResource;
+using HelloJobPH.Server.Service.Interview;
 using HelloJobPH.Server.Service.JobPost;
 using HelloJobPH.Server.Service.UserAccountRepository;
 using HelloJobPH.Server.Services;
@@ -55,6 +56,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IJobPostService, JobPostService>();
 builder.Services.AddScoped<IHumanResourceService, HumanResourceService>();
 builder.Services.AddScoped<ICandidateService, CandidateService>();
+builder.Services.AddScoped<IInterviewService, InterviewService>();
 //builder.Services.AddScoped<IUserAccountRepository, UserAccountRepository>();
 //builder.Services.AddScoped<IApplicantRepository, ApplicantRepository>();
 

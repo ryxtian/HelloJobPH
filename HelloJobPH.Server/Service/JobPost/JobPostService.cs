@@ -35,6 +35,7 @@ namespace HelloJobPH.Server.Service.JobPost
                     SalaryFrom = i.SalaryFrom,
                     SalaryTo = i.SalaryTo,
                     JobRequirements = i.JobRequirements,
+                    JobCategory = i.JobCategory,
                     PostedDate = i.PostedDate,
                     IsDeleted = i.IsDeleted
                 }).Where(i=>i.IsDeleted == 0)
@@ -57,6 +58,7 @@ namespace HelloJobPH.Server.Service.JobPost
                 Location = entity.Location,
                 EmploymentType = entity.EmploymentType,
                 PostedDate = entity.PostedDate,
+                JobCategory = entity.JobCategory,
                 ExpiredDate = entity.ExpiredDate,
                 SalaryFrom = entity.SalaryFrom,
                 JobRequirements = entity.JobRequirements,
@@ -83,7 +85,10 @@ namespace HelloJobPH.Server.Service.JobPost
                     Description = jobPostingDto.Description,
                     Location = jobPostingDto.Location,
                     EmploymentType = jobPostingDto.EmploymentType,
+                    SalaryFrom = jobPostingDto.SalaryFrom,
+                    SalaryTo = jobPostingDto.SalaryTo,
                     JobRequirements = jobPostingDto.JobRequirements,
+                    JobCategory = jobPostingDto.JobCategory,
                     PostedDate = DateTime.Now,
                     ExpiredDate = jobPostingDto.ExpiredDate ?? DateTime.Now,
                     HumanResourceId = userId,
@@ -117,7 +122,7 @@ namespace HelloJobPH.Server.Service.JobPost
 
             var user = _httpContextAccessor.HttpContext?.User;
 
-            // ✅ Get the user’s ID from claims
+      
             var userIdClaim = user?.FindFirstValue(ClaimTypes.NameIdentifier);
             if (!int.TryParse(userIdClaim, out int userId))
                 throw new Exception("Invalid or missing user ID in claims.");
@@ -125,9 +130,9 @@ namespace HelloJobPH.Server.Service.JobPost
                 .FirstOrDefaultAsync(j => j.JobPostingId == jobPostingDto.JobPostingId);
 
             if (existing == null)
-                return false; // or throw new Exception("Job posting not found");
+                return false; 
 
-            // ✅ Manually map allowed fields
+        
             existing.Title = jobPostingDto.Title;
             existing.Description = jobPostingDto.Description;
             existing.Location = jobPostingDto.Location;
@@ -135,6 +140,7 @@ namespace HelloJobPH.Server.Service.JobPost
             existing.SalaryFrom = jobPostingDto.SalaryFrom;
             existing.SalaryTo = jobPostingDto.SalaryTo;
             existing.JobRequirements = jobPostingDto.JobRequirements;
+            existing.JobCategory = jobPostingDto.JobCategory;
             existing.IsDeleted = jobPostingDto.IsDeleted;
             existing.HumanResourceId = userId;
             existing.PostedDate = DateTime.Now;

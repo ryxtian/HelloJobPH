@@ -60,9 +60,11 @@
 
                         <!-- Bottom Buttons -->
                         <MudStack Row="true"  Class="mt-3">
-                            <MudButton Variant="Variant.Filled" Color="Color.Primary"
-                                       >
-                                View Applications
+                            <MudButton Variant="Variant.Filled" OnClick="@(() => OnEdit(@job.JobPostingId))" Color="Color.Primary">
+                                Edit
+                            </MudButton>
+                            <MudButton Variant="Variant.Filled" OnClick="@(() => OnDelete(@job.JobPostingId))" Color="Color.Error">
+                                Remove
                             </MudButton>
                             <MudText Typo="Typo.caption" Color="Color.Secondary">
                                 <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" Class="mr-1" />
@@ -152,7 +154,7 @@
         }
         else
         {
-            Navigation.NavigateTo("/login", true);
+            Navigation.NavigateTo("/", true);
         }
 
 
