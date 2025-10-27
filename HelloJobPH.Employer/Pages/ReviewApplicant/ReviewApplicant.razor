@@ -89,12 +89,32 @@
                             </div>
                         </CardHeaderContent>
                     </MudCardHeader>
-                    <MudCardContent>
-                        <MudText Typo="Typo.body2" Color="Color.Secondary" Align="Align.Center" Class="py-4">
-                            <MudIcon Icon="@Icons.Material.Filled.WorkOff" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
-                            <br />No work experience data available
-                        </MudText>
-                    </MudCardContent>
+                <MudCardContent>
+        @if (overview.WorkExperiences != null && overview.WorkExperiences.Any())
+        {
+            @foreach (var work in overview.WorkExperiences)
+            {
+               
+                    <MudText Typo="Typo.subtitle1" Color="Color.Primary">@work.CompanyName</MudText>
+                    <MudText Typo="Typo.body2">@work.PositionTitle (@work.Department)</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                        @work.StartDate.ToString("MMM yyyy")
+                        -
+                        @(work.IsPresent ? "Present" : work.EndDate?.ToString("MMM yyyy"))
+                    </MudText>
+                    <MudText Typo="Typo.body2" Class="mt-1">@work.Responsibilities</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">@work.CompanyAddress</MudText>
+            
+            }
+        }
+        else
+        {
+            <MudText Typo="Typo.body2" Color="Color.Secondary" Align="Align.Center" Class="py-4">
+                <MudIcon Icon="@Icons.Material.Filled.WorkOff" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
+                <br />No work experience data available
+            </MudText>
+        }
+    </MudCardContent>
                 </MudCard>
 
                 <!-- Educational Background -->
@@ -107,12 +127,30 @@
                             </div>
                         </CardHeaderContent>
                     </MudCardHeader>
-               @*      <MudCardContent>
-                        <MudText Typo="Typo.body2" Color="Color.Secondary" Align="Align.Center" Class="py-4">
-                            <MudIcon Icon="@Icons.Material.Filled.SchoolOutlined" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
-                            <br />No education data available
-                        </MudText>
-                    </MudCardContent> *@
+
+            <MudCardContent>
+    @if (overview?.EducationalAttainment != null && overview.EducationalAttainment.Any())
+    {
+        @foreach (var school in overview.EducationalAttainment)
+        {
+            <MudPaper Elevation="0" Class="pa-3 mb-3" Style="background: var(--mud-palette-surface); border-left: 4px solid var(--mud-palette-primary);">
+                <MudText Typo="Typo.subtitle1" Class="fw-bold">@school.SchoolName - @school.Degree ?? "NA"</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">@school.Degree</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                    @school.YearStarted - @(school.YearEnded.HasValue ? school.YearEnded : "Present")
+                </MudText>
+            </MudPaper>
+        }
+    }
+    else
+    {
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Align="Align.Center" Class="py-4">
+          <MudIcon Icon="@Icons.Material.Outlined.School" Size="Size.Large" Color="Color.Secondary" Class="mb-2" />
+            <br />No educational attainment data available
+        </MudText>
+    }
+</MudCardContent>
+
                 </MudCard>
             </MudItem>
 
@@ -169,7 +207,7 @@
                                         <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Size="Size.Small" Color="Color.Primary" Class="mr-2" />
                                         <MudText Typo="Typo.caption" Color="Color.Secondary" Class="text-uppercase">Salary Range</MudText>
                                     </div>
-                                    <MudText Typo="Typo.body1" Class="fw-medium">@overview.SalaryRange</MudText>
+                                    <MudText Typo="Typo.body1" Class="fw-medium">@overview.SalaryFrom - @overview.SalaryTo</MudText>
                                 </MudPaper>
                             </MudItem>
                         </MudGrid>

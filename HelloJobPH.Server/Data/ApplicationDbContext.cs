@@ -13,6 +13,8 @@ namespace HelloJobPH.Server.Data
         public DbSet<HumanResources> HumanResource { get; set; }
         public DbSet<Application> Application { get; set; }
         public DbSet<Interview> Interview { get; set; }
+        public DbSet<WorkExperience> WorkExperience { get; set; }
+        public DbSet<EducationalAttainment> EducationalAttainment { get; set; }
         //protected override void OnModelCreating(ModelBuilder modelBuilder)
         //{
         //    base.OnModelCreating(modelBuilder);

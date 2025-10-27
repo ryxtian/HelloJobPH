@@ -3,59 +3,134 @@
 @inject NavigationManager Navigation
 @inject IClientInterviewService CandidateService
 
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-4">
+    <MudPaper Elevation="2" Class="pa-6">
+        <MudStack Spacing="4">
+            <!-- Header Section -->
+            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                <MudStack Spacing="1">
+                    <MudText Typo="Typo.h5" Color="Color.Primary">
+                        <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" Class="mr-2" />
+                        Initial Interviews
+                    </MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        Manage and review scheduled initial interview candidates
+                    </MudText>
+                </MudStack>
+                <MudChip T="string" Icon="@Icons.Material.Filled.People" Color="Color.Info" Variant="Variant.Filled">
+                    @initial.Count Candidate@(initial.Count != 1 ? "s" : "")
+                </MudChip>
+            </MudStack>
 
-<MudPaper Class="pa-4">
-    <MudTable Dense="true" Hover="true" Bordered="true" Breakpoint="Breakpoint.Sm" Items="@initial">
-        <HeaderContent>
-            <MudTh><MudText Typo="Typo.subtitle2">Name</MudText></MudTh>
-            <MudTh><MudText Typo="Typo.subtitle2">Position</MudText></MudTh>
-            <MudTh><MudText Typo="Typo.subtitle2">Status</MudText></MudTh>
-            <MudTh><MudText Typo="Typo.subtitle2">Resume</MudText></MudTh>
-            <MudTh><MudText Typo="Typo.subtitle2">Schedule Date</MudText></MudTh>
-            <MudTh><MudText Typo="Typo.subtitle2">Schedule Time</MudText></MudTh>
-            <MudTh><MudText Typo="Typo.subtitle2">Type</MudText></MudTh>
-            <MudTh><MudText Typo="Typo.subtitle2">Action</MudText></MudTh>
-        </HeaderContent>
+            <MudDivider />
 
-        <RowTemplate>
-            <MudTd>@context.Firstname @context.Lastname</MudTd>
-            <MudTd>@context.JobTitle</MudTd>
-            <MudTd>@context.Status</MudTd>
-            <MudTd><a href="@context.ResumeUrl" target="_blank">View Resume</a></MudTd>
-            <MudTd>@context.DateInterview.ToString("dd MMM yyyy")</MudTd>   @* Date of interview *@
-            <MudTd>@context.TimeInterview</MudTd>
-            <MudTd>@context.Type</MudTd>
-            <MudTd>
-                <MudMenu Icon="@Icons.Material.Filled.MoreVert">
-                    <MudMenuItem>Reschedule</MudMenuItem>
-                    <MudMenuItem>No Apperance</MudMenuItem>
-                    <MudMenuItem>Technical</MudMenuItem>
-                    <MudMenuItem>Final</MudMenuItem>
-                    <MudMenuItem>Failed</MudMenuItem>
-                    <MudMenuItem>Delete</MudMenuItem>
-    <MudMenuItem OnClick="@(()=> NavigateToOverview(context.ApplicationId))">Overview</MudMenuItem>
-                </MudMenu>
-            </MudTd>
-        </RowTemplate>
-
-        <NoRecordsContent>
-            <MudText Typo="Typo.body1" Align="Align.Center">No candidates found.</MudText>
-        </NoRecordsContent>
-    </MudTable>
-</MudPaper>
+            <!-- Table Section -->
+            <MudTable Dense="false" 
+                      Hover="true" 
+                      Bordered="false" 
+                      Striped="true"
+                      Breakpoint="Breakpoint.Sm" 
+                      Items="@initial"
+                      Elevation="0"
+                      Class="rounded-lg">
+                <HeaderContent>
+                    <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Candidate</strong></MudText></MudTh>
+                    <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Position</strong></MudText></MudTh>
+                    <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Status</strong></MudText></MudTh>
+                    <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Resume</strong></MudText></MudTh>
+                    <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Interview Date</strong></MudText></MudTh>
+                    <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Time</strong></MudText></MudTh>
+                    <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Type</strong></MudText></MudTh>
+                    <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Actions</strong></MudText></MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Candidate">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                            <MudAvatar Color="Color.Primary" Size="Size.Small">
+                                @context.Firstname?.Substring(0, 1)@context.Lastname?.Substring(0, 1)
+                            </MudAvatar>
+                            <MudText Typo="Typo.body2">
+                                <strong>@context.Firstname @context.Lastname</strong>
+                            </MudText>
+                        </MudStack>
+                    </MudTd>
+                    <MudTd DataLabel="Position">
+                        <MudText Typo="Typo.body2">@context.JobTitle</MudText>
+                    </MudTd>
+                    <MudTd DataLabel="Status">
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Filled" Color="Color.Info">
+                            @context.Status
+                        </MudChip>
+                    </MudTd>
+                    <MudTd DataLabel="Resume">
+                        <MudButton Href="@context.ResumeUrl" 
+                                   Target="_blank" 
+                                   StartIcon="@Icons.Material.Filled.Description" 
+                                   Size="Size.Small" 
+                                   Variant="Variant.Text" 
+                                   Color="Color.Primary">
+                            View
+                        </MudButton>
+                    </MudTd>
+                    <MudTd DataLabel="Interview Date">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                            <MudIcon Icon="@Icons.Material.Filled.Event" Size="Size.Small" Color="Color.Secondary" />
+                            <MudText Typo="Typo.body2">@context.DateInterview.ToString("dd MMM yyyy")</MudText>
+                        </MudStack>
+                    </MudTd>
+                    <MudTd DataLabel="Time">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                            <MudIcon Icon="@Icons.Material.Filled.AccessTime" Size="Size.Small" Color="Color.Secondary" />
+                            <MudText Typo="Typo.body2">@context.TimeInterview</MudText>
+                        </MudStack>
+                    </MudTd>
+                    <MudTd DataLabel="Type">
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@context.Type</MudChip>
+                    </MudTd>
+                    <MudTd DataLabel="Actions">
+                        <MudMenu Icon="@Icons.Material.Filled.MoreVert" 
+                                 Size="Size.Small" 
+                                 Dense="true"
+                                 AnchorOrigin="Origin.BottomLeft">
+                            <MudMenuItem Icon="@Icons.Material.Filled.Schedule">Reschedule</MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.PersonOff">No Appearance</MudMenuItem>
+                            <MudDivider />
+                            <MudMenuItem Icon="@Icons.Material.Filled.Engineering">Technical</MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.CheckCircle">Final</MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.Cancel" Class="mud-error-text">Failed</MudMenuItem>
+                            <MudDivider />
+                            <MudMenuItem Icon="@Icons.Material.Filled.Delete" Class="mud-error-text">Delete</MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.Visibility" 
+                                        OnClick="@(()=> NavigateToOverview(context.ApplicationId))">
+                                Overview
+                            </MudMenuItem>
+                        </MudMenu>
+                    </MudTd>
+                </RowTemplate>
+                <NoRecordsContent>
+                    <MudStack AlignItems="AlignItems.Center" Spacing="3" Class="pa-8">
+                        <MudIcon Icon="@Icons.Material.Filled.EventBusy" Size="Size.Large" Color="Color.Secondary" />
+                        <MudText Typo="Typo.h6" Color="Color.Secondary">No Scheduled Interviews</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                            There are no candidates scheduled for initial interviews at this time.
+                        </MudText>
+                    </MudStack>
+                </NoRecordsContent>
+            </MudTable>
+        </MudStack>
+    </MudPaper>
+</MudContainer>
 
 @code {
     private List<InterviewListDtos> initial = new();
-
+    
     protected override async Task OnInitializedAsync()
     {
         initial = await CandidateService.InitialList();
     }
-
+    
     private void NavigateToOverview(int applicationId)
     {
         Navigation.NavigateTo($"/reviewapplicant/reviewapplicant/{applicationId}");
     }
-
-
 }

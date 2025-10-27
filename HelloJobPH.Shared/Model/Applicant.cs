@@ -20,7 +20,10 @@ namespace HelloJobPH.Shared.Model
         public int? HumanResourceId { get; set; }
         public int UserAccountId { get; set; }
         public HumanResources? HumanResources { get; set; }
+        public Resume? Resume { get; set; }
         public UserAccount? UserAccount { get; set; }
         public List<Application>? Appications { get; set; }
+        public List<EducationalAttainment>? EducationalAttainments { get; set; }
+        public List<WorkExperience>? WorkExperiences { get; set; }
     }
 }

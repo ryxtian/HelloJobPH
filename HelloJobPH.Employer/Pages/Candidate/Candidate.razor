@@ -1,47 +1,117 @@
 ﻿@page "/candidate/candidate"
 @inject IClientCandidateService CandidateService
 
-<MudPaper Class="pa-4">
-    <MudTable Dense="true" Hover="true" Bordered="true" Breakpoint="Breakpoint.Sm" Items="@candidates">
-        <HeaderContent>
-            <MudTh><MudText Typo="Typo.subtitle2">Name</MudText></MudTh>
-            <MudTh><MudText Typo="Typo.subtitle2">Position</MudText></MudTh>
-            <MudTh><MudText Typo="Typo.subtitle2">Status</MudText></MudTh>
-            <MudTh><MudText Typo="Typo.subtitle2">Resume</MudText></MudTh>
-            <MudTh><MudText Typo="Typo.subtitle2">Date</MudText></MudTh>
-            <MudTh><MudText Typo="Typo.subtitle2">Postion</MudText></MudTh>
-            <MudTh><MudText Typo="Typo.subtitle2">Action</MudText></MudTh>
-        </HeaderContent>
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-4">
+    <MudPaper Elevation="2" Class="pa-6">
+        <MudStack Spacing="4">
+            <!-- Header Section -->
+            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                <MudStack Spacing="1">
+                    <MudText Typo="Typo.h5" Color="Color.Primary">
+                        <MudIcon Icon="@Icons.Material.Filled.PersonSearch" Class="mr-2" />
+                        Candidate Applications
+                    </MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        Review and manage candidate applications
+                    </MudText>
+                </MudStack>
+                <MudChip T="string" Icon="@Icons.Material.Filled.People" Color="Color.Info" Variant="Variant.Filled">
+                    @candidates.Count Candidate@(candidates.Count != 1 ? "s" : "")
+                </MudChip>
+            </MudStack>
 
-        <RowTemplate>
-            <MudTd>@context.Firstname @context.Lastname</MudTd>
-            <MudTd>@context.JobTitle</MudTd>
-            <MudTd>@context.Status</MudTd>
-            <MudTd>resume url</MudTd>
-            <MudTd>@context.DateApplied.ToString("dd MMM yyyy")</MudTd>
-            <MudTd>@context.Type</MudTd>
-            <MudTd>
-             <MudMenu Icon="@Icons.Material.Filled.MoreVert">
-                    <MudMenuItem OnClick="@(() => Accept(context.ApplicationId))">Accept</MudMenuItem>
-                    <MudMenuItem>Reject</MudMenuItem>
-                </MudMenu> 
-            </MudTd>
-        </RowTemplate>
+            <MudDivider />
 
-        <NoRecordsContent>
-            <MudText Typo="Typo.body1" Align="Align.Center">No candidates found.</MudText>
-        </NoRecordsContent>
-    </MudTable>
-</MudPaper>
+            <!-- Table Section -->
+            <MudTable Dense="false" 
+                      Hover="true" 
+                      Bordered="false" 
+                      Striped="true"
+                      Breakpoint="Breakpoint.Sm" 
+                      Items="@candidates"
+                      Elevation="0">
+                <HeaderContent>
+                    <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Candidate</strong></MudText></MudTh>
+                    <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Position</strong></MudText></MudTh>
+                    <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Status</strong></MudText></MudTh>
+                    <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Resume</strong></MudText></MudTh>
+                    <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Date Applied</strong></MudText></MudTh>
+                    <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Type</strong></MudText></MudTh>
+                    <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Actions</strong></MudText></MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Candidate">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                            <MudAvatar Color="Color.Primary" Size="Size.Small">
+                                @context.Firstname?.Substring(0, 1)@context.Lastname?.Substring(0, 1)
+                            </MudAvatar>
+                            <MudText Typo="Typo.body2">
+                                <strong>@context.Firstname @context.Lastname</strong>
+                            </MudText>
+                        </MudStack>
+                    </MudTd>
+                    <MudTd DataLabel="Position">
+                        <MudText Typo="Typo.body2">@context.JobTitle</MudText>
+                    </MudTd>
+                    <MudTd DataLabel="Status">
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Filled" Color="Color.Info">
+                            @context.Status
+                        </MudChip>
+                    </MudTd>
+                    <MudTd DataLabel="Resume">
+                        <MudButton StartIcon="@Icons.Material.Filled.Description" 
+                                   Size="Size.Small" 
+                                   Variant="Variant.Text" 
+                                   Color="Color.Primary">
+                            View Resume
+                        </MudButton>
+                    </MudTd>
+                    <MudTd DataLabel="Date Applied">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                            <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Size="Size.Small" Color="Color.Secondary" />
+                            <MudText Typo="Typo.body2">@context.DateApplied.ToString("dd MMM yyyy")</MudText>
+                        </MudStack>
+                    </MudTd>
+                    <MudTd DataLabel="Type">
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@context.Type</MudChip>
+                    </MudTd>
+                    <MudTd DataLabel="Actions">
+                        <MudMenu Icon="@Icons.Material.Filled.MoreVert" 
+                                 Size="Size.Small" 
+                                 Dense="true"
+                                 AnchorOrigin="Origin.BottomLeft">
+                            <MudMenuItem Icon="@Icons.Material.Filled.CheckCircle" 
+                                        OnClick="@(() => Accept(context.ApplicationId))">
+                                Accept
+                            </MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.Cancel" Class="mud-error-text">
+                                Reject
+                            </MudMenuItem>
+                        </MudMenu>
+                    </MudTd>
+                </RowTemplate>
+                <NoRecordsContent>
+                    <MudStack AlignItems="AlignItems.Center" Spacing="3" Class="pa-8">
+                        <MudIcon Icon="@Icons.Material.Filled.PersonOff" Size="Size.Large" Color="Color.Secondary" />
+                        <MudText Typo="Typo.h6" Color="Color.Secondary">No Candidates Found</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                            There are no candidate applications at this time.
+                        </MudText>
+                    </MudStack>
+                </NoRecordsContent>
+            </MudTable>
+        </MudStack>
+    </MudPaper>
+</MudContainer>
 
 @code {
     private List<ApplicationListDtos> candidates = new();
-
+    
     protected override async Task OnInitializedAsync()
     {
         candidates = await CandidateService.RetrieveAllCandidate();
     }
-
+    
     public async Task Accept(int id)
     {
         await CandidateService.CandidateAcceptAsync(id);

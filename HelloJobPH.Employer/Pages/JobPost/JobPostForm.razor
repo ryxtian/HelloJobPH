@@ -141,7 +141,7 @@
                 var message = await _jobpost.AddAsync(jobpost);
                 Snackbar.Add("Successfully saved", Severity.Success);
                 Console.WriteLine("success");
-                NavigationManager.NavigateTo("/jobPost");
+                NavigationManager.NavigateTo("/jobpost/jobPost");
             }
             catch (Exception ex)
             {

@@ -4,6 +4,7 @@ using HelloJobPH.Employer;
 using HelloJobPH.Employer.JwtAuthStateProviders;
 using HelloJobPH.Employer.Services.Authentication;
 using HelloJobPH.Employer.Services.Candidate;
+using HelloJobPH.Employer.Services.Dashboard;
 using HelloJobPH.Employer.Services.HumanResource;
 using HelloJobPH.Employer.Services.Interview;
 using HelloJobPH.Employer.Services.JobPosting;
@@ -38,6 +39,8 @@ builder.Services.AddScoped<IClientIAuthService, ClientAuthService>();
 builder.Services.AddScoped<IClientCandidateService, ClientCandidateService>();
 builder.Services.AddScoped<IClientInterviewService, ClientInterviewService>();
 builder.Services.AddScoped<IClientOverview, ClientOverview>();
+builder.Services.AddScoped<IClientDashboardService, ClientDashboardService>();
+
 
 
 

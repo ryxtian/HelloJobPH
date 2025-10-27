@@ -1,66 +1,100 @@
 ﻿@page "/dashboard/dashboard"
-@using HelloJobPH.Employer.JwtAuthStateProviders
-@using Microsoft.AspNetCore.Components.Authorization
-@using MudBlazor
+
 @inject AuthenticationStateProvider AuthProvider
 @inject NavigationManager Navigation
+@inject IClientDashboardService DashboardService
 @attribute [Authorize]
 
-<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-6">
-    <MudPaper Class="pa-6 elevation-2 rounded-lg">
+
+@if (isLoading)
+{
+    <div class="text-center mt-10">
+        <MudProgressCircular Indeterminate="true" Size="Size.Large" Color="Color.Primary" />
+        <MudText Typo="Typo.subtitle1" Class="mt-2">Loading dashboard...</MudText>
+    </div>
+}
+else
+{
+    <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-6">
+    <MudPaper Class="pa-6 mb-4">
         <MudText Typo="Typo.h4" Color="Color.Primary" GutterBottom="true">
             Dashboard Overview
         </MudText>
 
-        <!-- Summary Cards -->
-        <MudGrid Spacing="3" Class="mb-6 mt-4">
-            <MudItem xs="12" sm="6" md="4">
-                <MudCard Class="pa-4 elevation-3 hover-elevate">
-                    <MudCardContent>
+    </MudPaper>
+
+    <!-- Summary Cards -->
+    <MudGrid Spacing="3" Class="mb-6">
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Class="pa-4">
+                <MudCardContent>
+                    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Start">
+                        <MudStack Spacing="1">
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Total Job Posts</MudText>
+                            <MudText Typo="Typo.h4">@totalJobPosts</MudText>
+                        </MudStack>
                         <MudIcon Icon="@Icons.Material.Filled.Work" Color="Color.Primary" Size="Size.Large" />
-                        <MudText Typo="Typo.h6" Color="Color.Primary" Class="mt-2">Total Job Posts</MudText>
-                        <MudText Typo="Typo.h4" Class="mt-2">@totalJobPosts</MudText>
-                    </MudCardContent>
-                </MudCard>
-            </MudItem>
+                    </MudStack>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
 
-            <MudItem xs="12" sm="6" md="4">
-                <MudCard Class="pa-4 elevation-3 hover-elevate">
-                    <MudCardContent>
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Class="pa-4">
+                <MudCardContent>
+                    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Start">
+                        <MudStack Spacing="1">
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Active Applications</MudText>
+                            <MudText Typo="Typo.h4">@activeApplications</MudText>
+                        </MudStack>
                         <MudIcon Icon="@Icons.Material.Filled.Description" Color="Color.Success" Size="Size.Large" />
-                        <MudText Typo="Typo.h6" Color="Color.Success" Class="mt-2">Active Applications</MudText>
-                        <MudText Typo="Typo.h4" Class="mt-2">@activeApplications</MudText>
-                    </MudCardContent>
-                </MudCard>
-            </MudItem>
+                    </MudStack>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
 
-            <MudItem xs="12" sm="6" md="4">
-                <MudCard Class="pa-4 elevation-3 hover-elevate">
-                    <MudCardContent>
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Class="pa-4">
+                <MudCardContent>
+                    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Start">
+                        <MudStack Spacing="1">
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Approved Hires</MudText>
+                            <MudText Typo="Typo.h4">@approvedHires</MudText>
+                        </MudStack>
                         <MudIcon Icon="@Icons.Material.Filled.VerifiedUser" Color="Color.Info" Size="Size.Large" />
-                        <MudText Typo="Typo.h6" Color="Color.Info" Class="mt-2">Approved Hires</MudText>
-                        <MudText Typo="Typo.h4" Class="mt-2">@approvedHires</MudText>
-                    </MudCardContent>
-                </MudCard>
-            </MudItem>
-        </MudGrid>
+                    </MudStack>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
 
-        <!-- Bar Chart -->
-        <MudPaper Elevation="3" Class="pa-4 rounded-lg" Style="height: 420px;">
-            <MudText Typo="Typo.h6" GutterBottom="true" Color="Color.Primary">
+    <!-- Chart Section -->
+    @* <MudPaper Class="pa-6">
+        <MudStack Spacing="3">
+            <MudText Typo="Typo.h6" Color="Color.Primary">
                 Monthly Applications Comparison
             </MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                Track your application trends over the past 6 months
+            </MudText>
 
-            <MudChart ChartType="ChartType.Bar"
-                      Labels="@chartLabels"
-                      Class="mt-4"
-                      Style="height: 350px; width: 100%;">
-                <MudChartSeries Name="2024" Data="@data2024" Color="Color.Primary" />
-                <MudChartSeries Name="2025" Data="@data2025" Color="Color.Secondary" />
-            </MudChart>
-        </MudPaper>
-    </MudPaper>
+            <MudDivider />
+
+            <div style="height: 400px;">
+                <MudChart ChartType="ChartType.Bar"
+                          ChartOptions="@chartOptions"
+                          Labels="@chartLabels"
+                          Style="height: 100%; width: 100%;">
+                    <MudChartSeries Name="2024" Data="@data2024" />
+                    <MudChartSeries Name="2025" Data="@data2025" />
+                </MudChart>
+            </div>
+        </MudStack>
+    </MudPaper> *@
 </MudContainer>
+}
+
+
 
 @code {
     private ClaimsPrincipal? user;
@@ -68,9 +102,19 @@
     private string? email;
     private string? role;
     private string? userId;
+    // Live dashboard data
+    public int totalJobPosts;
+    public int activeApplications;
+    public int approvedHires;
+    private bool isLoading = true;
+
+
 
     protected override async Task OnInitializedAsync()
     {
+        totalJobPosts = await DashboardService.GetTotalJobPostAsync();
+        activeApplications = await DashboardService.GetActiveApplicationAsync();
+        approvedHires = await DashboardService.GetApprovedHiredAsync();
         var authState = await AuthProvider.GetAuthenticationStateAsync();
         user = authState.User;
 
@@ -88,21 +132,27 @@
         {
             Navigation.NavigateTo("/login", true);
         }
+
     }
-    // Fake dashboard data (replace with API data later)
-    private int totalJobPosts = 42;
-    private int activeApplications = 18;
-    private int approvedHires = 9;
+
 
     private string[] chartLabels = { "Jan", "Feb", "Mar", "Apr", "May", "Jun" };
     private double[] data2024 = { 10, 20, 15, 25, 18, 30 };
     private double[] data2025 = { 14, 25, 20, 32, 21, 35 };
+
+    private ChartOptions chartOptions = new ChartOptions
+    {
+        YAxisTicks = 5,
+        MaxNumYAxisTicks = 10,
+        InterpolationOption = InterpolationOption.Straight,
+        LineStrokeWidth = 3
+    };
 
     private async Task Logout()
     {
         if (AuthProvider is JwtAuthStateProvider jwtAuth)
             await jwtAuth.MarkUserAsLoggedOut();
 
-        Navigation.NavigateTo("/login", true);
+        Navigation.NavigateTo("/", true);
     }
 }
