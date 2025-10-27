@@ -151,21 +151,6 @@ namespace HelloJobPH.Server.Service.JobPost
             await _context.SaveChangesAsync();
 
             return true;
-            //return new JobPostingDtos
-            //{
-            //    JobPostingId = existing.JobPostingId,
-            //    Title = existing.Title,
-            //    Description = existing.Description,
-            //    Location = existing.Location,
-            //    EmploymentType = existing.EmploymentType,
-            //    SalaryFrom = existing.SalaryFrom,
-            //    SalaryTo = existing.SalaryTo,
-            //    JobRequirements = existing.JobRequirements,
-            //    IsDeleted = existing.IsDeleted,
-            //    HumanResourceId = 6,
-            //    PostedDate = existing.PostedDate,
-            //    ExpiredDate = existing.ExpiredDate
-            //};
         }
 
 

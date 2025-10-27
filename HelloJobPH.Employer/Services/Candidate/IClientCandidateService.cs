@@ -4,8 +4,11 @@ namespace HelloJobPH.Employer.Services.Candidate
 {
     public interface IClientCandidateService
     {
-        Task<bool> CandidateAcceptAsync(int id);
+        Task<ApplicationListDtos> CandidateAcceptAsync(int id);
         Task<bool> CandidateRejectAsync(int id);
         Task<List<ApplicationListDtos>> RetrieveAllCandidate();
+        Task<List<ApplicationListDtos>> RetrieveAllAcceptedCandidate();
+
+        Task<bool> SendEmail(int applicationId, string interviewDate, string interviewTime, string? location);
     }
 }

@@ -8,122 +8,161 @@
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider AuthProvider
 
-<MudButton OnClick="AddNewJob" Variant="Variant.Filled" Color="Color.Primary" Class="mb-4">Add New Job Post</MudButton>
-
-
-<MudGrid>
-    @if (jobPostings is not null && jobPostings.Any())
-    {
-        @foreach (var job in jobPostings)
-        {
-            <MudItem xs="12" sm="6" md="4" Class="mb-4">
-                <MudCard Class="rounded-2xl shadow-sm hover:shadow-md transition-all duration-300">
-                    <MudCardContent>
-                        <!-- Company Info -->
-                        <MudStack Row="true"  Spacing="2">
-                            <MudAvatar Size="Size.Medium" Color="Color.Primary" Variant="Variant.Filled">
-                               
-                            </MudAvatar>
-                            <MudText Typo="Typo.subtitle2" Class="font-weight-medium">
-                                
-                            </MudText>
-                        </MudStack>
-
-                        <!-- Job Title -->
-                        <MudText Typo="Typo.h6" Class="font-weight-bold mt-2">@job.Title</MudText>
-
-                        <!-- Salary -->
-                        <MudText Color="Color.Primary" Typo="Typo.subtitle2" Class="mt-1">
-                            @($"{job.SalaryFrom:C0} - {job.SalaryTo:C0}")
-                        </MudText>
-
-                        <!-- Description -->
-                        <MudText Typo="Typo.body2" Class="mt-2 text-gray-600">
-                            @(string.IsNullOrWhiteSpace(job.Description)
-                                                ? "No description available."
-                                                : job.Description.Length > 90
-                                                ? job.Description.Substring(0, 90) + "..."
-                                                : job.Description)
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="py-6">
+    <!-- Header Section -->
+    <MudPaper Elevation="0" Class="pa-6 mb-6 rounded-lg" Style="background: linear-gradient(135deg, var(--mud-palette-primary) 0%, var(--mud-palette-primary-darken) 100%);">
+        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+            <MudStack Spacing="1">
+                <MudText Typo="Typo.h4" Class="font-weight-bold" Style="color: white;">
+                    Job Postings
                 </MudText>
+                <MudText Typo="Typo.body1" Style="color: rgba(255,255,255,0.9);">
+                    Manage and track all your job openings
+                </MudText>
+            </MudStack>
+            <MudButton OnClick="AddNewJob" 
+                       Variant="Variant.Filled" 
+                       StartIcon="@Icons.Material.Filled.Add"
+                       Size="Size.Large"
+                       Style="background-color: white; color: var(--mud-palette-primary); box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                Add New Job Post
+            </MudButton>
+        </MudStack>
+    </MudPaper>
 
-                        <!-- Openings -->
-                        <MudStack Row="true" Class="mt-3">
-                            <MudText Typo="Typo.subtitle2" Class="font-weight-medium">
-                                
+    <!-- Job Cards Grid -->
+    <MudGrid Spacing="4">
+        @if (jobPostings is not null && jobPostings.Any())
+        {
+            @foreach (var job in jobPostings)
+            {
+                <MudItem xs="12" sm="6" md="4">
+                    <MudCard Elevation="2" Class="rounded-xl overflow-hidden" Style="height: 100%; transition: all 0.3s ease; border: 1px solid rgba(0,0,0,0.05);">
+                        <!-- Color Accent Bar -->
+                        <div style="height: 4px; background: linear-gradient(90deg, var(--mud-palette-primary) 0%, var(--mud-palette-secondary) 100%);"></div>
+                        
+                        <MudCardContent Class="pa-5">
+                            <!-- Company Avatar & Badge -->
+                            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Start" Class="mb-3">
+                                <MudAvatar Size="Size.Large" 
+                                          Color="Color.Primary" 
+                                          Variant="Variant.Filled"
+                                          Style="box-shadow: 0 4px 12px rgba(var(--mud-palette-primary-rgb), 0.3);">
+                                    <MudIcon Icon="@Icons.Material.Filled.Work" Size="Size.Medium" />
+                                </MudAvatar>
+                                <MudChip T="string" Size="Size.Small" 
+                                        Color="Color.Success" 
+                                        Variant="Variant.Filled"
+                                        Style="font-weight: 600;">
+                                    Active
+                                </MudChip>
+                            </MudStack>
+
+                            <!-- Job Title -->
+                            <MudText Typo="Typo.h6" Class="font-weight-bold mb-2" Style="line-height: 1.3;">
+                                @job.Title
                             </MudText>
-                        </MudStack>
 
-                        <MudProgressLinear Class="mt-1"
-                                         
-                                           Color="Color.Primary"
-                                           Rounded="true" />
+                            <!-- Salary Range with Icon -->
+                            <MudPaper Elevation="0" Class="pa-3 mb-3 rounded-lg" Style="background-color: rgba(var(--mud-palette-primary-rgb), 0.08);">
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                    <MudIcon Icon="@Icons.Material.Filled.AttachMoney" 
+                                            Color="Color.Primary" 
+                                            Size="Size.Small" />
+                                    <MudText Typo="Typo.subtitle2" 
+                                            Color="Color.Primary"
+                                            Class="font-weight-bold">
+                                        @job.SalaryFrom - @job.SalaryTo
+                                    </MudText>
+                                </MudStack>
+                            </MudPaper>
 
-                        <!-- Bottom Buttons -->
-                        <MudStack Row="true"  Class="mt-3">
-                            <MudButton Variant="Variant.Filled" OnClick="@(() => OnEdit(@job.JobPostingId))" Color="Color.Primary">
-                                Edit
-                            </MudButton>
-                            <MudButton Variant="Variant.Filled" OnClick="@(() => OnDelete(@job.JobPostingId))" Color="Color.Error">
-                                Remove
-                            </MudButton>
-                            <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" Class="mr-1" />
-                                @job.Location
+                            <!-- Description -->
+                            <MudText Typo="Typo.body2" Class="mb-3" Style="color: #666; line-height: 1.6;">
+                                @(string.IsNullOrWhiteSpace(job.Description)
+                                    ? "No description available."
+                                    : job.Description.Length > 90
+                                    ? job.Description.Substring(0, 90) + "..."
+                                    : job.Description)
                             </MudText>
-                        </MudStack>
-                    </MudCardContent>
-                </MudCard>
+
+                            <!-- Openings Progress -->
+                         @*    <MudStack Spacing="2" Class="mb-4">
+                                <MudStack Row="true" Justify="Justify.SpaceBetween">
+                                    <MudText Typo="Typo.caption" Class="font-weight-medium" Style="color: #666;">
+                                        Open Positions
+                                    </MudText>
+                                    <MudText Typo="Typo.caption" Class="font-weight-bold" Color="Color.Primary">
+                                        @job.NumberOfOpenings positions
+                                    </MudText>
+                                </MudStack>
+                                <MudProgressLinear Color="Color.Primary"
+                                                 Value="@(job.NumberOfOpenings * 10)"
+                                                 Size="Size.Medium"
+                                                 Rounded="true"
+                                                 Style="height: 8px;" />
+                            </MudStack> *@
+
+                            <!-- Location -->
+                            <MudPaper Elevation="0" Class="pa-2 mb-4 rounded" Style="background-color: #f5f5f5;">
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                    <MudIcon Icon="@Icons.Material.Filled.LocationOn" 
+                                            Size="Size.Small" 
+                                            Style="color: #666;" />
+                                    <MudText Typo="Typo.caption" Style="color: #666;">
+                                        @job.Location
+                                    </MudText>
+                                </MudStack>
+                            </MudPaper>
+
+                            <!-- Action Buttons -->
+                            <MudStack Row="true" Spacing="2">
+                                <MudButton Variant="Variant.Filled" 
+                                          OnClick="@(() => OnEdit(@job.JobPostingId))" 
+                                          Color="Color.Primary"
+                                          StartIcon="@Icons.Material.Filled.Edit"
+                                          FullWidth="true"
+                                          Style="text-transform: none; font-weight: 600;">
+                                    Edit
+                                </MudButton>
+                                <MudButton Variant="Variant.Outlined" 
+                                          OnClick="@(() => OnDelete(@job.JobPostingId))" 
+                                          Color="Color.Error"
+                                          StartIcon="@Icons.Material.Filled.Delete"
+                                          FullWidth="true"
+                                          Style="text-transform: none; font-weight: 600;">
+                                    Remove
+                                </MudButton>
+                            </MudStack>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            }
+        }
+        else
+        {
+            <MudItem xs="12">
+                <MudPaper Elevation="0" Class="pa-12 rounded-lg text-center" Style="background-color: #f9fafb;">
+                    <MudIcon Icon="@Icons.Material.Filled.WorkOff" 
+                            Size="Size.Large" 
+                            Style="font-size: 4rem; color: #d1d5db; margin-bottom: 1rem;" />
+                    <MudText Typo="Typo.h6" Class="font-weight-medium mb-2" Style="color: #6b7280;">
+                        No job postings found
+                    </MudText>
+                    <MudText Typo="Typo.body2" Style="color: #9ca3af;" Class="mb-4">
+                        Get started by creating your first job posting
+                    </MudText>
+                    <MudButton OnClick="AddNewJob" 
+                              Variant="Variant.Filled" 
+                              Color="Color.Primary"
+                              StartIcon="@Icons.Material.Filled.Add">
+                        Create Job Post
+                    </MudButton>
+                </MudPaper>
             </MudItem>
         }
-    }
-    else
-    {
-        <MudItem xs="12">
-            <MudText Typo="Typo.subtitle1"Align="Align.Center" Class="mt-4">
-                No job postings found.
-            </MudText>
-        </MudItem>
-    }
-</MudGrid>
-
-@* <MudTable Items="@jobPostings" Filter="FilterFunc1" @bind-SelectedItem="selectedItem1" Hover="true" Elevation="1">
-    <ToolBarContent>
-        <MudText Typo="Typo.h6">Job Postings</MudText>
-        <MudSpacer />
-        <MudTextField @bind-Value="searchString1" Placeholder="Search" Adornment="Adornment.Start"
-                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0" />
-    </ToolBarContent>
-
-    <HeaderContent>
-        <MudTh>Title</MudTh>
-        <MudTh>Description</MudTh>
-        <MudTh>Type</MudTh>
-        <MudTh>Salary Range</MudTh>
-        <MudTh>Date Posted</MudTh>
-        <MudTh>Options</MudTh>
-    </HeaderContent>
-
-    <RowTemplate>
-        <MudTd DataLabel="Title">@context.Title</MudTd>
-        <MudTd DataLabel="Description">@context.Description</MudTd>
-        <MudTd DataLabel="Type">@context.EmploymentType</MudTd>
-        <MudTd DataLabel="Salary Range">@($"{context.SalaryFrom} - {context.SalaryTo}")</MudTd>
-        <MudTd DataLabel="Date Posted">@context.PostedDate.ToLocalTime().ToString("MM/dd/yyyy")</MudTd>
-        <MudTd DataLabel="Options">
-            <MudButton Color="Color.Primary" Variant="Variant.Outlined" OnClick="@(() => OnEdit(context.JobPostingId))" Size="Size.Small">
-                Edit
-            </MudButton>
-            <MudButton Color="Color.Error" Variant="Variant.Outlined" Size="Size.Small" Disabled="@isDeleting" OnClick="@(() => OnDelete(context.JobPostingId))" Class="ml-2">
-                Delete
-            </MudButton>
-        </MudTd>
-    </RowTemplate>
-
-    <PagerContent>
-        <MudTablePager />
-    </PagerContent>
-</MudTable>
- *@
+    </MudGrid>
+</MudContainer>
 
 @code {
     private string searchString1 = string.Empty;

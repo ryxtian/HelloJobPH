@@ -1,27 +1,39 @@
-﻿@page "/interview/initial"
-@using HelloJobPH.Employer.Services.Interview
-@inject IClientInterviewService _serviceInterview
+﻿@page "/Interview/initial"
+@using HelloJobPH.Employer.Services.Overview
+@inject NavigationManager Navigation
+@inject IClientInterviewService CandidateService
+
+
 <MudPaper Class="pa-4">
-    <MudTable Dense="true" Hover="true" Bordered="true" Breakpoint="Breakpoint.Sm" Items="@candidates">
+    <MudTable Dense="true" Hover="true" Bordered="true" Breakpoint="Breakpoint.Sm" Items="@initial">
         <HeaderContent>
             <MudTh><MudText Typo="Typo.subtitle2">Name</MudText></MudTh>
-            <MudTh><MudText Typo="Typo.subtitle2">Job Title</MudText></MudTh>
+            <MudTh><MudText Typo="Typo.subtitle2">Position</MudText></MudTh>
             <MudTh><MudText Typo="Typo.subtitle2">Status</MudText></MudTh>
             <MudTh><MudText Typo="Typo.subtitle2">Resume</MudText></MudTh>
-            <MudTh><MudText Typo="Typo.subtitle2">Date Applied</MudText></MudTh>
+            <MudTh><MudText Typo="Typo.subtitle2">Schedule Date</MudText></MudTh>
+            <MudTh><MudText Typo="Typo.subtitle2">Schedule Time</MudText></MudTh>
+            <MudTh><MudText Typo="Typo.subtitle2">Type</MudText></MudTh>
             <MudTh><MudText Typo="Typo.subtitle2">Action</MudText></MudTh>
         </HeaderContent>
 
         <RowTemplate>
-            <MudTd>@context.Firstname</MudTd>
+            <MudTd>@context.Firstname @context.Lastname</MudTd>
             <MudTd>@context.JobTitle</MudTd>
             <MudTd>@context.Status</MudTd>
-            <MudTd>@context.ResumeUrl</MudTd>
-            <MudTd>@context.DateApplied.ToString("dd MMM yyyy")</MudTd>
+            <MudTd><a href="@context.ResumeUrl" target="_blank">View Resume</a></MudTd>
+            <MudTd>@context.DateInterview.ToString("dd MMM yyyy")</MudTd>   @* Date of interview *@
+            <MudTd>@context.TimeInterview</MudTd>
+            <MudTd>@context.Type</MudTd>
             <MudTd>
                 <MudMenu Icon="@Icons.Material.Filled.MoreVert">
-                    <MudMenuItem>Accept</MudMenuItem>
-                    <MudMenuItem>Reject</MudMenuItem>
+                    <MudMenuItem>Reschedule</MudMenuItem>
+                    <MudMenuItem>No Apperance</MudMenuItem>
+                    <MudMenuItem>Technical</MudMenuItem>
+                    <MudMenuItem>Final</MudMenuItem>
+                    <MudMenuItem>Failed</MudMenuItem>
+                    <MudMenuItem>Delete</MudMenuItem>
+    <MudMenuItem OnClick="@(()=> NavigateToOverview(context.ApplicationId))">Overview</MudMenuItem>
                 </MudMenu>
             </MudTd>
         </RowTemplate>
@@ -33,18 +45,17 @@
 </MudPaper>
 
 @code {
-    private List<InterviewListDtos> candidates = new();
+    private List<InterviewListDtos> initial = new();
 
     protected override async Task OnInitializedAsync()
     {
-        candidates = await _serviceInterview.InitialList();
+        initial = await CandidateService.InitialList();
     }
 
-    private Color GetStatusColor(string status) =>
-        status switch
-        {
-            "Contacting" => Color.Success,
-            "Awaiting Review" => Color.Info,
-            _ => Color.Default
-        };
+    private void NavigateToOverview(int applicationId)
+    {
+        Navigation.NavigateTo($"/reviewapplicant/reviewapplicant/{applicationId}");
+    }
+
+
 }

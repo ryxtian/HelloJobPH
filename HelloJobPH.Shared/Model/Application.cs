@@ -13,12 +13,13 @@ namespace HelloJobPH.Shared.Model
     {
         [Key]
         public int ApplicationId { get; set; }
-        public string ResumeUrl { get; set; }
+        public string ResumeUrl { get; set; } = string.Empty;
         public DateTime DateApply { get; set; }
         public ApplicationStatus ApplicationStatus { get; set; }
         public int? JobPostId { get; set; }
-        public JobPosting JobPosting { get; set; }
-        public Applicant Applicant { get; set; }
+        public JobPosting? JobPosting { get; set; }
+        public Applicant? Applicant { get; set; }
+        public Interview? Interview { get; set; }
         public int ApplicantId { get; set; }
     }
 }

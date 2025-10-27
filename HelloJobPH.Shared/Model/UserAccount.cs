@@ -10,9 +10,9 @@ namespace HelloJobPH.Shared.Model
     public class UserAccount
     {
         public int UserAccountId { get; set; }
-        public string Email { get; set; }
-        public string Password { get; set; }
-        public string Role { get; set; }
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+        public string Role { get; set; } = string.Empty;
         public bool IsLoggedIn { get; set; } = false;
         public int userDetailsId { get; set; }
         public Applicant? Applicant { get; set; }

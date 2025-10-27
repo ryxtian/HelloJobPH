@@ -1,0 +1,86 @@
+﻿@using MudBlazor
+@using MudBlazor.Components
+@inject ISnackbar Snackbar
+@inject IClientCandidateService Service
+<MudDialog>
+    <DialogContent>
+
+        <MudForm @ref="_form" Model="@emailModel">
+            <!-- Interview Date -->
+            <MudDatePicker Label="Interview Date"
+                           @bind-Date="emailModel.InterviewDate"
+                           Required="true"
+                           RequiredError="Interview date is required"
+                           Class="mb-2"
+                           PickerVariant="PickerVariant.Dialog" />
+
+            <!-- Interview Time -->
+            <MudTimePicker Label="Interview Time"
+                           @bind-Time="emailModel.InterviewTime"
+                           Required="true"
+                           RequiredError="Interview time is required"
+                           Class="mb-2"
+                           PickerVariant="PickerVariant.Dialog" />
+
+            <MudTextField Label="Location" @bind-Value="emailModel.Location" Lines="3" TextArea="true" Required="true" />
+
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SendEmail">Send</MudButton>
+                <MudButton Color="Color.Secondary" Variant="Variant.Text" OnClick="Cancel">Cancel</MudButton>
+
+           
+        </MudForm>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public ApplicationListDtos Candidate { get; set; } = default!;
+
+    private MudForm _form;
+    private EmailModel emailModel = new();
+
+    protected override void OnInitialized()
+    {
+  
+        emailModel.InterviewDate = DateTime.Now.AddDays(1); // Default to tomorrow
+        emailModel.InterviewTime = TimeSpan.FromHours(9);   // Default to 9:00 AM
+    
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private async Task SendEmail()
+    {
+        await _form.Validate();
+        if (!_form.IsValid)
+        {
+            Snackbar.Add("Please fill all required fields.", Severity.Error);
+            return;
+        }
+
+        bool success = await Service.SendEmail(
+         Candidate.ApplicationId,
+         emailModel.InterviewDate!.Value.ToString("yyyy-MM-dd"),
+         emailModel.InterviewTime!.Value.ToString(@"hh\:mm"),
+         emailModel.Location
+     );
+
+        if (success)
+        {
+            Snackbar.Add("Email sent successfully.", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        else
+        {
+            Snackbar.Add("Failed to send email. Candidate not found.", Severity.Error);
+        }
+    }
+
+    public class EmailModel
+    {
+        public DateTime? InterviewDate { get; set; }
+        public TimeSpan? InterviewTime { get; set; }
+        public string? Location { get; set; }
+      
+    }
+}

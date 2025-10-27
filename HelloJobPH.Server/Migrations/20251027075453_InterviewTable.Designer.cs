@@ -4,6 +4,7 @@ using HelloJobPH.Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HelloJobPH.Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251027075453_InterviewTable")]
+    partial class InterviewTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -158,7 +161,7 @@ namespace HelloJobPH.Server.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("InterviewId"));
 
-                    b.Property<int?>("ApplicationId")
+                    b.Property<int>("ApplicationId")
                         .HasColumnType("int");
 
                     b.Property<int?>("HumanResourceId")
@@ -176,8 +179,7 @@ namespace HelloJobPH.Server.Migrations
                     b.HasKey("InterviewId");
 
                     b.HasIndex("ApplicationId")
-                        .IsUnique()
-                        .HasFilter("[ApplicationId] IS NOT NULL");
+                        .IsUnique();
 
                     b.HasIndex("HumanResourceId");
 
@@ -319,7 +321,9 @@ namespace HelloJobPH.Server.Migrations
                 {
                     b.HasOne("HelloJobPH.Shared.Model.Application", "Application")
                         .WithOne("Interview")
-                        .HasForeignKey("HelloJobPH.Shared.Model.Interview", "ApplicationId");
+                        .HasForeignKey("HelloJobPH.Shared.Model.Interview", "ApplicationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("HelloJobPH.Shared.Model.HumanResources", "HumanResource")
                         .WithMany("Interviews")

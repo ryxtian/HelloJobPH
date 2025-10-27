@@ -11,16 +11,16 @@ namespace HelloJobPH.Shared.Model
     {
         [Key]
         public int ApplicantId { get; set; }
-        public string Firstname { get; set; }
-        public string Middlename { get; set; }
-        public string Surname { get; set; }
-        public string Address { get; set; }
-        public string Phone { get; set; }
+        public string Firstname { get; set; } = string.Empty;
+        public string Middlename { get; set; }= string.Empty;
+        public string Surname { get; set; } = string.Empty;
+        public string Address { get; set; } = string.Empty;
+        public string Phone { get; set; } = string.Empty;
         public DateTime Birthday { get; set; }
         public int? HumanResourceId { get; set; }
         public int UserAccountId { get; set; }
         public HumanResources? HumanResources { get; set; }
-        public UserAccount UserAccount { get; set; }
-        public List<Application> Appications { get; set; }
+        public UserAccount? UserAccount { get; set; }
+        public List<Application>? Appications { get; set; }
     }
 }

@@ -13,12 +13,38 @@ namespace HelloJobPH.Server.Controllers
         {
             _service = service;
         }
-        [HttpGet]
+        [HttpGet("initial")]
         public async Task<IActionResult>InitialList()
         {
             try
             {
                 var request = await _service.InitialList();
+                return Ok(request);
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
+        }
+        [HttpGet("technical")]
+        public async Task<IActionResult> TechnicalList()
+        {
+            try
+            {
+                var request = await _service.TechnicalList();
+                return Ok(request);
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
+        }
+        [HttpGet("final")]
+        public async Task<IActionResult> FinalList()
+        {
+            try
+            {
+                var request = await _service.FinalList();
                 return Ok(request);
             }
             catch (Exception)

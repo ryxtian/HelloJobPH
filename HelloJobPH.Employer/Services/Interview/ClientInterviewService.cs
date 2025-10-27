@@ -11,20 +11,22 @@ namespace HelloJobPH.Employer.Services.Interview
         {
             _http = http;
         }
-        public Task<List<InterviewListDtos>> FinalList()
+        public async Task<List<InterviewListDtos>> FinalList()
         {
-            throw new NotImplementedException();
+            var result = await _http.GetFromJsonAsync<List<InterviewListDtos>>("api/Interview/final");
+            return result ?? [];
         }
 
         public async Task<List<InterviewListDtos>> InitialList()
         {
-            var result = await _http.GetFromJsonAsync<List<InterviewListDtos>>("api/Interview");
+            var result = await _http.GetFromJsonAsync<List<InterviewListDtos>>("api/Interview/initial");
             return result ?? [];
         }
 
-        public Task<List<InterviewListDtos>> TechnicalList()
+        public async Task<List<InterviewListDtos>> TechnicalList()
         {
-            throw new NotImplementedException();
+            var result = await _http.GetFromJsonAsync<List<InterviewListDtos>>("api/Interview/technical");
+            return result ?? [];
         }
     }
 }

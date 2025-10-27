@@ -10,7 +10,7 @@ namespace HelloJobPH.Shared.Enums
     {
         Pending,
         Viewed,
-        Rejected,
+        Accepted,
         Initial,
         Technical,
         Final,
@@ -18,6 +18,9 @@ namespace HelloJobPH.Shared.Enums
         Hired,
         Withdrawn,
         OfferDeclined,
-        Reschedule
+        Reschedule,
+        Rejected,
+        NoAppearance,
+        DeclinedInterview,
     }
 }

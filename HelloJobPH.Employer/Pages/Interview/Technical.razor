@@ -1,6 +1,56 @@
-﻿@page "/interview/technical"
-<h3>Technical</h3>
+﻿@page "/Interview/technical"
+@inject NavigationManager Navigation
+@inject IClientInterviewService CandidateService
+
+<MudPaper Class="pa-4">
+    <MudTable Dense="true" Hover="true" Bordered="true" Breakpoint="Breakpoint.Sm" Items="@initial">
+        <HeaderContent>
+            <MudTh><MudText Typo="Typo.subtitle2">Name</MudText></MudTh>
+            <MudTh><MudText Typo="Typo.subtitle2">Position</MudText></MudTh>
+            <MudTh><MudText Typo="Typo.subtitle2">Status</MudText></MudTh>
+            <MudTh><MudText Typo="Typo.subtitle2">Resume</MudText></MudTh>
+            <MudTh><MudText Typo="Typo.subtitle2">Date</MudText></MudTh>
+            <MudTh><MudText Typo="Typo.subtitle2">Type</MudText></MudTh>
+            <MudTh><MudText Typo="Typo.subtitle2">Action</MudText></MudTh>
+        </HeaderContent>
+
+        <RowTemplate>
+            <MudTd>@context.Firstname @context.Lastname</MudTd>
+            <MudTd>@context.JobTitle</MudTd>
+            <MudTd>@context.Status</MudTd>
+            <MudTd><a href="@context.ResumeUrl" target="_blank">View Resume</a></MudTd>
+            <MudTd>@context.DateApplied.ToString("dd MMM yyyy")</MudTd>
+            <MudTd>@context.Type</MudTd>
+            <MudTd>
+                <MudMenu Icon="@Icons.Material.Filled.MoreVert">
+        
+                    <MudMenuItem>Reschedule</MudMenuItem>
+                    <MudMenuItem>No Apperance</MudMenuItem>
+                    <MudMenuItem>Final</MudMenuItem>
+                    <MudMenuItem>Failed</MudMenuItem>
+                    <MudMenuItem>Delete</MudMenuItem>
+                    <MudMenuItem OnClick="@(() => NavigateToOverview(context.ApplicationId))">Overview</MudMenuItem>
+
+                </MudMenu>
+            </MudTd>
+        </RowTemplate>
+
+        <NoRecordsContent>
+            <MudText Typo="Typo.body1" Align="Align.Center">No candidates found.</MudText>
+        </NoRecordsContent>
+    </MudTable>
+</MudPaper>
 
 @code {
+    private List<InterviewListDtos> initial = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        initial = await CandidateService.TechnicalList();
+    }
+    private void NavigateToOverview(int applicationId)
+    {
+        Navigation.NavigateTo($"/reviewapplicant/reviewapplicant/{applicationId}");
+    }
 
 }
