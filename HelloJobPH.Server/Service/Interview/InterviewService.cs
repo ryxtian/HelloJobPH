@@ -5,6 +5,7 @@ using HelloJobPH.Shared.Enums;
 using HelloJobPH.Shared.Model;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Security.Claims;
 using static System.Net.Mime.MediaTypeNames;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
@@ -14,17 +15,25 @@ namespace HelloJobPH.Server.Service.Interview
     {
         private readonly ApplicationDbContext _context;
         private readonly IEmailService _emailService;
-        public InterviewService(ApplicationDbContext context, IEmailService emailService)
+        IHttpContextAccessor _httpContextAccessor;
+        public InterviewService(ApplicationDbContext context, IEmailService emailService, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
             _emailService = emailService;
+            _httpContextAccessor = httpContextAccessor;
         }
         public async Task<List<InterviewListDtos>> FinalList()
         {
+            var user = _httpContextAccessor.HttpContext?.User;
+
+            // ✅ Get the user’s ID from claims
+            var userIdClaim = user?.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdClaim, out int userId))
+                throw new Exception("Invalid or missing user ID in claims.");
             try
             {
                 var result = await _context.Application
-                    .Where(a => a.ApplicationStatus == ApplicationStatus.Final && a.IsDeleted ==0)
+                    .Where(a => a.ApplicationStatus == ApplicationStatus.Final && a.IsDeleted ==0&&a.HumanResourceId == userId)
                     .Select(a => new InterviewListDtos
                     {
                         ApplicationId = a.ApplicationId,
@@ -52,10 +61,16 @@ namespace HelloJobPH.Server.Service.Interview
 
         public async Task<List<InterviewListDtos>> InitialList()
         {
+            var user = _httpContextAccessor.HttpContext?.User;
+
+            // ✅ Get the user’s ID from claims
+            var userIdClaim = user?.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdClaim, out int userId))
+                throw new Exception("Invalid or missing user ID in claims.");
             try
             {
                 var result = await _context.Application
-                    .Where(a => a.ApplicationStatus == ApplicationStatus.Initial && a.IsDeleted == 0)
+                    .Where(a => a.ApplicationStatus == ApplicationStatus.Initial && a.IsDeleted == 0 && a.HumanResourceId == userId)
                     .Select(a => new InterviewListDtos
                     {
                         ApplicationId = a.ApplicationId,
@@ -83,10 +98,16 @@ namespace HelloJobPH.Server.Service.Interview
 
         public async Task<List<InterviewListDtos>> TechnicalList()
         {
+            var user = _httpContextAccessor.HttpContext?.User;
+
+            // ✅ Get the user’s ID from claims
+            var userIdClaim = user?.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdClaim, out int userId))
+                throw new Exception("Invalid or missing user ID in claims.");
             try
             {
                 var result = await _context.Application
-                    .Where(a => a.ApplicationStatus == ApplicationStatus.Technical && a.IsDeleted == 0)
+                    .Where(a => a.ApplicationStatus == ApplicationStatus.Technical && a.IsDeleted == 0 && a.HumanResourceId == userId)
                     .Select(a => new InterviewListDtos
                     {
                         ApplicationId = a.ApplicationId,

@@ -1,0 +1,37 @@
+﻿
+@layout LandingLayout
+@page "/applicant/login"
+@inject NavigationManager Navigation
+
+<MudPaper Elevation="4" Class="pa-6 mx-auto mt-12" MaxWidth="400px">
+    <MudText Typo="Typo.h5" Class="mb-4">Applicant Portal Login</MudText>
+
+
+    <MudTextField @bind-Value="Email" Label="Email" Required="true" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Email" />
+
+    <MudTextField @bind-Value="Password" Label="Password" InputType="@(_showPassword? InputType.Text: InputType.Password)" Required="true"
+                  Adornment="Adornment.End" AdornmentIcon="@(_showPassword? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                  OnAdornmentClick="@TogglePasswordVisibility" />
+
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-4" FullWidth="true" OnClick="LoginUser">Login</MudButton>
+
+    <MudText Class="mt-2">
+        <MudLink Href="/forgot-password">Forgot Password?</MudLink> |
+        <MudLink Href="/register">Sign Up</MudLink>
+    </MudText>
+</MudPaper>
+
+@code {
+    private string Email;
+    private string Password;
+    private string SelectedRole = "Applicant";
+    private bool _showPassword = false;
+
+    private void TogglePasswordVisibility() => _showPassword = !_showPassword;
+
+    private void LoginUser()
+    {
+        // TODO: Add login logic based on SelectedRole
+        Navigation.NavigateTo("/dashboard");
+    }
+}

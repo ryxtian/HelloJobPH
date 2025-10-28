@@ -2,7 +2,7 @@
 @using HelloJobPH.Employer.Pages.Shared.Dialogs
 @inject IClientCandidateService CandidateService
 @inject IDialogService DialogService
-
+@attribute [Authorize(Roles ="Admin")]
 <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-4">
     <MudPaper Elevation="2" Class="pa-6">
         <MudStack Spacing="4">

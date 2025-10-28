@@ -2,6 +2,7 @@
 using HelloJobPH.Server.Service.Auth;
 using HelloJobPH.Server.Services;
 using HelloJobPH.Shared.DTOs;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HelloJobPH.Server.Controllers
@@ -16,17 +17,43 @@ namespace HelloJobPH.Server.Controllers
             _authService = authService;
         }
 
+        //[HttpPost("login")]
+        //public async Task<IActionResult> Login([FromBody] LoginDtos user)
+        //{
+        //    try
+        //    {
+        //        var token = await _authService.LoginAsync(user.Email, user.Password);
+        //        return Ok(new { token });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest(new { message = ex.Message });
+        //    }
+        //}
+
+
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginDtos user)
+        public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
             try
             {
-                var token = await _authService.LoginAsync(user.Email, user.Password);
-                return Ok(new { token });
+                var token = await _authService.LoginAsync(request.Email, request.Password);
+
+                var cookieOptions = new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true, // Only for HTTPS
+                    SameSite = SameSiteMode.Strict,
+                    Expires = DateTime.UtcNow.AddHours(1)
+                };
+
+                Response.Cookies.Append("jwtToken", token, cookieOptions);
+
+                return Ok(new { message = "Login successful", token });
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(new { error = ex.Message });
             }
         }
     }

@@ -5,6 +5,7 @@ using HelloJobPH.Shared.DTOs;
 using HelloJobPH.Shared.Enums;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace HelloJobPH.Server.Service.Candidate
 {
@@ -12,19 +13,28 @@ namespace HelloJobPH.Server.Service.Candidate
     {
         private readonly IEmailService _emailService;
         private readonly ApplicationDbContext _context;
-        public CandidateService(ApplicationDbContext context, IEmailService emailService)
+        IHttpContextAccessor _httpContextAccessor;
+        public CandidateService(ApplicationDbContext context, IEmailService emailService, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
             _emailService = emailService;
+            _httpContextAccessor = httpContextAccessor;
         }
         public async Task<bool> CandidateAccepttAsync(int id)
         {
+            var user = _httpContextAccessor.HttpContext?.User;
+
+            // ✅ Get the user’s ID from claims
+            var userIdClaim = user?.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdClaim, out int userId))
+                throw new Exception("Invalid or missing user ID in claims.");
             var response = await _context.Application.FirstOrDefaultAsync(i => i.ApplicationId == id);
             if(response ==null)
             {
                 throw new Exception("Application not found.");
             }
             response.ApplicationStatus = ApplicationStatus.Accepted;
+            response.HumanResourceId = userId;
              _context.Update(response);
             await _context.SaveChangesAsync();
             return true;
@@ -79,8 +89,14 @@ namespace HelloJobPH.Server.Service.Candidate
         }
         public async Task<List<ApplicationListDtos>> RetrieveAllAcceptedCandidate()
         {
+            var user = _httpContextAccessor.HttpContext?.User;
+
+            // ✅ Get the user’s ID from claims
+            var userIdClaim = user?.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdClaim, out int userId))
+                throw new Exception("Invalid or missing user ID in claims.");
             var result = await _context.Application
-                .Where(a => a.ApplicationStatus == ApplicationStatus.Accepted)
+                .Where(a => a.ApplicationStatus == ApplicationStatus.Accepted && a.HumanResourceId == userId)
                 .Select(a => new ApplicationListDtos
                 {
                     ApplicationId = a.ApplicationId,
