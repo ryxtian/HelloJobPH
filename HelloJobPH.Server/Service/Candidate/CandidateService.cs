@@ -114,6 +114,8 @@ namespace HelloJobPH.Server.Service.Candidate
 
         public async Task<bool> SendInitialEmail(int applicationId, string date, string time, string? location)
         {
+
+            bool isTaken = await _context.Interview.AnyAsync(d => d.ScheduledTime = time);
             // 1️⃣ Get candidate details via navigation properties
             var application = await _context.Application
                 .Include(a => a.Applicant)

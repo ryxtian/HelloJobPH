@@ -3,7 +3,7 @@
 @inject AuthenticationStateProvider AuthProvider
 @inject NavigationManager Navigation
 @inject IClientDashboardService DashboardService
-@attribute [Authorize]
+@attribute [Authorize(Roles ="Admin")]
 
 @if (isLoading)
 {
@@ -100,7 +100,7 @@ else
             }
             else
             {
-                Navigation.NavigateTo("/login", true);
+                Navigation.NavigateTo("/", true);
                 return;
             }
 

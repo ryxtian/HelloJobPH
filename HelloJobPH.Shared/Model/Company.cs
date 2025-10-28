@@ -14,6 +14,10 @@ namespace HelloJobPH.Shared.Model
         public string Email { get; set; } = string.Empty;
         public string Phone { get; set; } = string.Empty;
         public string Website { get; set; } = string.Empty;
+        public string OwnerName { get; set; }=string.Empty;
+        public string OwnerEmail { get; set; }= string.Empty;
+        public string OwnerPhone { get; set; } = string.Empty;
+
 
       
         public string TIN { get; set; } = string.Empty; // Tax Identification Number (BIR)
