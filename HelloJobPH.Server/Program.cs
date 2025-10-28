@@ -30,6 +30,24 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+//var jwtKey = builder.Configuration["Jwt:Key"];
+//var jwtIssuer = builder.Configuration["Jwt:Issuer"];
+//var jwtAudience = builder.Configuration["Jwt:Audience"];
+
+//builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+//    .AddJwtBearer(options =>
+//    {
+//        options.TokenValidationParameters = new TokenValidationParameters
+//        {
+//            ValidateIssuer = true,
+//            ValidateAudience = true,
+//            ValidateIssuerSigningKey = true,
+//            ValidIssuer = jwtIssuer,
+//            ValidAudience = jwtAudience,
+//            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey!))
+//        };
+//    });
+
 var jwtKey = builder.Configuration["Jwt:Key"];
 var jwtIssuer = builder.Configuration["Jwt:Issuer"];
 var jwtAudience = builder.Configuration["Jwt:Audience"];
@@ -45,6 +63,23 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = jwtIssuer,
             ValidAudience = jwtAudience,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey!))
+        };
+
+        // ? Read token from cookie instead of Authorization header
+        options.Events = new Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                // Check if the JWT is stored in the "jwtToken" cookie
+                var token = context.Request.Cookies["jwtToken"];
+
+                if (!string.IsNullOrEmpty(token))
+                {
+                    context.Token = token; // ? Tell ASP.NET Core to use this token
+                }
+
+                return Task.CompletedTask;
+            }
         };
     });
 
