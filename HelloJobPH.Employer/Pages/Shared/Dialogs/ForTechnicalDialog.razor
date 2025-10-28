@@ -2,6 +2,9 @@
 @using MudBlazor.Components
 @inject ISnackbar Snackbar
 @inject IClientCandidateService Service
+@inject IClientInterviewService Interview
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
 <MudDialog>
     <DialogContent>
 
@@ -24,32 +27,32 @@
 
             <MudTextField Label="Location" @bind-Value="emailModel.Location" Lines="3" TextArea="true" Required="true" />
 
-            <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SendEmail">Send</MudButton>
-                <MudButton Color="Color.Secondary" Variant="Variant.Text" OnClick="Cancel">Cancel</MudButton>
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="ForTechnical">Send</MudButton>
+            <MudButton Color="Color.Secondary" Variant="Variant.Text" OnClick="Cancel">Cancel</MudButton>
 
-           
+
         </MudForm>
     </DialogContent>
 </MudDialog>
 
 @code {
     [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
-    [Parameter] public ApplicationListDtos Candidate { get; set; } = default!;
+    [Parameter] public InterviewListDtos Candidate { get; set; } = default!;
 
     private MudForm _form;
     private EmailModel emailModel = new();
 
     protected override void OnInitialized()
     {
-  
-        emailModel.InterviewDate = DateTime.Now.AddDays(1); // Default to tomorrow
-        emailModel.InterviewTime = TimeSpan.FromHours(9);   // Default to 9:00 AM
-    
+
+        emailModel.InterviewDate = DateTime.Now.AddDays(1);
+        emailModel.InterviewTime = TimeSpan.FromHours(9);
+
     }
 
     private void Cancel() => MudDialog.Cancel();
 
-    private async Task SendEmail()
+    private async Task ForTechnical()
     {
         await _form.Validate();
         if (!_form.IsValid)
@@ -58,7 +61,7 @@
             return;
         }
 
-        bool success = await Service.ForInitial(
+        bool success = await Interview.ForTechnical(
          Candidate.ApplicationId,
          emailModel.InterviewDate!.Value.ToString("yyyy-MM-dd"),
          emailModel.InterviewTime!.Value.ToString(@"hh\:mm"),
@@ -68,12 +71,15 @@
         if (success)
         {
             Snackbar.Add("Email sent successfully.", Severity.Success);
+            await JS.InvokeVoidAsync("location.reload");
             MudDialog.Close(DialogResult.Ok(true));
+
         }
         else
         {
             Snackbar.Add("Failed to send email. Candidate not found.", Severity.Error);
         }
+
     }
 
     public class EmailModel
@@ -81,6 +87,6 @@
         public DateTime? InterviewDate { get; set; }
         public TimeSpan? InterviewTime { get; set; }
         public string? Location { get; set; }
-      
+
     }
 }

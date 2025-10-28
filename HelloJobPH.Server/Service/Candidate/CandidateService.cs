@@ -37,79 +37,90 @@ namespace HelloJobPH.Server.Service.Candidate
 
         public async Task<List<ApplicationListDtos>> RetrieveAllCandidate()
         {
-            var result = await (
-                from app in _context.Application
-                join applicant in _context.Applicant on app.ApplicantId equals applicant.ApplicantId
-                join user in _context.UserAccount on applicant.UserAccountId equals user.UserAccountId
-                join job in _context.JobPosting on app.JobPostId equals job.JobPostingId
-                where app.ApplicationStatus == ApplicationStatus.Pending
-                select new ApplicationListDtos
+            var result = await _context.Application
+                .Where(a => a.ApplicationStatus == ApplicationStatus.Pending)
+                .Select(a => new ApplicationListDtos
                 {
-                    ApplicationId = app.ApplicationId,
-                    Type = job.EmploymentType,
-                    Firstname = applicant.Firstname,
-                    Lastname = applicant.Surname,
-                    Email = user.Email,
-                    JobTitle = job.Title,
-                    //CompanyName = job.CompanyName,
-                    DateApplied = app.DateApply,
-                    Status = app.ApplicationStatus
-                }
-            ).ToListAsync();
+                    ApplicationId = a.ApplicationId,
+                    Type = a.JobPosting.EmploymentType,
+                    Firstname = a.Applicant.Firstname,
+                    Lastname = a.Applicant.Surname,
+                    Email = a.Applicant.UserAccount.Email,
+                    JobTitle = a.JobPosting.Title,
+                    DateApplied = a.DateApply,
+                    Status = a.ApplicationStatus
+                })
+                .ToListAsync();
 
             return result;
+        
+
+            //var result = await (
+            //    from app in _context.Application
+            //    join applicant in _context.Applicant on app.ApplicantId equals applicant.ApplicantId
+            //    join user in _context.UserAccount on applicant.UserAccountId equals user.UserAccountId
+            //    join job in _context.JobPosting on app.JobPostId equals job.JobPostingId
+            //    where app.ApplicationStatus == ApplicationStatus.Pending
+            //    select new ApplicationListDtos
+            //    {
+            //        ApplicationId = app.ApplicationId,
+            //        Type = job.EmploymentType,
+            //        Firstname = applicant.Firstname,
+            //        Lastname = applicant.Surname,
+            //        Email = user.Email,
+            //        JobTitle = job.Title,
+            //        //CompanyName = job.CompanyName,
+            //        DateApplied = app.DateApply,
+            //        Status = app.ApplicationStatus
+            //    }
+            //).ToListAsync();
+
+            //return result;
         }
         public async Task<List<ApplicationListDtos>> RetrieveAllAcceptedCandidate()
         {
-            var result = await (
-                from app in _context.Application
-                join applicant in _context.Applicant on app.ApplicantId equals applicant.ApplicantId
-                join user in _context.UserAccount on applicant.UserAccountId equals user.UserAccountId
-                join job in _context.JobPosting on app.JobPostId equals job.JobPostingId
-                where app.ApplicationStatus == ApplicationStatus.Accepted
-                select new ApplicationListDtos
+            var result = await _context.Application
+                .Where(a => a.ApplicationStatus == ApplicationStatus.Accepted)
+                .Select(a => new ApplicationListDtos
                 {
-                    ApplicationId = app.ApplicationId,
-                    Type = job.EmploymentType,
-                    Firstname = applicant.Firstname,
-                    Lastname = applicant.Surname,
-                    Email = user.Email,
-                    JobTitle = job.Title,
-                    //CompanyName = job.CompanyName,
-                    DateApplied = app.DateApply,
-                    Status = app.ApplicationStatus
-                }
-            ).ToListAsync();
-
+                    ApplicationId = a.ApplicationId,
+                    Type = a.JobPosting.EmploymentType,
+                    Firstname = a.Applicant.Firstname,
+                    Lastname = a.Applicant.Surname,
+                    Email = a.Applicant.UserAccount.Email,
+                    JobTitle = a.JobPosting.Title,
+                    DateApplied = a.DateApply,
+                    Status = a.ApplicationStatus
+                }).ToListAsync();
             return result;
         }
 
 
         public async Task<bool> SendInitialEmail(int applicationId, string date, string time, string? location)
         {
-            // 1️⃣ Get candidate details
-            var candidate = await (from user in _context.UserAccount
-                                   join applicant in _context.Applicant on user.UserAccountId equals applicant.UserAccountId
-                                   join application in _context.Application on applicant.ApplicantId equals application.ApplicantId
-                                   join job in _context.JobPosting on application.JobPostId equals job.JobPostingId
-                                   where application.ApplicationId == applicationId
-                                   select new CandidateEmailDto
-                                   {
-                                       Email = user.Email,
-                                       Firstname = applicant.Firstname,
-                                       Surname = applicant.Surname,
-                                       JobTitle = job.Title
-                                   }).FirstOrDefaultAsync();
+            // 1️⃣ Get candidate details via navigation properties
+            var application = await _context.Application
+                .Include(a => a.Applicant)
+                    .ThenInclude(a => a.UserAccount)
+                .Include(a => a.JobPosting)
+                .FirstOrDefaultAsync(a => a.ApplicationId == applicationId);
 
-            if (candidate == null || string.IsNullOrEmpty(candidate.Email))
+            if (application == null || string.IsNullOrEmpty(application.Applicant?.UserAccount?.Email))
                 return false;
 
-            // 2️⃣ Create email content
+            var candidate = new CandidateEmailDto
+            {
+                Email = application.Applicant.UserAccount.Email,
+                Firstname = application.Applicant.Firstname,
+                Surname = application.Applicant.Surname,
+                JobTitle = application.JobPosting.Title
+            };
+
             var subject = $"Initial Interview Invitation for {candidate.JobTitle}";
             var body = $@"Dear {candidate.Firstname},
 
 Thank you for applying for the {candidate.JobTitle} position at [Company Name].
-You are invited to attend an Initial Interview on {time:MMMM dd, yyyy} at {date:hh\\:mm}.
+You are invited to attend an Initial Interview on {date} at {time}.
 
 Location/Platform: {location}
 
@@ -120,16 +131,12 @@ Best regards,
 [Your Position]
 [Company Name]";
 
-            // 3️⃣ Send email using injected service
             var result = _emailService.SendEmailAsync(candidate.Email, subject, body);
-            if(result is null)
-            {
-                return false;
-            }
-            return true;
+
+            return result != null;
         }
 
-        // DTO to avoid anonymous type issues
+
         public class CandidateEmailDto
         {
             public string Email { get; set; } = default!;

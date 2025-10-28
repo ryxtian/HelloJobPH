@@ -74,7 +74,7 @@ namespace HelloJobPH.Employer.Services.Candidate
             }
         }
 
-        public async Task<bool> SendEmail(int id, string time, string date,string?location)
+        public async Task<bool> ForInitial(int id, string time, string date,string?location)
         {
             var url = $"api/Candidate/SendEmail{id}?date={date:yyyy-MM-dd}&time={time}&location={Uri.EscapeDataString(location ?? "")}";
 
@@ -85,5 +85,6 @@ namespace HelloJobPH.Employer.Services.Candidate
             }
             return false;
         }
+
     }
 }

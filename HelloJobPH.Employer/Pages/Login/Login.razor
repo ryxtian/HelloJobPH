@@ -1,6 +1,5 @@
 ﻿@page "/"
 @layout LandingLayout
-
 @using HelloJobPH.Employer.Services.Authentication
 @using HelloJobPH.Shared.DTOs
 @inject IClientIAuthService AuthService
@@ -8,18 +7,60 @@
 @inject NavigationManager Nav
 
 <MudContainer MaxWidth="MaxWidth.ExtraSmall" Class="mt-12">
-    <MudPaper Elevation="4" Class="pa-6">
-        <MudText Typo="Typo.h5" Align="Align.Center" GutterBottom="true" Class="mb-4">
-            Welcome Admin
-        </MudText>
+    <MudPaper Elevation="8" Class="pa-8 rounded-lg">
+        <MudStack Spacing="4">
+            <!-- Header Section -->
+            <MudStack Spacing="2" AlignItems="AlignItems.Center" Class="mb-2">
+                <MudAvatar Color="Color.Primary" Size="Size.Large" Class="mb-2">
+                    <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" Size="Size.Large" />
+                </MudAvatar>
+                <MudText Typo="Typo.h4" Align="Align.Center" Class="fw-bold">
+                    Welcome Admin
+                </MudText>
+                <MudText Typo="Typo.body2" Align="Align.Center" Color="Color.Secondary">
+                    Sign in to access your dashboard
+                </MudText>
+            </MudStack>
 
-        <EditForm Model="@model" OnValidSubmit="HandleLogin">
-            <DataAnnotationsValidator />
-            <MudTextField Label="Email" @bind-Value="model.Email" Required="true" />
-            <MudTextField Label="Password" @bind-Value="model.Password" InputType="InputType.Password" Required="true" />
-            <MudButton ButtonType="ButtonType.Submit" FullWidth="true" Color="Color.Primary">Login</MudButton>
-        </EditForm>
+            <MudDivider Class="my-2" />
+
+            <!-- Login Form -->
+            <EditForm Model="@model" OnValidSubmit="HandleLogin">
+                <DataAnnotationsValidator />
+                <MudStack Spacing="3">
+                    <MudTextField Label="Email"
+                                  @bind-Value="model.Email"
+                                  Required="true"
+                                  Variant="Variant.Outlined"
+                                  Adornment="Adornment.Start"
+                                  AdornmentIcon="@Icons.Material.Filled.Email"
+                                  HelperText="Enter your admin email address" />
+
+                    <MudTextField Label="Password"
+                                  @bind-Value="model.Password"
+                                  InputType="InputType.Password"
+                                  Required="true"
+                                  Variant="Variant.Outlined"
+                                  Adornment="Adornment.Start"
+                                  AdornmentIcon="@Icons.Material.Filled.Lock"
+                                  HelperText="Enter your password" />
+
+                    <MudButton ButtonType="ButtonType.Submit"
+                               FullWidth="true"
+                               Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               Size="Size.Large"
+                               Class="mt-2"
+                               StartIcon="@Icons.Material.Filled.Login">
+                        Sign In
+                    </MudButton>
+                </MudStack>
+            </EditForm>
+        </MudStack>
     </MudPaper>
+
+    <!-- Footer Text -->
+    <MudText Typo="Typo.caption" Align="Align.Center" Color="Color.Secondary" Class="mt-4">
+        Protected admin access only
+    </MudText>
 </MudContainer>
-
-

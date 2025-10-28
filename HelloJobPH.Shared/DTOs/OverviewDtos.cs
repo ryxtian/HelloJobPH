@@ -19,6 +19,7 @@ namespace HelloJobPH.Shared.DTOs
 
 
         public string? JobTitle { get; set; }
+        public string? JobRequirement { get; set; }
         public string? LocationOfjob { get; set; }
         public decimal? SalaryFrom { get; set; }
         public decimal? SalaryTo { get; set; }

@@ -13,57 +13,56 @@ namespace HelloJobPH.Server.Service.Overview
         }
         public async Task<OverviewDtos?> ListOverview(int id)
         {
-            var result = await (from applicant in _context.Applicant
-                                join application in _context.Application on applicant.ApplicantId equals application.ApplicantId
-                                join job in _context.JobPosting on application.JobPostId equals job.JobPostingId
-                                where application.ApplicationId == id
-                                select new OverviewDtos
-                                {
-                                    ApplicantId = applicant.ApplicantId,
-                                    Firstname = applicant.Firstname,
-                                    Lastname = applicant.Surname,
-                                    Phone = applicant.Phone,
-                                    //Email = applicant.Email,
-                                    Location = applicant.Address,
+            var result = await _context.Application
 
-                                    JobTitle = job.Title,
-                                    SalaryFrom = job.SalaryFrom,
-                                    SalaryTo = job.SalaryTo,
-                                    LocationOfjob = job.Location,
-                                    EmployementType = job.EmploymentType,
-                                    JobPostedDate = job.PostedDate.ToString("yyyy-MM-dd"),
-                                    JobDescription = job.Description,
+                .Where(a => a.ApplicationId == id)
+                .Select(a => new OverviewDtos
+                {
+                    ApplicantId = a.Applicant.ApplicantId,
+                    Firstname = a.Applicant.Firstname,
+                    Lastname = a.Applicant.Surname,
+                    Phone = a.Applicant.Phone,
+                    Location = a.Applicant.Address,
 
-                                    WorkExperiences = _context.WorkExperience
-                                        .Where(w => w.ApplicantId == applicant.ApplicantId)
-                                        .Select(w => new WorkExperienceDtos
-                                        {
-                                            CompanyName = w.CompanyName,
-                                            PositionTitle = w.PositionTitle,
-                                            Department = w.Department,
-                                            StartDate = w.StartDate,
-                                            EndDate = w.EndDate,
-                                            IsPresent = w.IsPresent,
-                                            Responsibilities = w.Responsibilities,
-                                            CompanyAddress = w.CompanyAddress
-                                        }).ToList(),
-                                    EducationalAttainment = _context.EducationalAttainment
-                                        .Where(w => w.ApplicantId == applicant.ApplicantId)
-                                        .Select(w => new EducationalAttainmentDtos
-                                        {
-                                            SchoolName = w.SchoolName,
-                                            Degree = w.Degree,
-                                            YearStarted = w.YearStarted,
-                                            YearEnded = w.YearEnded,
-                                            Level = w.Level,
-                                            IsGraduated = w.IsGraduated,
-                                      
-                                        }).ToList(),
+                    JobTitle = a.JobPosting.Title,
+                    SalaryFrom = a.JobPosting.SalaryFrom,
+                    SalaryTo = a.JobPosting.SalaryTo,
+                    LocationOfjob = a.JobPosting.Location,
+                    EmployementType = a.JobPosting.EmploymentType,
+                    JobPostedDate = a.JobPosting.PostedDate.ToString("yyyy-MM-dd"),
+                    JobDescription = a.JobPosting.Description,
+                    JobRequirement = a.JobPosting.JobRequirements,
 
-                                }).FirstOrDefaultAsync();
+                    WorkExperiences = a.Applicant.WorkExperiences
+                        .Select(w => new WorkExperienceDtos
+                        {
+                            CompanyName = w.CompanyName,
+                            PositionTitle = w.PositionTitle,
+                            Department = w.Department,
+                            StartDate = w.StartDate,
+                            EndDate = w.EndDate,
+                            IsPresent = w.IsPresent,
+                            Responsibilities = w.Responsibilities,
+                            CompanyAddress = w.CompanyAddress
+                        }).ToList(),
+
+                    EducationalAttainment = a.Applicant.EducationalAttainments
+                        .Select(e => new EducationalAttainmentDtos
+                        {
+                            SchoolName = e.SchoolName,
+                            Degree = e.Degree,
+                            YearStarted = e.YearStarted,
+                            YearEnded = e.YearEnded,
+                            Level = e.Level,
+                            IsGraduated = e.IsGraduated
+                        }).ToList()
+                })
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
 
             return result;
         }
+
 
 
 

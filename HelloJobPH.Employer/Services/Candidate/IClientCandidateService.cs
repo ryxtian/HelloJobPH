@@ -9,6 +9,7 @@ namespace HelloJobPH.Employer.Services.Candidate
         Task<List<ApplicationListDtos>> RetrieveAllCandidate();
         Task<List<ApplicationListDtos>> RetrieveAllAcceptedCandidate();
 
-        Task<bool> SendEmail(int applicationId, string interviewDate, string interviewTime, string? location);
+        Task<bool> ForInitial(int applicationId, string interviewDate, string interviewTime, string? location);
+    
     }
 }

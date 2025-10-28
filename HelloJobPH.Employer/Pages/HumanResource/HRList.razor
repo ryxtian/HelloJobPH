@@ -5,41 +5,119 @@
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 
-<MudButton OnClick="AddNewRecruiter" Variant="Variant.Filled" Color="Color.Primary" Class="mb-4">Add New Recruiter</MudButton>
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-6">
+    <!-- Header Section -->
+    <MudPaper Elevation="0" Class="pa-4 mb-4">
+        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+            <MudStack Spacing="1">
+                <MudText Typo="Typo.h4" Class="fw-bold">
+                    <MudIcon Icon="@Icons.Material.Filled.People" Class="mr-2" />
+                    Human Resource Management
+                </MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                    Manage your recruitment team members
+                </MudText>
+            </MudStack>
+            <MudButton 
+                OnClick="AddNewRecruiter" 
+                Variant="Variant.Filled" 
+                Color="Color.Primary" 
+                Size="Size.Large"
+                StartIcon="@Icons.Material.Filled.PersonAdd">
+                Add New Recruiter
+            </MudButton>
+        </MudStack>
+    </MudPaper>
 
-
-
-
-<MudContainer Class="mt-4">
-    <MudText Typo="Typo.h5" GutterBottom="true">Human Resource</MudText>
-
+    <!-- Content Section -->
     @if (HumanResources == null)
     {
-        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+        <MudPaper Class="pa-8" Elevation="0">
+            <MudStack AlignItems="AlignItems.Center" Spacing="3">
+                <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+                <MudText Typo="Typo.body1" Color="Color.Secondary">Loading recruiters...</MudText>
+            </MudStack>
+        </MudPaper>
     }
     else if (!HumanResources.Any())
     {
-        <MudText>No available.</MudText>
+        <MudPaper Class="pa-12" Elevation="0">
+            <MudStack AlignItems="AlignItems.Center" Spacing="3">
+                <MudIcon Icon="@Icons.Material.Filled.PersonOff" Size="Size.Large" Color="Color.Secondary" Style="font-size: 4rem;" />
+                <MudText Typo="Typo.h6" Color="Color.Secondary">No recruiters available</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">Get started by adding your first recruiter</MudText>
+                <MudButton 
+                    OnClick="AddNewRecruiter" 
+                    Variant="Variant.Filled" 
+                    Color="Color.Primary"
+                    StartIcon="@Icons.Material.Filled.PersonAdd"
+                    Class="mt-2">
+                    Add Recruiter
+                </MudButton>
+            </MudStack>
+        </MudPaper>
     }
     else
     {
-        <MudGrid>
+        <MudGrid Spacing="3">
             @foreach (var hr in HumanResources)
             {
                 <MudItem xs="12" sm="6" md="4" lg="3">
-                    <MudCard Class="mb-4">
-                    
-                        <MudCardMedia Image="images/door.jpg" Height="200" /> @* -----------IMAGE OF HUMAN RESOURCE----------------- *@             
-                        <MudCardContent>
-                            <MudText Typo="Typo.h6">@hr.Firstname @hr.Lastname</MudText>
-                            <MudText Typo="Typo.body2" Class="mb-2">@hr.JobTitle</MudText>
-                            <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                @hr.Email
-                            </MudText>
+                    <MudCard Elevation="2" Class="rounded-lg" Style="height: 100%;">
+                        <!-- Card Header with Image -->
+                        <MudCardMedia Image="images/door.jpg" Height="180" />
+                        
+                        <!-- Profile Badge Overlay -->
+                        <div style="margin-top: -40px; text-align: center; position: relative; z-index: 1;">
+                            <MudAvatar Size="Size.Large" Color="Color.Primary" Style="border: 4px solid white;">
+                                <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Large" />
+                            </MudAvatar>
+                        </div>
+
+                        <MudCardContent Class="pt-2">
+                            <MudStack Spacing="2" AlignItems="AlignItems.Center">
+                                <MudText Typo="Typo.h6" Align="Align.Center" Class="fw-bold">
+                                    @hr.Firstname @hr.Lastname
+                                </MudText>
+                                <MudChip 
+                                    T="string"
+                                    Size="Size.Small" 
+                                    Color="Color.Primary" 
+                                    Variant="Variant.Outlined"
+                                    Icon="@Icons.Material.Filled.Work">
+                                    @hr.JobTitle
+                                </MudChip>
+                                <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center" Class="mt-1">
+                                    <MudIcon Icon="@Icons.Material.Filled.Email" Size="Size.Small" Color="Color.Secondary" />
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                        @hr.Email
+                                    </MudText>
+                                </MudStack>
+                            </MudStack>
                         </MudCardContent>
-                        <MudCardActions>
-                            <MudButton Variant="Variant.Text" OnClick="@(() => OnEdit(@hr.HumanResourceId))" Color="Color.Primary">Edit</MudButton>
-                            <MudButton Variant="Variant.Text" OnClick="@(() => OnDelete(hr.HumanResourceId))" Color="Color.Error">Remove</MudButton>
+
+                        <MudDivider />
+
+                        <MudCardActions Class="pa-3">
+                            <MudStack Row="true" Spacing="2" Style="width: 100%;" Justify="Justify.Center">
+                                <MudButton 
+                                    Variant="Variant.Filled" 
+                                    OnClick="@(() => OnEdit(@hr.HumanResourceId))" 
+                                    Color="Color.Primary"
+                                    StartIcon="@Icons.Material.Filled.Edit"
+                                    Size="Size.Small">
+                                    Edit
+                                </MudButton>
+                                <MudButton 
+                                    Variant="Variant.Outlined" 
+                                    OnClick="@(() => OnDelete(hr.HumanResourceId))" 
+                                    Color="Color.Error"
+                                    StartIcon="@Icons.Material.Filled.Delete"
+                                    Size="Size.Small"
+                                    Disabled="@isDeleting">
+                                    Remove
+                                </MudButton>
+                            </MudStack>
                         </MudCardActions>
                     </MudCard>
                 </MudItem>
@@ -86,62 +164,63 @@
 </MudTable> *@
 
 @code{
-                 private string searchString1 = string.Empty;
-private bool isDeleting = false;
-private HumanResourceDtos? selectedItem1;
-protected List<HumanResourceDtos>? HumanResources;
+    private string searchString1 = string.Empty;
+    private bool isDeleting = false;
+    private HumanResourceDtos? selectedItem1;
+    protected List<HumanResourceDtos>? HumanResources;
 
-private bool FilterFunc1(HumanResourceDtos element)
-{
-    if (string.IsNullOrWhiteSpace(searchString1))
-        return true;
+    private bool FilterFunc1(HumanResourceDtos element)
+    {
+        if (string.IsNullOrWhiteSpace(searchString1))
+            return true;
 
-    return (element.Firstname?.Contains(searchString1, StringComparison.OrdinalIgnoreCase) ?? false)
-        || (element.Lastname?.Contains(searchString1, StringComparison.OrdinalIgnoreCase) ?? false)
-        || (element.Email?.Contains(searchString1, StringComparison.OrdinalIgnoreCase) ?? false)
-        || (element.PhoneNumber?.Contains(searchString1, StringComparison.OrdinalIgnoreCase) ?? false)
-        || (element.JobTitle?.Contains(searchString1, StringComparison.OrdinalIgnoreCase) ?? false);
-}
+        return (element.Firstname?.Contains(searchString1, StringComparison.OrdinalIgnoreCase) ?? false)
+            || (element.Lastname?.Contains(searchString1, StringComparison.OrdinalIgnoreCase) ?? false)
+            || (element.Email?.Contains(searchString1, StringComparison.OrdinalIgnoreCase) ?? false)
+            || (element.PhoneNumber?.Contains(searchString1, StringComparison.OrdinalIgnoreCase) ?? false)
+            || (element.JobTitle?.Contains(searchString1, StringComparison.OrdinalIgnoreCase) ?? false);
+    }
 
-public void AddNewRecruiter()
-{
+    public void AddNewRecruiter()
+    {
         NavigationManager.NavigateTo("/humanresource/addHumanResource");
-}
-public void OnEdit(int id)
-{
-    NavigationManager.NavigateTo($"/humanresource/addHumanResource/{id}");
-}
-public async Task OnDelete(int id)
-{
-    isDeleting = true;
-    try
-    {
-        var success = await _humanService.SoftDeleteJobPost(id);
+    }
 
-        if (success)
-        {
-            Snackbar.Add("Job post deleted successfully.", Severity.Success);
-            HumanResources = await _humanService.RetrieveAllAsync();
-        }
-        else
-        {
-            Snackbar.Add("Failed to delete job post.", Severity.Error);
-        }
-    }
-    catch (Exception ex)
+    public void OnEdit(int id)
     {
-        Console.WriteLine($"Exception during soft delete: {ex.Message}");
-        Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        NavigationManager.NavigateTo($"/humanresource/addHumanResource/{id}");
     }
-    finally
-    {
-        isDeleting = false;
-    }
-}
 
-protected override async Task OnInitializedAsync()
-{
-    HumanResources = await _humanService.RetrieveAllAsync();
-}
+    public async Task OnDelete(int id)
+    {
+        isDeleting = true;
+        try
+        {
+            var success = await _humanService.SoftDeleteJobPost(id);
+
+            if (success)
+            {
+                Snackbar.Add("Job post deleted successfully.", Severity.Success);
+                HumanResources = await _humanService.RetrieveAllAsync();
+            }
+            else
+            {
+                Snackbar.Add("Failed to delete job post.", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Exception during soft delete: {ex.Message}");
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isDeleting = false;
+        }
     }
-            
+
+    protected override async Task OnInitializedAsync()
+    {
+        HumanResources = await _humanService.RetrieveAllAsync();
+    }
+}

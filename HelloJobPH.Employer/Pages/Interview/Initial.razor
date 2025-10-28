@@ -1,8 +1,10 @@
 ﻿@page "/Interview/initial"
-@using HelloJobPH.Employer.Services.Overview
+
 @inject NavigationManager Navigation
 @inject IClientInterviewService CandidateService
-
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject IJSRuntime JS
 <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-4">
     <MudPaper Elevation="2" Class="pa-6">
         <MudStack Spacing="4">
@@ -75,7 +77,7 @@
                     <MudTd DataLabel="Interview Date">
                         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
                             <MudIcon Icon="@Icons.Material.Filled.Event" Size="Size.Small" Color="Color.Secondary" />
-                            <MudText Typo="Typo.body2">@context.DateInterview.ToString("dd MMM yyyy")</MudText>
+                            <MudText Typo="Typo.body2">@context.DateInterview?.ToString("dd MMM yyyy")</MudText>
                         </MudStack>
                     </MudTd>
                     <MudTd DataLabel="Time">
@@ -92,14 +94,15 @@
                                  Size="Size.Small" 
                                  Dense="true"
                                  AnchorOrigin="Origin.BottomLeft">
-                            <MudMenuItem Icon="@Icons.Material.Filled.Schedule">Reschedule</MudMenuItem>
-                            <MudMenuItem Icon="@Icons.Material.Filled.PersonOff">No Appearance</MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.Schedule" OnClick="@(() => Reschedule(context))">Reschedule</MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.PersonOff" OnClick="@(() => NoAppearance(context.ApplicationId))">No Appearance</MudMenuItem>
                             <MudDivider />
-                            <MudMenuItem Icon="@Icons.Material.Filled.Engineering">Technical</MudMenuItem>
-                            <MudMenuItem Icon="@Icons.Material.Filled.CheckCircle">Final</MudMenuItem>
-                            <MudMenuItem Icon="@Icons.Material.Filled.Cancel" Class="mud-error-text">Failed</MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.Build" OnClick="@(() => ForTechnical(context))">Technical</MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.EmojiEvents" OnClick="@(() => ForFinal(context))">Final</MudMenuItem>
+
+                            <MudMenuItem Icon="@Icons.Material.Filled.Cancel" OnClick="@(() => Failed(context.ApplicationId))" Class="mud-error-text">Failed</MudMenuItem>
                             <MudDivider />
-                            <MudMenuItem Icon="@Icons.Material.Filled.Delete" Class="mud-error-text">Delete</MudMenuItem>
+                            <MudMenuItem OnClick="@(() => Delete(context.ApplicationId))" Icon="@Icons.Material.Filled.Delete" Class="mud-error-text">Delete</MudMenuItem>
                             <MudMenuItem Icon="@Icons.Material.Filled.Visibility" 
                                         OnClick="@(()=> NavigateToOverview(context.ApplicationId))">
                                 Overview
@@ -123,14 +126,131 @@
 
 @code {
     private List<InterviewListDtos> initial = new();
-    
+
     protected override async Task OnInitializedAsync()
     {
         initial = await CandidateService.InitialList();
     }
-    
+
     private void NavigateToOverview(int applicationId)
     {
         Navigation.NavigateTo($"/reviewapplicant/reviewapplicant/{applicationId}");
     }
+
+    private async Task Reschedule(InterviewListDtos candidate)
+    {
+        var parameters = new DialogParameters
+        {
+            { "Candidate", candidate }
+        };
+
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Medium, FullWidth = true };
+
+        await DialogService.ShowAsync<RescheduleDialog>("Send Interview Invitation", parameters, options);
+
+
+    }
+
+    private async Task ForTechnical(InterviewListDtos candidate)
+    {
+        var parameters = new DialogParameters
+        {
+            { "Candidate", candidate }
+        };
+
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Medium, FullWidth = true };
+
+        await DialogService.ShowAsync<ForTechnicalDialog>("Send Interview Invitation", parameters, options);
+
+
+    }
+    private async Task ForFinal(InterviewListDtos candidate)
+    {
+        var parameters = new DialogParameters
+        {
+            { "Candidate", candidate }
+        };
+
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Medium, FullWidth = true };
+
+        await DialogService.ShowAsync<ForFinalDialog>("Send Interview Invitation", parameters, options);
+
+
+    }
+    private async Task NoAppearance(int id)
+    {
+        bool? result = await DialogService.ShowMessageBox(
+            "Confirm Action",
+            "Are you sure you want to mark this candidate as 'No Appearance'?",
+            cancelText: "Cancel",
+            yesText: "Yes"
+          
+        );
+
+        if (result == true)
+        {
+            var response = await CandidateService.NoAppearance(id);
+
+            if (response > 0)
+            {
+                Snackbar.Add("Candidate marked as 'No Appearance'.", Severity.Success);
+                await JS.InvokeVoidAsync("location.reload");
+            }
+            else
+            {
+                Snackbar.Add("Failed to update candidate status.", Severity.Error);
+            }
+        }
+    }
+    private async Task Failed(int id)
+    {
+        bool? result = await DialogService.ShowMessageBox(
+            "Confirm Action",
+            "Are you sure you want to mark this candidate as 'Failed'?",
+            cancelText: "Cancel",
+            yesText: "Yes"
+
+        );
+
+        if (result == true)
+        {
+            var response = await CandidateService.Failed(id);
+
+            if (response > 0)
+            {
+                Snackbar.Add("Candidate marked as 'Failed'.", Severity.Success);
+                await JS.InvokeVoidAsync("location.reload");
+            }
+            else
+            {
+                Snackbar.Add("Failed to update candidate status.", Severity.Error);
+            }
+        }
+    }
+    private async Task Delete(int id)
+    {
+        bool? result = await DialogService.ShowMessageBox(
+            "Confirm Action",
+            "Are you sure you want to mark this candidate as 'Failed'?",
+            cancelText: "Cancel",
+            yesText: "Yes"
+
+        );
+
+        if (result == true)
+        {
+            var response = await CandidateService.Delete(id);
+
+            if (response > 0)
+            {
+                Snackbar.Add("Candidate marked as 'Delete'.", Severity.Success);
+                await JS.InvokeVoidAsync("location.reload");
+            }
+            else
+            {
+                Snackbar.Add("Failed to update candidate status.", Severity.Error);
+            }
+        }
+    }
+
 }

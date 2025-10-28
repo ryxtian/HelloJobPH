@@ -6,28 +6,174 @@
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-6 mb-8">
+    <!-- Header Section -->
+    <MudPaper Elevation="0" Class="pa-4 mb-4">
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+            <MudIconButton Icon="@Icons.Material.Filled.ArrowBack"
+                           Color="Color.Primary"
+                           OnClick="Cancel"
+                           Size="Size.Large" />
+            <MudStack Spacing="1" Style="flex: 1;">
+                <MudText Typo="Typo.h4" Class="fw-bold">
+                    @_pageTitle
+                </MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                    @(HumanResourceId.HasValue ? "Update recruiter information" : "Fill in the details to add a new recruiter")
+                </MudText>
+            </MudStack>
+        </MudStack>
+    </MudPaper>
 
-    <MudText Typo="Typo.h5" Class="mb-4">Add New Human Resource</MudText>
+    @if (_loading)
+    {
+        <MudPaper Class="pa-8" Elevation="2">
+            <MudStack AlignItems="AlignItems.Center" Spacing="3">
+                <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+                <MudText Typo="Typo.body1" Color="Color.Secondary">Loading data...</MudText>
+            </MudStack>
+        </MudPaper>
+    }
+    else
+    {
+        <MudPaper Elevation="2" Class="pa-6 rounded-lg">
+            <MudForm @ref="_form" OnValidSubmit="HandleValidSubmit">
+                <MudStack Spacing="4">
+                    <!-- Personal Information Section -->
+                    <MudStack Spacing="1">
+                        <MudText Typo="Typo.h6" Class="fw-bold">
+                            <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" Class="mr-1" />
+                            Personal Information
+                        </MudText>
+                        <MudDivider />
+                    </MudStack>
 
-    <MudForm @ref="_form" OnValidSubmit="HandleValidSubmit">
-        <MudTextField @bind-Value="humanResource.Firstname" Label="Firstname" Required="true" For="@(() => humanResource.Firstname)" />
-        <MudTextField @bind-Value="humanResource.Lastname" Label="Lastname" Required="true" For="@(() => humanResource.Lastname)" />
-        <MudTextField @bind-Value="humanResource.Email" Label="Email" Required="true" For="@(() => humanResource.Email)" />
-        <MudTextField @bind-Value="humanResource.PhoneNumber" Label="Phone Number" For="@(() => humanResource.PhoneNumber)" />
-        <MudTextField @bind-Value="humanResource.ProfilePhotoUrl" Label="Profile Photo URL" For="@(() => humanResource.ProfilePhotoUrl)" />
-       <MudTextField @bind-Value="humanResource.JobTitle" Label="Job Title" For="@(() => humanResource.JobTitle)" />
-    <MudTextField @bind-Value="humanResource.Password"
-                  Label="Password"
-                  For="@(() => humanResource.Password)"
-                  InputType="InputType.Password"
-                  Adornment="Adornment.End"
-                  AdornmentIcon="@Icons.Material.Filled.Visibility"
-                  OnAdornmentClick="@TogglePasswordVisibility" />
+                    <MudGrid Spacing="3">
+                        <MudItem xs="12" sm="6">
+                            <MudTextField @bind-Value="humanResource.Firstname"
+                                          Label="First Name"
+                                          Required="true"
+                                          For="@(() => humanResource.Firstname)"
+                                          Variant="Variant.Outlined"
+                                          Adornment="Adornment.Start"
+                                          AdornmentIcon="@Icons.Material.Filled.Badge" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6">
+                            <MudTextField @bind-Value="humanResource.Lastname"
+                                          Label="Last Name"
+                                          Required="true"
+                                          For="@(() => humanResource.Lastname)"
+                                          Variant="Variant.Outlined"
+                                          Adornment="Adornment.Start"
+                                          AdornmentIcon="@Icons.Material.Filled.Badge" />
+                        </MudItem>
+                    </MudGrid>
 
-    <MudButton Type="button" OnClick="SubmitForm" Variant="Variant.Filled" Color="Color.Primary" Class="mt-4">Save</MudButton>
-        <MudButton Variant="Variant.Text" Color="Color.Secondary" Class="mt-4 ml-2" OnClick="Cancel">Cancel</MudButton>
-    </MudForm>
+                    <!-- Contact Information Section -->
+                    <MudStack Spacing="1" Class="mt-2">
+                        <MudText Typo="Typo.h6" Class="fw-bold">
+                            <MudIcon Icon="@Icons.Material.Filled.ContactMail" Size="Size.Small" Class="mr-1" />
+                            Contact Information
+                        </MudText>
+                        <MudDivider />
+                    </MudStack>
 
+                    <MudGrid Spacing="3">
+                        <MudItem xs="12" sm="6">
+                            <MudTextField @bind-Value="humanResource.Email"
+                                          Label="Email Address"
+                                          Required="true"
+                                          For="@(() => humanResource.Email)"
+                                          Variant="Variant.Outlined"
+                                          Adornment="Adornment.Start"
+                                          AdornmentIcon="@Icons.Material.Filled.Email"
+                                          HelperText="Work email address" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6">
+                            <MudTextField @bind-Value="humanResource.PhoneNumber"
+                                          Label="Phone Number"
+                                          For="@(() => humanResource.PhoneNumber)"
+                                          Variant="Variant.Outlined"
+                                          Adornment="Adornment.Start"
+                                          AdornmentIcon="@Icons.Material.Filled.Phone"
+                                          HelperText="Contact number" />
+                        </MudItem>
+                    </MudGrid>
+
+                    <!-- Professional Information Section -->
+                    <MudStack Spacing="1" Class="mt-2">
+                        <MudText Typo="Typo.h6" Class="fw-bold">
+                            <MudIcon Icon="@Icons.Material.Filled.Work" Size="Size.Small" Class="mr-1" />
+                            Professional Information
+                        </MudText>
+                        <MudDivider />
+                    </MudStack>
+
+                    <MudGrid Spacing="3">
+                        <MudItem xs="12" sm="6">
+                            <MudTextField @bind-Value="humanResource.JobTitle"
+                                          Label="Job Title"
+                                          For="@(() => humanResource.JobTitle)"
+                                          Variant="Variant.Outlined"
+                                          Adornment="Adornment.Start"
+                                          AdornmentIcon="@Icons.Material.Filled.WorkOutline"
+                                          HelperText="Current position" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6">
+                            <MudTextField @bind-Value="humanResource.ProfilePhotoUrl"
+                                          Label="Profile Photo URL"
+                                          For="@(() => humanResource.ProfilePhotoUrl)"
+                                          Variant="Variant.Outlined"
+                                          Adornment="Adornment.Start"
+                                          AdornmentIcon="@Icons.Material.Filled.Image"
+                                          HelperText="Optional profile image" />
+                        </MudItem>
+                    </MudGrid>
+
+                    <!-- Security Section -->
+                    <MudStack Spacing="1" Class="mt-2">
+                        <MudText Typo="Typo.h6" Class="fw-bold">
+                            <MudIcon Icon="@Icons.Material.Filled.Security" Size="Size.Small" Class="mr-1" />
+                            Security
+                        </MudText>
+                        <MudDivider />
+                    </MudStack>
+
+                    <MudTextField @bind-Value="humanResource.Password"
+                                  Label="Password"
+                                  For="@(() => humanResource.Password)"
+                                  InputType="@(isPasswordVisible? InputType.Text: InputType.Password)"
+                                  Variant="Variant.Outlined"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@(isPasswordVisible? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff)"
+                                  OnAdornmentClick="@TogglePasswordVisibility"
+                                  HelperText="@(HumanResourceId.HasValue ? "Leave blank to keep current password" : "Create a secure password")" />
+
+                    <!-- Action Buttons -->
+                    <MudDivider Class="my-2" />
+
+                    <MudStack Row="true" Justify="Justify.FlexEnd" Spacing="2" Class="mt-2">
+                        <MudButton Variant="Variant.Outlined"
+                                   Color="Color.Default"
+                                   OnClick="Cancel"
+                                   StartIcon="@Icons.Material.Filled.Cancel"
+                                   Size="Size.Large">
+                            Cancel
+                        </MudButton>
+                        <MudButton Type="button"
+                                   OnClick="SubmitForm"
+                                   Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.Save"
+                                   Size="Size.Large">
+                            @(HumanResourceId.HasValue ? "Update Recruiter" : "Add Recruiter")
+                        </MudButton>
+                    </MudStack>
+                </MudStack>
+            </MudForm>
+        </MudPaper>
+    }
+</MudContainer>
 
 @code {
     private HumanResourceDtos humanResource = new();
@@ -45,7 +191,7 @@
             {
                 _pageTitle = "Edit Human Resource";
 
-               
+
                 humanResource = await _humanService.GetSingle(HumanResourceId.Value);
 
                 if (humanResource == null)
@@ -66,6 +212,7 @@
 
         _loading = false;
     }
+
     private void TogglePasswordVisibility()
     {
         isPasswordVisible = !isPasswordVisible;
@@ -91,7 +238,7 @@
                     Snackbar.Add("Successfully created!", Severity.Success);
                 }
 
-                NavigationManager.NavigateTo("/humanresource/HRlist");
+                NavigationManager.NavigateTo("/humanresource/Recruiter");
             }
             catch (HttpRequestException ex)
             {
@@ -110,7 +257,6 @@
 
     private void Cancel()
     {
-        NavigationManager.NavigateTo("/humanresource/HRlist");
+        NavigationManager.NavigateTo("/humanresource/Recruiter");
     }
 }
-

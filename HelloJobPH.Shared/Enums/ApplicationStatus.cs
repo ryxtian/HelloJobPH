@@ -20,6 +20,7 @@ namespace HelloJobPH.Shared.Enums
         OfferDeclined,
         Reschedule,
         Rejected,
+        Failed,
         NoAppearance,
         DeclinedInterview,
     }

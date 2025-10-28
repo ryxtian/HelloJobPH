@@ -12,8 +12,8 @@ namespace HelloJobPH.Shared.DTOs
       public int ApplicationId { get; set; }
         public DateTime DateApplied { get; set; }
         public string? Email { get; set; }
-        public DateTime DateInterview { get; set; }
-        public TimeSpan TimeInterview { get; set; }
+        public DateTime? DateInterview { get; set; }
+        public TimeSpan? TimeInterview { get; set; }
         public string? JobTitle { get; set; }
         public EmploymentType? Type { get; set; }
         public string? ResumeUrl { get; set; }
