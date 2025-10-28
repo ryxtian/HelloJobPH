@@ -1,0 +1,304 @@
+@page "/applicant/portal"
+@using MudBlazor
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+@layout LandingLayout
+
+<style>
+    .job-card-hover {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .job-card-hover:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1) !important;
+    }
+    .hero-gradient {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    .salary-badge {
+        background: rgba(102, 126, 234, 0.1);
+        border: 1px solid rgba(102, 126, 234, 0.3);
+    }
+</style>
+
+<!-- Hero Section -->
+<MudPaper Class="hero-gradient pa-8 mb-6" Elevation="0" Style="border-radius: 0;">
+    <MudContainer MaxWidth="MaxWidth.ExtraLarge">
+        <MudStack Spacing="3" AlignItems="AlignItems.Center" Class="py-4">
+            <MudText Typo="Typo.h3" Align="Align.Center" Style="color: white; font-weight: 700;">
+                Find Your Dream Job
+            </MudText>
+            <MudText Typo="Typo.h6" Align="Align.Center" Style="color: rgba(255,255,255,0.9);">
+                Discover opportunities that match your skills and aspirations
+            </MudText>
+            
+            <!-- Search Bar -->
+            <MudPaper Elevation="4" Class="pa-3 mt-4" Style="width: 100%; max-width: 800px; border-radius: 50px;">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                    <MudTextField 
+                        @bind-Value="searchQuery"
+                        Placeholder="Search job titles, keywords, or companies..."
+                        Variant="Variant.Text"
+                        Adornment="Adornment.Start"
+                        AdornmentIcon="@Icons.Material.Filled.Search"
+                        Style="flex: 1;"
+                        DisableUnderLine="true" />
+                    <MudButton 
+                        Variant="Variant.Filled" 
+                        Color="Color.Primary"
+                        Size="Size.Large"
+                        Style="border-radius: 30px; padding: 0 32px;">
+                        Search
+                    </MudButton>
+                </MudStack>
+            </MudPaper>
+        </MudStack>
+    </MudContainer>
+</MudPaper>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="my-6">
+    <MudGrid>
+        <!-- Filters Sidebar -->
+        <MudItem xs="12" md="3">
+            <MudPaper Elevation="2" Class="pa-4 rounded-lg" Style="position: sticky; top: 20px;">
+                <MudStack Spacing="3">
+                    <MudStack Spacing="1">
+                        <MudText Typo="Typo.h6" Class="fw-bold">
+                            <MudIcon Icon="@Icons.Material.Filled.FilterList" Class="mr-1" />
+                            Filters
+                        </MudText>
+                        <MudDivider />
+                    </MudStack>
+
+                    <!-- Job Type Filter -->
+                    <MudStack Spacing="1">
+                        <MudText Typo="Typo.subtitle2" Class="fw-bold">Job Type</MudText>
+                        <MudCheckBox T="string" @bind-Checked="filterFullTime" Label="Full-time" Dense="true" />
+                        <MudCheckBox T="string" @bind-Checked="filterPartTime" Label="Part-time" Dense="true" />
+                        <MudCheckBoxT="string"  @bind-Checked="filterContract" Label="Contract" Dense="true" />
+                        <MudCheckBox T="string" @bind-Checked="filterRemote" Label="Remote" Dense="true" />
+                    </MudStack>
+
+                    <!-- Experience Level -->
+                    <MudStack Spacing="1">
+                        <MudText Typo="Typo.subtitle2" Class="fw-bold">Experience Level</MudText>
+                        <MudCheckBoxT="string"  @bind-Checked="filterEntry" Label="Entry Level" Dense="true" />
+                        <MudCheckBoxT="string"  @bind-Checked="filterMid" Label="Mid Level" Dense="true" />
+                        <MudCheckBoxT="string"  @bind-Checked="filterSenior" Label="Senior Level" Dense="true" />
+                    </MudStack>
+
+                    <!-- Salary Range -->
+                    <MudStack Spacing="2">
+                        <MudText Typo="Typo.subtitle2" Class="fw-bold">Salary Range</MudText>
+                        <MudSlider @bind-Value="salaryMin" Min="0" Max="200000" Step="5000" Color="Color.Primary">
+                            ?@salaryMin.ToString("N0")
+                        </MudSlider>
+                    </MudStack>
+
+                    <MudButton 
+                        Variant="Variant.Outlined" 
+                        Color="Color.Primary" 
+                        FullWidth="true"
+                        StartIcon="@Icons.Material.Filled.Clear">
+                        Clear Filters
+                    </MudButton>
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+
+        <!-- Job Listings -->
+        <MudItem xs="12" md="9">
+            <!-- Stats Bar -->
+            <MudPaper Elevation="0" Class="pa-3 mb-4">
+                <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                    <MudText Typo="Typo.body1">
+                        <strong>@jobListings.Count</strong> jobs found
+                    </MudText>
+                    <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">Sort by:</MudText>
+                        <MudSelect @bind-Value="sortOption" Variant="Variant.Outlined" Dense="true" Style="min-width: 150px;">
+                            <MudSelectItem Value="@("recent")">Most Recent</MudSelectItem>
+                            <MudSelectItem Value="@("salary")">Highest Salary</MudSelectItem>
+                            <MudSelectItem Value="@("relevance")">Relevance</MudSelectItem>
+                        </MudSelect>
+                    </MudStack>
+                </MudStack>
+            </MudPaper>
+
+            <!-- Job Cards -->
+            <MudStack Spacing="3">
+                @foreach (var job in jobListings)
+                {
+                    <MudPaper Elevation="2" Class="pa-4 rounded-lg job-card-hover" Style="cursor: pointer;" @onclick="@(() => ViewJobDetails(job.Id))">
+                        <MudGrid>
+                            <MudItem xs="12" sm="2" Style="display: flex; align-items: center; justify-content: center;">
+                                <MudAvatar Size="Size.Large" Color="Color.Primary" Variant="Variant.Outlined">
+                                    <MudIcon Icon="@Icons.Material.Filled.Business" Size="Size.Large" />
+                                </MudAvatar>
+                            </MudItem>
+                            <MudItem xs="12" sm="10">
+                                <MudStack Spacing="2">
+                                    <!-- Header -->
+                                    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Start">
+                                        <MudStack Spacing="1">
+                                            <MudText Typo="Typo.h6" Class="fw-bold">@job.Title</MudText>
+                                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+                                                <MudText Typo="Typo.body2" Color="Color.Primary" Class="fw-bold">
+                                                    @job.Company
+                                                </MudText>
+                                                <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Outlined">
+                                                    Verified
+                                                </MudChip>
+                                            </MudStack>
+                                        </MudStack>
+                                        <MudIconButton Icon="@Icons.Material.Filled.BookmarkBorder" Color="Color.Default" />
+                                    </MudStack>
+
+                                    <!-- Job Details -->
+                                    <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Class="flex-wrap">
+                                        <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                                            <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" Color="Color.Secondary" />
+                                            <MudText Typo="Typo.body2" Color="Color.Secondary">@job.Location</MudText>
+                                        </MudStack>
+                                        <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                                            <MudIcon Icon="@Icons.Material.Filled.Work" Size="Size.Small" Color="Color.Secondary" />
+                                            <MudText Typo="Typo.body2" Color="Color.Secondary">@job.JobType</MudText>
+                                        </MudStack>
+                                        <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                                            <MudIcon Icon="@Icons.Material.Filled.Schedule" Size="Size.Small" Color="Color.Secondary" />
+                                            <MudText Typo="Typo.body2" Color="Color.Secondary">@job.PostedDate</MudText>
+                                        </MudStack>
+                                    </MudStack>
+
+                                    <!-- Description -->
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary" Style="line-height: 1.6;">
+                                        @job.ShortDescription
+                                    </MudText>
+
+                                    <!-- Tags and Salary -->
+                                    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mt-2">
+                                        <MudStack Row="true" Spacing="1">
+                                            @foreach (var skill in job.Skills.Take(3))
+                                            {
+                                                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@skill</MudChip>
+                                            }
+                                            @if (job.Skills.Count > 3)
+                                            {
+                                                <MudChip T="string" Size="Size.Small" Variant="Variant.Text">+@(job.Skills.Count - 3) more</MudChip>
+                                            }
+                                        </MudStack>
+                                        <MudText Typo="Typo.h6" Color="Color.Primary" Class="fw-bold salary-badge pa-2" Style="border-radius: 8px;">
+                                            @job.Salary
+                                        </MudText>
+                                    </MudStack>
+                                </MudStack>
+                            </MudItem>
+                        </MudGrid>
+                    </MudPaper>
+                }
+            </MudStack>
+
+            <!-- Pagination -->
+            <MudPaper Elevation="0" Class="pa-4 mt-4">
+                <MudStack Row="true" Justify="Justify.Center">
+                    <MudPagination Count="10" Selected="1" Color="Color.Primary" />
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code {
+    private string searchQuery = "";
+    private string sortOption = "recent";
+    private bool filterFullTime = false;
+    private bool filterPartTime = false;
+    private bool filterContract = false;
+    private bool filterRemote = false;
+    private bool filterEntry = false;
+    private bool filterMid = false;
+    private bool filterSenior = false;
+    private int salaryMin = 20000;
+
+    private List<JobListing> jobListings = new List<JobListing>
+    {
+        new JobListing
+        {
+            Id = 1,
+            Title = "Senior Software Engineer",
+            Company = "TechCorp Philippines",
+            Location = "Makati City, Metro Manila",
+            JobType = "Full-time",
+            PostedDate = "2 days ago",
+            Salary = "?80,000 - ?120,000/mo",
+            ShortDescription = "We're looking for an experienced software engineer to join our growing team. You'll work on cutting-edge projects using modern technologies.",
+            Skills = new List<string> { "C#", "Blazor", ".NET", "SQL Server", "Azure" }
+        },
+        new JobListing
+        {
+            Id = 2,
+            Title = "UI/UX Designer",
+            Company = "Creative Studio Inc.",
+            Location = "BGC, Taguig",
+            JobType = "Full-time",
+            PostedDate = "1 week ago",
+            Salary = "?50,000 - ?70,000/mo",
+            ShortDescription = "Join our design team to create beautiful and intuitive user experiences for our clients across various industries.",
+            Skills = new List<string> { "Figma", "Adobe XD", "Prototyping", "User Research" }
+        },
+        new JobListing
+        {
+            Id = 3,
+            Title = "Digital Marketing Specialist",
+            Company = "Growth Marketing Co.",
+            Location = "Remote",
+            JobType = "Remote",
+            PostedDate = "3 days ago",
+            Salary = "?45,000 - ?65,000/mo",
+            ShortDescription = "Drive digital marketing campaigns and strategies for our diverse portfolio of clients. Experience with SEO, SEM, and social media required.",
+            Skills = new List<string> { "SEO", "Google Ads", "Social Media", "Analytics" }
+        },
+        new JobListing
+        {
+            Id = 4,
+            Title = "Data Analyst",
+            Company = "DataInsights Corp",
+            Location = "Ortigas, Pasig",
+            JobType = "Full-time",
+            PostedDate = "5 days ago",
+            Salary = "?55,000 - ?75,000/mo",
+            ShortDescription = "Analyze complex datasets to provide actionable insights. Work with cross-functional teams to drive data-driven decision making.",
+            Skills = new List<string> { "Python", "SQL", "Tableau", "Statistics", "Excel" }
+        },
+        new JobListing
+        {
+            Id = 5,
+            Title = "Project Manager",
+            Company = "Enterprise Solutions Ltd.",
+            Location = "Quezon City",
+            JobType = "Full-time",
+            PostedDate = "1 day ago",
+            Salary = "?70,000 - ?95,000/mo",
+            ShortDescription = "Lead and manage multiple projects from initiation to completion. Coordinate with stakeholders and ensure timely delivery of objectives.",
+            Skills = new List<string> { "Agile", "Scrum", "JIRA", "Leadership" }
+        }
+    };
+
+    private void ViewJobDetails(int jobId)
+    {
+        NavigationManager.NavigateTo($"/applicant/job/{jobId}");
+    }
+
+    public class JobListing
+    {
+        public int Id { get; set; }
+        public string Title { get; set; }
+        public string Company { get; set; }
+        public string Location { get; set; }
+        public string JobType { get; set; }
+        public string PostedDate { get; set; }
+        public string Salary { get; set; }
+        public string ShortDescription { get; set; }
+        public List<string> Skills { get; set; }
+    }
+}
