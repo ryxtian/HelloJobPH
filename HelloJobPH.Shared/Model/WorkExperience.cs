@@ -15,8 +15,8 @@ namespace HelloJobPH.Shared.Model
         public string CompanyName { get; set; }
         public string PositionTitle { get; set; }
         public string Department { get; set; }
-        public DateTime StartDate { get; set; }
-        public DateTime? EndDate { get; set; }
+        public int? StartDate { get; set; }
+        public int? EndDate { get; set; }
         public bool IsPresent { get; set; }
         public string? Responsibilities { get; set; }
         public string? CompanyAddress { get; set; }

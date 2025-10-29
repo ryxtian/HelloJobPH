@@ -98,7 +98,7 @@
                     <MudText Typo="Typo.subtitle1" Color="Color.Primary">@work.CompanyName</MudText>
                     <MudText Typo="Typo.body2">@work.PositionTitle (@work.Department)</MudText>
                     <MudText Typo="Typo.caption" Color="Color.Secondary">
-                        @work.StartDate.ToString("MMM yyyy")
+                        @work.StartDate
                         -
                         @(work.IsPresent ? "Present" : work.EndDate?.ToString("MMM yyyy"))
                     </MudText>
