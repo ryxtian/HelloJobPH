@@ -15,7 +15,7 @@ namespace HelloJobPH.Shared.Model
         public string Title { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public string Location { get; set; } = string.Empty;
-        public EmploymentType EmploymentType { get; set; } // e.g., Full-Time, Part-Time, Contract
+        public EmploymentType EmploymentType { get; set; } 
         public decimal? SalaryFrom { get; set; }
         public decimal? SalaryTo { get; set; }
         public byte IsDeleted { get; set; } = 0;

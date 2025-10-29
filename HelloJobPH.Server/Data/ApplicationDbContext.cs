@@ -15,6 +15,7 @@ namespace HelloJobPH.Server.Data
         public DbSet<Interview> Interview { get; set; }
         public DbSet<WorkExperience> WorkExperience { get; set; }
         public DbSet<EducationalAttainment> EducationalAttainment { get; set; }
+        public DbSet<PendingRegistration> PendingRegistration { get; set; }
         //protected override void OnModelCreating(ModelBuilder modelBuilder)
         //{
         //    base.OnModelCreating(modelBuilder);
