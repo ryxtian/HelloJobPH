@@ -13,7 +13,7 @@ namespace HelloJobPH.Server.Service.Candidate
     {
         private readonly IEmailService _emailService;
         private readonly ApplicationDbContext _context;
-        IHttpContextAccessor _httpContextAccessor;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         public CandidateService(ApplicationDbContext context, IEmailService emailService, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
