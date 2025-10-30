@@ -137,7 +137,7 @@
                 <MudText Typo="Typo.subtitle1" Class="fw-bold">@school.SchoolName - @school.Degree ?? "NA"</MudText>
                 <MudText Typo="Typo.body2" Color="Color.Secondary">@school.Degree</MudText>
                 <MudText Typo="Typo.caption" Color="Color.Secondary">
-                    @school.YearStarted - @(school.YearEnded.HasValue ? school.YearEnded : "Present")
+                       @school.YearStarted?.ToString("yyyy") - @(school.YearEnded?.ToString("yyyy"))
                 </MudText>
             </MudPaper>
         }

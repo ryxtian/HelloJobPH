@@ -31,5 +31,7 @@ namespace HelloJobPH.Shared.DTOs
         //public HumanResource HumanResource { get; set; }
         public DateTime PostedDate { get; set; }
         public DateTime? ExpiredDate { get; set; }
+        public string? ScheduleDays { get; set; }
+        public string? ScheduleTime { get; set; }
     }
 }

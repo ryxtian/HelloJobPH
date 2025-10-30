@@ -31,24 +31,6 @@ namespace HelloJobPH.Shared.DTOs
         public List<EducationalAttainmentDtos>? EducationalAttainment { get; set; } = new();
 
     }
-    public class WorkExperienceDtos
-    {
-        public string? CompanyName { get; set; }
-        public string? PositionTitle { get; set; }
-        public string? Department { get; set; }
-        public int? StartDate { get; set; }
-        public int? EndDate { get; set; }
-        public bool IsPresent { get; set; }
-        public string? Responsibilities { get; set; }
-        public string? CompanyAddress { get; set; }
-    }
-    public class EducationalAttainmentDtos
-    {
-        public string SchoolName { get; set; }
-        public string? Degree { get; set; }
-        public int? YearStarted { get; set; }
-        public int? YearEnded { get; set; }
-        public string? Level { get; set; } // e.g., "High School", "College", "Master’s"
-        public bool? IsGraduated { get; set; }
-    }
+
+
 }

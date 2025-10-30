@@ -37,7 +37,7 @@ namespace HelloJobPH.Server.Service.Interview
                     .Select(a => new InterviewListDtos
                     {
                         ApplicationId = a.ApplicationId,
-                        ResumeUrl = a.ResumeUrl,
+                        //ResumeUrl = a.ResumeUrl,
                         Firstname = a.Applicant.Firstname,
                         Lastname = a.Applicant.Surname,
                         Email = a.Applicant.UserAccount.Email,
@@ -74,7 +74,7 @@ namespace HelloJobPH.Server.Service.Interview
                     .Select(a => new InterviewListDtos
                     {
                         ApplicationId = a.ApplicationId,
-                        ResumeUrl = a.ResumeUrl,
+                        //ResumeUrl = a.ResumeUrl,
                         Firstname = a.Applicant.Firstname,
                         Lastname = a.Applicant.Surname,
                         Email = a.Applicant.UserAccount.Email,
@@ -111,7 +111,7 @@ namespace HelloJobPH.Server.Service.Interview
                     .Select(a => new InterviewListDtos
                     {
                         ApplicationId = a.ApplicationId,
-                        ResumeUrl = a.ResumeUrl,
+                        //ResumeUrl = a.ResumeUrl,
                         Firstname = a.Applicant.Firstname,
                         Lastname = a.Applicant.Surname,
                         Email = a.Applicant.UserAccount.Email,

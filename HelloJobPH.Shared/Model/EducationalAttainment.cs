@@ -13,12 +13,13 @@ namespace HelloJobPH.Shared.Model
         public int EducationId { get; set; }
         public string SchoolName { get; set; }
         public string? Degree { get; set; }
-        public int? YearStarted { get; set; } //xx
-        public int? YearEnded { get; set; }//x
+        public DateTime? YearStarted { get; set; } //xx
+        public DateTime? YearEnded { get; set; }//x
         public string? Level { get; set; } // e.g., "High School", "College", "Master’s"
         public bool? IsGraduated { get; set; }
         public int? ApplicantId { get; set; }
         public Applicant? Applicant { get; set; }
 
     }
+
 }
