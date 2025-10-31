@@ -13,7 +13,7 @@ namespace HelloJobPH.Shared.DTOs
         public int ApplicationId { get; set; }
         public DateTime DateApplied { get; set; }
         public string? Email { get; set; }
-        public string? JobTitle { get; set; }
+        public string JobTitle { get; set; }
         public EmploymentType? Type { get; set; }
         public string? ResumeUrl { get; set; }
         public string? Firstname { get; set; }
