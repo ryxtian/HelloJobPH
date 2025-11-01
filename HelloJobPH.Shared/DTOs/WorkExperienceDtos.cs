@@ -16,5 +16,6 @@ namespace HelloJobPH.Shared.DTOs
         public bool IsPresent { get; set; }
         public string? Responsibilities { get; set; }
         public string? CompanyAddress { get; set; }
+        public byte IsDeleted { get; set; }
     }
 }

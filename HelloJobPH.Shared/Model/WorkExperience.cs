@@ -21,6 +21,7 @@ namespace HelloJobPH.Shared.Model
         public string? Responsibilities { get; set; }
         public string? CompanyAddress { get; set; }
         public int? ApplicantId { get; set; }
+        public byte IsDeleted { get; set; } = 0;
         public Applicant? Applicant { get; set; }
     }
 }

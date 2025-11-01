@@ -14,5 +14,6 @@ namespace HelloJobPH.Shared.DTOs
         public DateTime? YearEnded { get; set; }
         public string? Level { get; set; } // e.g., "High School", "College", "Master’s"
         public bool? IsGraduated { get; set; }
+        public byte IsDeleted { get; set; }
     }
 }

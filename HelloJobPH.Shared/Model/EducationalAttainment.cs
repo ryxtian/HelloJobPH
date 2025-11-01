@@ -18,6 +18,7 @@ namespace HelloJobPH.Shared.Model
         public string? Level { get; set; } // e.g., "High School", "College", "Master’s"
         public bool? IsGraduated { get; set; }
         public int? ApplicantId { get; set; }
+        public byte IsDeleted { get; set; } = 0;
         public Applicant? Applicant { get; set; }
 
     }
