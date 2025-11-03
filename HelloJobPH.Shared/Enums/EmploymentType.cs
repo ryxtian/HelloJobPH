@@ -14,5 +14,9 @@ namespace HelloJobPH.Shared.Enums
         FullTime,
         [Display(Name ="Part Time")]
         PartTime,
+        [Display(Name = "Contract")]
+        Contract,
+        [Display(Name = "Remote")]
+        Remote
     }
 }

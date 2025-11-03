@@ -17,5 +17,6 @@ namespace HelloJobPH.Shared.Model
         public int userDetailsId { get; set; }
         public Applicant? Applicant { get; set; }
         public HumanResources? HumanResource { get; set; }
+        public Employers? Employer { get; set; }
     }
 }
