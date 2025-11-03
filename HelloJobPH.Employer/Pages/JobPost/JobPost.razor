@@ -20,7 +20,7 @@
                     Manage and track all your job openings
                 </MudText>
             </MudStack>
-            <MudButton OnClick="AddNewJob" 
+            <MudButton OnClick="AddPost" 
                        Variant="Variant.Filled" 
                        StartIcon="@Icons.Material.Filled.Add"
                        Size="Size.Large"
@@ -117,9 +117,9 @@
 
                             <!-- Action Buttons -->
                             <MudStack Row="true" Spacing="2">
-                                <MudButton Variant="Variant.Filled" 
-                                          OnClick="@(() => OnEdit(@job.JobPostingId))" 
-                                          Color="Color.Primary"
+                                <MudButton Variant="Variant.Filled"
+                                           OnClick="@(() => EditPost(job))"
+                                           Color="Color.Primary"
                                           StartIcon="@Icons.Material.Filled.Edit"
                                           FullWidth="true"
                                           Style="text-transform: none; font-weight: 600;">
@@ -152,10 +152,10 @@
                     <MudText Typo="Typo.body2" Style="color: #9ca3af;" Class="mb-4">
                         Get started by creating your first job posting
                     </MudText>
-                    <MudButton OnClick="AddNewJob" 
-                              Variant="Variant.Filled" 
-                              Color="Color.Primary"
-                              StartIcon="@Icons.Material.Filled.Add">
+                    <MudButton OnClick="AddPost"
+                               Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.Add">
                         Create Job Post
                     </MudButton>
                 </MudPaper>
@@ -212,10 +212,10 @@
             || (element.JobRequirements?.Contains(searchString1, StringComparison.OrdinalIgnoreCase) ?? false)
             || $"{element.SalaryFrom} {element.SalaryTo}".Contains(searchString1);
     }
-    public void AddNewJob()
-    {
-        Navigation.NavigateTo("/JobPost/JobPostForm");
-    }
+    // public void AddNewJob()
+    // {
+    //     Navigation.NavigateTo("/JobPost/JobPostForm");
+    // }
 
 
     public void OnEdit(int id)
@@ -249,4 +249,28 @@
             isDeleting = false;
         }
     }
+    private async Task AddPost()
+    {
+        var parameters = new DialogParameters
+    {
+        { "JobPost", new JobPostingDtos() }
+    };
+
+        var options = new DialogOptions
+        {
+            CloseButton = true,
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true
+        };
+
+        await DialogService.ShowAsync<JobPostDialog>("Add Job Post", parameters, options);
+    }
+
+    private async Task Editpost(JobPostingDtos job)
+    {
+        Console.WriteLine($"jobId passed: {job.JobPostingId}");
+        var parameters = new DialogParameters { ["ExistingJob"] = job };
+        var dialog = DialogService.Show<EditJobDialog>("Edit job", parameters);
+    }
+
 }

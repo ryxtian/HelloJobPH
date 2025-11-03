@@ -1,0 +1,159 @@
+﻿@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject IJobPosting _jobpost
+@inject NavigationManager NavigationManager
+@attribute [Authorize]
+
+    <MudPaper Elevation="3" Class="pa-6">
+        <MudText Typo="Typo.h4" Class="mb-2">Create Job Post</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-6">
+            Fill in the details below to create a new job posting
+        </MudText>
+
+        <MudForm @ref="_form" OnValidSubmit="HandleValidSubmit">
+            <MudGrid Spacing="3">
+                <!-- Job Title -->
+                <MudItem xs="12">
+                    <MudTextField Label="Job Title"
+                                  @bind-Value="jobpost.Title"
+                                  Required="true"
+                                  Variant="Variant.Outlined"
+                                  Placeholder="e.g., Senior Software Engineer" />
+                </MudItem>
+
+                <!-- Description -->
+                <MudItem xs="12">
+                    <MudTextField Label="Job Description"
+                                  @bind-Value="jobpost.Description"
+                                  Required="true"
+                                  Lines="5"
+                                  Variant="Variant.Outlined"
+                                  Placeholder="Describe the role, responsibilities, and what makes this position unique..."
+                                  TextArea="true" />
+                </MudItem>
+
+                <!-- Employment Type and Location -->
+                <MudItem xs="12" sm="6">
+                    <MudSelect T="EmploymentType"
+                               Label="Employment Type"
+                               @bind-Value="jobpost.EmploymentType"
+                               Required="true"
+                               Variant="Variant.Outlined">
+                        @foreach (var type in Enum.GetValues<EmploymentType>())
+                        {
+                            <MudSelectItem Value="type">@type.ToString()</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+
+                <MudItem xs="12" sm="6">
+                    <MudTextField Label="Location"
+                                  @bind-Value="jobpost.Location"
+                                  Required="true"
+                                  Variant="Variant.Outlined"
+                                  Placeholder="e.g., Remote, New York, NY" />
+                </MudItem>
+
+                <!-- Job Category -->
+                <MudItem xs="12">
+                    <MudSelect T="JobCategory"
+                               Label="Job Category"
+                               @bind-Value="jobpost.JobCategory"
+                               Required="true"
+                               Variant="Variant.Outlined">
+                        @foreach (var type in Enum.GetValues<JobCategory>())
+                        {
+                            <MudSelectItem Value="type">@type.ToString()</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+
+                <!-- Salary Range -->
+                <MudItem xs="12">
+                    <MudText Typo="Typo.subtitle2" Class="mb-2">Salary Range</MudText>
+                </MudItem>
+
+                <MudItem xs="12" sm="6">
+                    <MudTextField Label="Salary From"
+                                  @bind-Value="jobpost.SalaryFrom"
+                                  Required="true"
+                                  Variant="Variant.Outlined"
+                                  Placeholder="Minimum salary" />
+                </MudItem>
+
+                <MudItem xs="12" sm="6">
+                    <MudTextField Label="Salary To"
+                                  @bind-Value="jobpost.SalaryTo"
+                                  Required="true"
+                                  Variant="Variant.Outlined"
+                                  Placeholder="Maximum salary" />
+                </MudItem>
+
+                <!-- Job Requirements -->
+                <MudItem xs="12">
+                    <MudTextField Label="Job Requirements"
+                                  @bind-Value="jobpost.JobRequirements"
+                                  Lines="5"
+                                  TextArea="true"
+                                  Required="true"
+                                  Variant="Variant.Outlined"
+                                  Placeholder="List the required skills, qualifications, and experience..." />
+                </MudItem>
+
+                <!-- Expiry Date -->
+                <MudItem xs="12" sm="6">
+                    <MudDatePicker Label="Application Deadline"
+                                   @bind-Date="jobpost.ExpiredDate"
+                                   Required="true"
+                                   Variant="Variant.Outlined"
+                                   MinDate="DateTime.Today" />
+                </MudItem>
+
+                <!-- Submit Button -->
+                <MudItem xs="12" Class="mt-4">
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               OnClick="SubmitForm"
+                               Size="Size.Large"
+                               FullWidth="true">
+                        <MudIcon Icon="@Icons.Material.Filled.Send" Class="mr-2" />
+                        Submit Job Post
+                    </MudButton>
+                </MudItem>
+            </MudGrid>
+        </MudForm>
+    </MudPaper>
+
+
+@code {
+    private JobPostingDtos jobpost = new();
+    private MudForm _form;
+    [CascadingParameter]
+    IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter]
+    public JobPostingDtos JobPost { get; set; } = new();
+    private async Task SubmitForm()
+    {
+        await _form.Validate();
+        if (_form.IsValid)
+        {
+            try
+            {
+                var message = await _jobpost.AddAsync(jobpost);
+                Snackbar.Add("Successfully saved", Severity.Success);
+                Console.WriteLine("success");
+                NavigationManager.NavigateTo("/jobpost/jobPost");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("badrequest");
+                //Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+            }
+        }
+        else
+        {
+            Snackbar.Add("Please fill all required fields.", Severity.Error);
+        }
+    }
+}

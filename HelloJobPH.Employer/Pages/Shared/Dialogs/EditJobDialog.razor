@@ -1,0 +1,189 @@
+﻿@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject IJobPosting _jobpost
+@inject NavigationManager NavigationManager
+
+
+<MudPaper Elevation="3" Class="pa-6">
+    <div class="d-flex align-center mb-2">
+        <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-2" Color="Color.Primary" />
+        <MudText Typo="Typo.h4">Edit Job Post</MudText>
+    </div>
+    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-6">
+        Update the job posting details below
+    </MudText>
+
+    <MudForm @ref="_form" OnValidSubmit="HandleValidSubmit">
+        <MudGrid Spacing="3">
+            <!-- Job Title -->
+            <MudItem xs="12">
+                <MudTextField Label="Job Title"
+                              @bind-Value="Job.Title"
+                              Required="true"
+                              Variant="Variant.Outlined"
+                              Placeholder="e.g., Senior Software Engineer" />
+            </MudItem>
+
+            <!-- Description -->
+            <MudItem xs="12">
+                <MudTextField Label="Job Description"
+                              @bind-Value="Job.Description"
+                              Required="true"
+                              Lines="5"
+                              Variant="Variant.Outlined"
+                              Placeholder="Describe the role, responsibilities, and what makes this position unique..."
+                              TextArea="true" />
+            </MudItem>
+
+            <!-- Employment Type and Location -->
+            <MudItem xs="12" sm="6">
+                <MudSelect T="EmploymentType"
+                           Label="Employment Type"
+                           @bind-Value="Job.EmploymentType"
+                           Required="true"
+                           Variant="Variant.Outlined">
+                    @foreach (var type in Enum.GetValues<EmploymentType>())
+                    {
+                        <MudSelectItem Value="type">@type.ToString()</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <MudItem xs="12" sm="6">
+                <MudTextField Label="Location"
+                              @bind-Value="Job.Location"
+                              Required="true"
+                              Variant="Variant.Outlined"
+                              Placeholder="e.g., Remote, New York, NY" />
+            </MudItem>
+
+            <!-- Job Category -->
+            <MudItem xs="12">
+                <MudSelect T="JobCategory"
+                           Label="Job Category"
+                           @bind-Value="Job.JobCategory"
+                           Required="true"
+                           Variant="Variant.Outlined">
+                    @foreach (var type in Enum.GetValues<JobCategory>())
+                    {
+                        <MudSelectItem Value="type">@type.ToString()</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <!-- Salary Range -->
+            <MudItem xs="12">
+                <MudText Typo="Typo.subtitle2" Class="mb-2">Salary Range</MudText>
+            </MudItem>
+
+            <MudItem xs="12" sm="6">
+                <MudTextField Label="Salary From"
+                              @bind-Value="Job.SalaryFrom"
+                              Required="true"
+                              Variant="Variant.Outlined"
+                              Placeholder="Minimum salary" />
+            </MudItem>
+
+            <MudItem xs="12" sm="6">
+                <MudTextField Label="Salary To"
+                              @bind-Value="Job.SalaryTo"
+                              Required="true"
+                              Variant="Variant.Outlined"
+                              Placeholder="Maximum salary" />
+            </MudItem>
+
+            <!-- Job Requirements -->
+            <MudItem xs="12">
+                <MudTextField Label="Job Requirements"
+                              @bind-Value="Job.JobRequirements"
+                              Lines="5"
+                              TextArea="true"
+                              Required="true"
+                              Variant="Variant.Outlined"
+                              Placeholder="List the required skills, qualifications, and experience..." />
+            </MudItem>
+
+            <!-- Expiry Date -->
+            <MudItem xs="12" sm="6">
+                <MudDatePicker Label="Application Deadline"
+                               @bind-Date="Job.ExpiredDate"
+                               Required="true"
+                               Variant="Variant.Outlined"
+                               MinDate="DateTime.Today" />
+            </MudItem>
+
+            <!-- Action Buttons -->
+            <MudItem xs="12" Class="mt-4">
+                <div class="d-flex gap-3">
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               OnClick="SubmitForm"
+                               Size="Size.Large"
+                               Class="flex-grow-1">
+                        <MudIcon Icon="@Icons.Material.Filled.Save" Class="mr-2" />
+                        Update Job Post
+                    </MudButton>
+                 @*    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Secondary"
+                               OnClick="Cancel"
+                               Size="Size.Large">
+                        Cancel
+                    </MudButton> *@
+                </div>
+            </MudItem>
+        </MudGrid>
+    </MudForm>
+</MudPaper>
+
+
+@code {
+
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+    private JobPostingDtos Job = new();
+    private bool isSaving = false;
+    private MudForm _form;
+
+    [Parameter] public JobPostingDtos? Existingjob { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (Existingjob != null)
+        {
+            // Copy existing data
+            Job = new JobPostingDtos
+            {
+                JobPostingId = Job.JobPostingId,
+                Title = Job.Title,
+                Description = Job.Description,
+                Location = Job.Location,
+                EmploymentType = Job.EmploymentType,
+                SalaryFrom = Job.SalaryFrom,
+                SalaryTo = Job.SalaryTo,
+                JobCategory = Job.JobCategory,
+                ExpiredDate = Job.ExpiredDate,
+                ScheduleDays = Job.ScheduleDays,
+                ScheduleTime = Job.ScheduleTime
+            };
+        }
+    }
+    private async Task SubmitForm()
+    {
+        await _form.Validate();
+        if (!_form.IsValid)
+        {
+            Snackbar.Add("Please fill all required fields.", Severity.Error);
+            return;
+        }
+        try
+        {
+            var message = await _jobpost.UpdateAsync(Job);
+            await _form.ResetAsync();
+            Snackbar.Add(message, Severity.Success);
+            NavigationManager.NavigateTo("/jobpost/jobpost");
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+}

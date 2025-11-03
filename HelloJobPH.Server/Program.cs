@@ -10,6 +10,7 @@ using HelloJobPH.Server.Service.HumanResource;
 using HelloJobPH.Server.Service.Interview;
 using HelloJobPH.Server.Service.JobPost;
 using HelloJobPH.Server.Service.Overview;
+using HelloJobPH.Server.Service.SuperAdmin;
 using HelloJobPH.Server.Service.UserAccountRepository;
 using HelloJobPH.Server.Services;
 using HelloJobPH.Shared.Model;
@@ -101,6 +102,7 @@ builder.Services.AddScoped<ICandidateService, CandidateService>();
 builder.Services.AddScoped<IInterviewService, InterviewService>();
 builder.Services.AddScoped<IOverviewService, OverviewService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddScoped<ISuperAdminService, SuperAdminService>();
 //builder.Services.AddScoped<IUserAccountRepository, UserAccountRepository>();
 //builder.Services.AddScoped<IApplicantRepository, ApplicantRepository>();
 

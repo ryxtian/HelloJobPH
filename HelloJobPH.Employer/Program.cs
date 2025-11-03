@@ -9,6 +9,7 @@ using HelloJobPH.Employer.Services.HumanResource;
 using HelloJobPH.Employer.Services.Interview;
 using HelloJobPH.Employer.Services.JobPosting;
 using HelloJobPH.Employer.Services.Overview;
+using HelloJobPH.Employer.Services.SuperAdmin;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -39,6 +40,7 @@ builder.Services.AddScoped<IClientCandidateService, ClientCandidateService>();
 builder.Services.AddScoped<IClientInterviewService, ClientInterviewService>();
 builder.Services.AddScoped<IClientOverview, ClientOverview>();
 builder.Services.AddScoped<IClientDashboardService, ClientDashboardService>();
+builder.Services.AddScoped<IClientSuperAdminService, ClientSuperAdminService>();
 
 
 

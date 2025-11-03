@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HelloJobPH.Shared.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -18,5 +19,6 @@ namespace HelloJobPH.Shared.DTOs
         public string Province { get; set; } = string.Empty;
         public string ContactEmail { get; set; } = string.Empty;
         public string ContactNumber { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
     }
 }

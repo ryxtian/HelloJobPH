@@ -63,12 +63,6 @@
                 Manage and monitor all registered employers
             </MudText>
         </MudStack>
-        <MudButton Variant="Variant.Filled" 
-                   Style="background: white; color: #667eea;"
-                   StartIcon="@Icons.Material.Filled.Add"
-                   OnClick="@(() => NavigationManager.NavigateTo("/admin/employers/new"))">
-            Add Employer
-        </MudButton>
     </MudStack>
 </MudPaper>
 
@@ -76,7 +70,7 @@
     <!-- Search and Filters -->
     <MudPaper Elevation="2" Class="pa-4 mb-4" Style="border-radius: 12px;">
         <MudGrid Spacing="3" AlignItems="Center">
-            <MudItem xs="12" md="6">
+          @*   <MudItem xs="12" md="6">
                 <MudTextField @bind-Value="searchQuery"
                               Placeholder="Search employers by name, email, or industry..."
                               Variant="Variant.Outlined"
@@ -85,7 +79,7 @@
                               Class="search-bar"
                               Immediate="true"
                               OnKeyUp="FilterEmployers" />
-            </MudItem>
+            </MudItem> *@
             <MudItem xs="12" sm="6" md="3">
                 <MudSelect @bind-Value="statusFilter" 
                            Label="Status" 
@@ -121,7 +115,7 @@
                 </MudStack>
             </MudPaper>
         </MudItem>
-        <MudItem xs="12" sm="6" md="3">
+       @*  <MudItem xs="12" sm="6" md="3">
             <MudPaper Elevation="2" Class="pa-4" Style="border-left: 4px solid #667eea; border-radius: 8px;">
                 <MudStack Spacing="1">
                     <MudText Typo="Typo.body2" Color="Color.Secondary">Active</MudText>
@@ -130,8 +124,8 @@
                     </MudText>
                 </MudStack>
             </MudPaper>
-        </MudItem>
-        <MudItem xs="12" sm="6" md="3">
+        </MudItem> *@
+     @*    <MudItem xs="12" sm="6" md="3">
             <MudPaper Elevation="2" Class="pa-4" Style="border-left: 4px solid #ed8936; border-radius: 8px;">
                 <MudStack Spacing="1">
                     <MudText Typo="Typo.body2" Color="Color.Secondary">Pending</MudText>
@@ -140,8 +134,8 @@
                     </MudText>
                 </MudStack>
             </MudPaper>
-        </MudItem>
-        <MudItem xs="12" sm="6" md="3">
+        </MudItem> *@
+        @* <MudItem xs="12" sm="6" md="3">
             <MudPaper Elevation="2" Class="pa-4" Style="border-left: 4px solid #cbd5e0; border-radius: 8px;">
                 <MudStack Spacing="1">
                     <MudText Typo="Typo.body2" Color="Color.Secondary">Inactive</MudText>
@@ -150,7 +144,7 @@
                     </MudText>
                 </MudStack>
             </MudPaper>
-        </MudItem>
+        </MudItem> *@
     </MudGrid>
 
     <!-- Employers Table -->
@@ -177,31 +171,31 @@
                         </MudAvatar>
                         <MudStack Spacing="0">
                             <MudText Typo="Typo.body2" Style="font-weight: 600;">@context.CompanyName</MudText>
-                            <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Email</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">@context.ContactEmail</MudText>
                         </MudStack>
                     </MudStack>
                 </MudTd>
                 <MudTd DataLabel="Contact Person">
                     <MudStack Spacing="0">
-                        <MudText Typo="Typo.body2">@context.ContactPerson</MudText>
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Phone</MudText>
+                  
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@context.ContactNumber</MudText>
                     </MudStack>
                 </MudTd>
                 <MudTd DataLabel="Industry">
                     <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@context.Industry</MudChip>
                 </MudTd>
-                <MudTd DataLabel="Job Posts">
+          @*       <MudTd DataLabel="Job Posts">
                     <MudText Typo="Typo.body2" Style="font-weight: 600;">@context.JobPostsCount</MudText>
-                </MudTd>
-                <MudTd DataLabel="Status">
+                </MudTd> *@
+                @* <MudTd DataLabel="Status">
                     <MudChip T="string" Size="Size.Small" 
                              Class="@GetStatusClass(context.Status)">
                         @context.Status
                     </MudChip>
-                </MudTd>
-                <MudTd DataLabel="Member Since">
+                </MudTd> *@
+              @*   <MudTd DataLabel="Member Since">
                     <MudText Typo="Typo.body2">@context.JoinedDate.ToString("MMM dd, yyyy")</MudText>
-                </MudTd>
+                </MudTd> *@
                 <MudTd DataLabel="Actions" Style="text-align: center;">
                     <MudStack Row="true" Spacing="1" Justify="Justify.Center">
                         <MudIconButton Icon="@Icons.Material.Filled.Check" 
@@ -209,12 +203,19 @@
                                        Color="Color.Primary"
                                        Title="Approved"
                                        OnClick="@(() => Approved(context.EmployerId))" />
+
+                        <MudIconButton Icon="@Icons.Material.Filled.DisabledByDefault"
+                                       Size="Size.Small"
+                                       Color="Color.Error"
+                                       Title="Disable"
+                                       OnClick="@(() => Disable(context.EmployerId))" />
                        
                         <MudIconButton Icon="@Icons.Material.Filled.Delete" 
                                        Size="Size.Small" 
                                        Color="Color.Error"
                                        Title="Delete"
                                        OnClick="@(() => DeleteEmployer(context.EmployerId))" />
+
                     </MudStack>
                 </MudTd>
             </RowTemplate>
@@ -256,7 +257,7 @@
             // Search filter
             bool matchesSearch = string.IsNullOrWhiteSpace(searchQuery) ||
                 e.CompanyName.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
-                e.Email.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                e.ContactEmail.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
                 e.Industry.Contains(searchQuery, StringComparison.OrdinalIgnoreCase);
 
             // Status filter
@@ -268,10 +269,10 @@
         // Apply sorting
         filteredEmployers = sortOption switch
         {
-            "name" => filteredEmployers.OrderBy(e => e.CompanyName).ToList(),
-            "date-new" => filteredEmployers.OrderByDescending(e => e.JoinedDate).ToList(),
-            "date-old" => filteredEmployers.OrderBy(e => e.JoinedDate).ToList(),
-            "jobs" => filteredEmployers.OrderByDescending(e => e.JobPostsCount).ToList(),
+            // "name" => filteredEmployers.OrderBy(e => e.CompanyName).ToList(),
+            // "date-new" => filteredEmployers.OrderByDescending(e => e.JoinedDate).ToList(),
+            // "date-old" => filteredEmployers.OrderBy(e => e.JoinedDate).ToList(),
+            // "jobs" => filteredEmployers.OrderByDescending(e => e.JobPostsCount).ToList(),
             _ => filteredEmployers
         };
 
@@ -291,7 +292,7 @@
 
     private void Approved(int id)
     {
-        NavigationManager.NavigateTo($"/admin/employers/{id}");
+        // api call with email notif
     }
 
     private void EditEmployer(int id)
@@ -310,12 +311,28 @@
         if (result == true)
         {
             // Delete employer logic here
-            employers.RemoveAll(e => e.Id == id);
-            FilterEmployers();
+            employers.RemoveAll(e => e.EmployerId == id);
+            //FilterEmployers();
             Snackbar.Add("Employer deleted successfully", Severity.Success);
         }
     }
 
+    private async Task Disable(int id)
+    {
+        bool? result = await DialogService.ShowMessageBox(
+            "Confirm Delete",
+            "Are you sure you want to delete this employer? This action cannot be undone.",
+            yesText: "Delete",
+            cancelText: "Cancel");
+
+        if (result == true)
+        {
+            // Delete employer logic here
+            employers.RemoveAll(e => e.EmployerId == id);
+            //FilterEmployers();
+            Snackbar.Add("Employer deleted successfully", Severity.Success);
+        }
+    }
 
     public class EmployerDto
     {

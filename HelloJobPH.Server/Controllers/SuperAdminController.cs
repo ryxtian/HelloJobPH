@@ -17,7 +17,7 @@ namespace HelloJobPH.Server.Controllers
         public async Task<IActionResult> EmployerList()
         {
             var lsit = await _service.EmployersList();
-            return Ok();
+            return Ok(lsit);
         }
     }
 }
