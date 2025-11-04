@@ -1,21 +1,27 @@
-﻿using HelloJobPH.Server.Data;
+﻿using HelloJobPH.Employer.Pages.Candidate;
+using HelloJobPH.Server.Data;
+using HelloJobPH.Server.Service.Email;
 using HelloJobPH.Shared.DTOs;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using static HelloJobPH.Employer.Pages.SuperAdmin.AdminDashboard;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace HelloJobPH.Server.Service.SuperAdmin
 {
     public class SuperAdminService : ISuperAdminService
     {
+        private readonly IEmailService _emailService;
         private readonly ApplicationDbContext _context;
-        public SuperAdminService(ApplicationDbContext context)
+        public SuperAdminService(IEmailService emailService, ApplicationDbContext context)
         {
             _context = context;
+            _emailService = emailService;
         }
         public async Task<List<EmployerListDtos>> EmployersList()
         {
 
-            List<EmployerListDtos> employers = await _context.Employers
+            List<EmployerListDtos> employers = await _context.Employers.Where(i=>i.IsDeleted ==0 && i.Status != "Pending")
                 .Select(e => new EmployerListDtos
                 {
                     EmployerId = e.EmployerId,
@@ -24,6 +30,7 @@ namespace HelloJobPH.Server.Service.SuperAdmin
                     Description = e.Description,
                     CompanyAddress = e.CompanyAddress,
                     City = e.City,
+                    Status = e.Status,
                     Province = e.Province,
                     ContactEmail = e.ContactEmail,
                     ContactNumber = e.ContactNumber
@@ -32,6 +39,230 @@ namespace HelloJobPH.Server.Service.SuperAdmin
 
             return employers;
         }
+        public async Task<List<EmployerListDtos>> ForApprovalList()
+        {
 
+            List<EmployerListDtos> employers = await _context.Employers.Where(i=>i.Status == "Pending")
+                .Select(e => new EmployerListDtos
+                {
+                    EmployerId = e.EmployerId,
+                    CompanyName = e.CompanyName,
+                    Industry = e.Industry,
+                    Description = e.Description,
+                    CompanyAddress = e.CompanyAddress,
+                    City = e.City,
+                    Status = e.Status,
+                    Province = e.Province,
+                    ContactEmail = e.ContactEmail,
+                    ContactNumber = e.ContactNumber
+                })
+                .ToListAsync();
+
+            return employers;
+        }
+        public async Task<bool> ApprovedEmployer(int id)
+        {
+            var employer = await _context.Employers.FindAsync(id);
+            if (employer == null)
+                return false;
+
+            employer.Status = "Active";
+            _context.Employers.Update(employer);
+            await _context.SaveChangesAsync();
+
+            // Subject and plain text body for account approval
+            var subject = "Your Employer Account Has Been Approved!";
+            var body = $@"
+Dear {employer.CompanyName},
+
+Congratulations! Your employer account with HelloJobPH has been approved and is now active.
+
+You can now log in and start posting job openings, managing applications, and connecting with potential candidates.
+
+We are excited to have you on board!
+
+Best regards,
+HelloJobPH Team";
+
+            // Send the plain text email
+            await _emailService.SendEmailAsync(employer.ContactEmail, subject, body);
+
+            return true;
+        }
+
+
+
+        public async Task<bool> DisableEmployer(int id)
+        {
+            var employer = await _context.Employers.FindAsync(id);
+            if (employer == null)
+                return false;
+
+            employer.Status = "Disabled";
+            _context.Employers.Update(employer);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<bool> DisapprovedEmployer(int id)
+        {
+            var employer = await _context.Employers.FindAsync(id);
+            if (employer == null)
+                return false;
+
+            employer.IsDeleted = 1;
+            _context.Employers.Update(employer);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<int> TotalJobCounts()
+        {
+            return await _context.JobPosting.CountAsync(); // Count all job postings
+        }
+
+        public async Task<int> TotalApplicants()
+        {
+            return await _context.Applicant.CountAsync(); // Count all applicants
+        }
+
+        public async Task<int> ScheduledInterviews()
+        {
+            return await _context.Interview
+                .Where(i => i.ScheduledDate >= DateTime.Today) // Count only upcoming interviews
+                .CountAsync();
+        }
+
+        public async Task<int> SuccessfulHires()
+        {
+            return await _context.Application
+                .Where(h => h.ApplicationStatus == Shared.Enums.ApplicationStatus.Hired) // Count only successful hires
+                .CountAsync();
+        }
+        public async Task<List<TopJobDto>> GetTopAppliedJobs()
+        {
+            var result = await _context.JobPosting
+                .Select(j => new TopJobDto
+                {
+                    JobTitle = j.Title,
+                    ApplicantCount = j.Application.Count()
+                })
+                .OrderByDescending(j => j.ApplicantCount)
+                .Take(7)
+                .ToListAsync();
+
+            return result;
+        }
+        public async Task<List<ApplicationStatusDto>> GetApplicationStatusCounts()
+        {
+            return await _context.Application
+                .GroupBy(a => a.ApplicationStatus)
+                .Select(g => new ApplicationStatusDto
+                {
+                    Status = g.Key.ToString(),
+                    Count = g.Count()
+                })
+                .ToListAsync();
+        }
+        public async Task<List<JobPostingListDtos>> JobPostList()
+        {
+            try
+            {
+                var today = DateTime.UtcNow;
+
+                // Simple, clean EF LINQ query like EmployersList
+                List<JobPostingListDtos> jobPosts = await _context.JobPosting
+                    .Where(j => j.IsDeleted == 0 &&
+                                (j.ExpiredDate == null || j.ExpiredDate >= today))
+                    .Select(j => new JobPostingListDtos
+                    {
+                        JobPostingId = j.JobPostingId,
+                        Title = j.Title,
+                        Description = j.Description,
+                        Location = j.Location,
+                        EmploymentType = j.EmploymentType,
+                        SalaryFrom = j.SalaryFrom,
+                        SalaryTo = j.SalaryTo,
+                        JobCategory = j.JobCategory,
+                        JobRequirements = j.JobRequirements,
+                        PostedDate = j.PostedDate,
+                        ExpiredDate = j.ExpiredDate,
+                        ScheduleDays = j.ScheduleDays,
+                        ScheduleTime = j.ScheduleTime
+                    })
+                    .OrderByDescending(j => j.PostedDate)
+                    .ToListAsync();
+
+                return jobPosts;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error fetching job postings: {ex.Message}");
+            }
+        }
+
+        public async Task<List<ApplicantDtos>> ApplicantList()
+        {
+            var applicants = await _context.Applicant
+                .Select(a => new ApplicantDtos
+                {
+                    ApplicantId = a.ApplicantId,
+                    Firstname = a.Firstname,
+                    Middlename = a.Middlename,
+                    Surname = a.Surname,
+                    Address = a.Address,
+                    Phone = a.Phone
+                })
+                .ToListAsync();
+
+            return applicants;
+        }
+
+
+        public async Task<bool> BlockApplicantAsync(int id)
+        {
+            var applicant = await _context.Applicant.FindAsync(id);
+            if (applicant == null) return false;
+            var user = await _context.UserAccount.FirstOrDefaultAsync(i => i.UserAccountId == applicant.UserAccountId);
+            if (user == null) return false;
+
+            user.IsDeleted = 1; // or applicant.Status = "Blocked";
+            _context.Applicant.Update(applicant);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> UnBlockApplicantAsync(int id)
+        {
+            var applicant = await _context.Applicant.FindAsync(id);
+            if (applicant == null) return false;
+            var user = await _context.UserAccount.FirstOrDefaultAsync(i => i.UserAccountId == applicant.UserAccountId);
+            if (user == null) return false;
+
+            user.UserAccountId = 1; // or applicant.Status = "Active";
+            _context.Applicant.Update(applicant);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<ApplicantDtos?> ViewApplicantAsync(int id)
+        {
+            var applicant = await _context.Applicant
+                .Where(a => a.ApplicantId == id)
+                .Select(a => new ApplicantDtos
+                {
+                    ApplicantId = a.ApplicantId,
+                    Firstname = a.Firstname,
+                    Middlename = a.Middlename,
+                    Surname = a.Surname,
+                    Address = a.Address,
+                    Phone = a.Phone
+                })
+                .FirstOrDefaultAsync();
+
+            return applicant;
+        }
     }
 }

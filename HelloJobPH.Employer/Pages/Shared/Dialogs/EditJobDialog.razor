@@ -123,12 +123,12 @@
                         <MudIcon Icon="@Icons.Material.Filled.Save" Class="mr-2" />
                         Update Job Post
                     </MudButton>
-                 @*    <MudButton Variant="Variant.Outlined"
-                               Color="Color.Secondary"
-                               OnClick="Cancel"
-                               Size="Size.Large">
+                    <MudButton OnClick="Cancel"
+                               Variant="Variant.Text"
+                               Color="Color.Default"
+                               Size="Size.Medium">
                         Cancel
-                    </MudButton> *@
+                    </MudButton>
                 </div>
             </MudItem>
         </MudGrid>
@@ -143,26 +143,28 @@
     private bool isSaving = false;
     private MudForm _form;
 
-    [Parameter] public JobPostingDtos? Existingjob { get; set; }
+    [Parameter] public JobPostingDtos? ExistingJob { get; set; }
 
     protected override void OnInitialized()
     {
-        if (Existingjob != null)
+        if (ExistingJob != null)
         {
-            // Copy existing data
+            // Copy data from the parameter into your local Job object
             Job = new JobPostingDtos
             {
-                JobPostingId = Job.JobPostingId,
-                Title = Job.Title,
-                Description = Job.Description,
-                Location = Job.Location,
-                EmploymentType = Job.EmploymentType,
-                SalaryFrom = Job.SalaryFrom,
-                SalaryTo = Job.SalaryTo,
-                JobCategory = Job.JobCategory,
-                ExpiredDate = Job.ExpiredDate,
-                ScheduleDays = Job.ScheduleDays,
-                ScheduleTime = Job.ScheduleTime
+                JobPostingId = ExistingJob.JobPostingId,
+                Title = ExistingJob.Title,
+                Description = ExistingJob.Description,
+                JobRequirements = ExistingJob.JobRequirements,
+                Location = ExistingJob.Location,
+                EmploymentType = ExistingJob.EmploymentType,
+                SalaryFrom = ExistingJob.SalaryFrom,
+                SalaryTo = ExistingJob.SalaryTo,
+                JobCategory = ExistingJob.JobCategory,
+                ExpiredDate = ExistingJob.ExpiredDate,
+         
+                ScheduleDays = ExistingJob.ScheduleDays,
+                ScheduleTime = ExistingJob.ScheduleTime
             };
         }
     }
@@ -186,4 +188,5 @@
             Snackbar.Add($"Error: {ex.Message}", Severity.Error);
         }
     }
+    void Cancel() => MudDialog.Cancel();
 }

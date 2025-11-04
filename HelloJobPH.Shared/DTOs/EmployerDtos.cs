@@ -17,8 +17,10 @@ namespace HelloJobPH.Shared.DTOs
         public string Description { get; set; } = string.Empty;
         public string CompanyAddress { get; set; } = string.Empty;
         public string City { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
         public string Province { get; set; } = string.Empty;
         public string ZipCode { get; set; } = string.Empty;
+
 
         [EmailAddress]
         public string ContactEmail { get; set; } = string.Empty;

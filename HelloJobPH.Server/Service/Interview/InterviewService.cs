@@ -1,5 +1,6 @@
 ﻿using HelloJobPH.Server.Data;
 using HelloJobPH.Server.Service.Email;
+using HelloJobPH.Server.Utility;
 using HelloJobPH.Shared.DTOs;
 using HelloJobPH.Shared.Enums;
 using HelloJobPH.Shared.Model;
@@ -15,21 +16,17 @@ namespace HelloJobPH.Server.Service.Interview
     {
         private readonly ApplicationDbContext _context;
         private readonly IEmailService _emailService;
-        IHttpContextAccessor _httpContextAccessor;
-        public InterviewService(ApplicationDbContext context, IEmailService emailService, IHttpContextAccessor httpContextAccessor)
+        public InterviewService(ApplicationDbContext context, IEmailService emailService)
         {
             _context = context;
             _emailService = emailService;
-            _httpContextAccessor = httpContextAccessor;
         }
         public async Task<List<InterviewListDtos>> FinalList()
         {
-            var user = _httpContextAccessor.HttpContext?.User;
-
-            // ✅ Get the user’s ID from claims
-            var userIdClaim = user?.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!int.TryParse(userIdClaim, out int userId))
-                throw new Exception("Invalid or missing user ID in claims.");
+            var userId = Utilities.GetUserId();
+            if (userId is null)
+                throw new Exception("User not found!!");
+                
             try
             {
                 var result = await _context.Application
@@ -61,12 +58,9 @@ namespace HelloJobPH.Server.Service.Interview
 
         public async Task<List<InterviewListDtos>> InitialList()
         {
-            var user = _httpContextAccessor.HttpContext?.User;
-
-            // ✅ Get the user’s ID from claims
-            var userIdClaim = user?.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!int.TryParse(userIdClaim, out int userId))
-                throw new Exception("Invalid or missing user ID in claims.");
+            var userId = Utilities.GetUserId();
+            if (userId is null)
+                throw new Exception("User not found!!");
             try
             {
                 var result = await _context.Application
@@ -98,12 +92,9 @@ namespace HelloJobPH.Server.Service.Interview
 
         public async Task<List<InterviewListDtos>> TechnicalList()
         {
-            var user = _httpContextAccessor.HttpContext?.User;
-
-            // ✅ Get the user’s ID from claims
-            var userIdClaim = user?.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!int.TryParse(userIdClaim, out int userId))
-                throw new Exception("Invalid or missing user ID in claims.");
+            var userId = Utilities.GetUserId();
+            if (userId is null)
+                throw new Exception("User not found!!");
             try
             {
                 var result = await _context.Application

@@ -2,6 +2,7 @@ using AutoMapper;
 using HelloJobPH.Employer.JwtAuthStateProviders;
 using HelloJobPH.Server.Data;
 using HelloJobPH.Server.Mapper;
+using HelloJobPH.Server.Middleware;
 using HelloJobPH.Server.Service.Auth;
 using HelloJobPH.Server.Service.Candidate;
 using HelloJobPH.Server.Service.Dashboard;
@@ -125,7 +126,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseHttpsRedirection();
 app.UseBlazorFrameworkFiles();
@@ -134,5 +135,8 @@ app.UseAuthorization();
 app.UseAuthentication();
 app.MapControllers();
 app.MapFallbackToFile("index.html");
+var httpContextAccessor = app.Services.GetRequiredService<IHttpContextAccessor>();
+HelloJobPH.Server.Utility.Utilities.Configure(httpContextAccessor);
+
 
 app.Run();

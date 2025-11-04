@@ -118,7 +118,7 @@
                             <!-- Action Buttons -->
                             <MudStack Row="true" Spacing="2">
                                 <MudButton Variant="Variant.Filled"
-                                           OnClick="@(() => EditPost(job))"
+                                           OnClick="@(() => Editpost(job))"
                                            Color="Color.Primary"
                                           StartIcon="@Icons.Material.Filled.Edit"
                                           FullWidth="true"
@@ -270,7 +270,14 @@
     {
         Console.WriteLine($"jobId passed: {job.JobPostingId}");
         var parameters = new DialogParameters { ["ExistingJob"] = job };
-        var dialog = DialogService.Show<EditJobDialog>("Edit job", parameters);
+
+        var options = new DialogOptions
+        {
+            CloseButton = true,
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true
+        };
+        var dialog = DialogService.Show<EditJobDialog>("Edit job", parameters, options);
     }
 
 }

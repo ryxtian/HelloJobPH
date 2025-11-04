@@ -44,7 +44,47 @@ namespace HelloJobPH.Shared.Enums
         [Display(Name = "Sales")]
         Sales,
 
+        [Display(Name = "Legal & Compliance")]
+        LegalAndCompliance,
+
+        [Display(Name = "Creative & Design")]
+        CreativeAndDesign,
+
+        [Display(Name = "Science & Research")]
+        ScienceAndResearch,
+
+        [Display(Name = "Government & Public Sector")]
+        GovernmentAndPublicSector,
+
+        [Display(Name = "Energy & Utilities")]
+        EnergyAndUtilities,
+
+        [Display(Name = "Real Estate & Property")]
+        RealEstateAndProperty,
+
+        [Display(Name = "Telecommunications")]
+        Telecommunications,
+
+        [Display(Name = "Customer Service & Support")]
+        CustomerServiceAndSupport,
+
+        [Display(Name = "Supply Chain & Procurement")]
+        SupplyChainAndProcurement,
+
+        [Display(Name = "Insurance")]
+        Insurance,
+
+        [Display(Name = "Media & Entertainment")]
+        MediaAndEntertainment,
+
+        [Display(Name = "Agriculture & Farming")]
+        AgricultureAndFarming,
+
+        [Display(Name = "Transportation & Logistics")]
+        TransportationAndLogistics,
+
         [Display(Name = "Other")]
         Other
     }
+
 }

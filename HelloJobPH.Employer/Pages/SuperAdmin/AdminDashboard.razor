@@ -1,7 +1,8 @@
 ﻿@page "/superadmin/dashboard"
+@using HelloJobPH.Employer.Services.SuperAdmin
 @inject NavigationManager NavigationManager
-@inject ISnackbar Snackbar
 @layout SuperAdminLayout
+@inject IClientSuperAdminService DashboardService
 
 <style>
     .stat-card {
@@ -11,37 +12,37 @@
         position: relative;
     }
 
-    .stat-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 12px 24px rgba(0,0,0,0.15) !important;
-    }
+        .stat-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.15) !important;
+        }
 
-    .stat-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        right: 0;
-        width: 120px;
-        height: 120px;
-        border-radius: 50%;
-        opacity: 0.1;
-    }
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            opacity: 0.1;
+        }
 
-    .stat-card.primary::before {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    }
+        .stat-card.primary::before {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
 
-    .stat-card.success::before {
-        background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
-    }
+        .stat-card.success::before {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+        }
 
-    .stat-card.warning::before {
-        background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
-    }
+        .stat-card.warning::before {
+            background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
+        }
 
-    .stat-card.info::before {
-        background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
-    }
+        .stat-card.info::before {
+            background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+        }
 
     .page-header {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -51,51 +52,24 @@
         overflow: hidden;
     }
 
-    .page-header::before {
-        content: '';
-        position: absolute;
-        top: -50%;
-        right: -10%;
-        width: 400px;
-        height: 400px;
-        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-    }
+        .page-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        }
 
     .chart-card {
         border-radius: 16px;
         transition: box-shadow 0.3s ease;
     }
 
-    .chart-card:hover {
-        box-shadow: 0 8px 16px rgba(0,0,0,0.1) !important;
-    }
-
-    .activity-item {
-        padding: 16px;
-        border-left: 3px solid transparent;
-        transition: all 0.2s ease;
-        border-radius: 8px;
-    }
-
-    .activity-item:hover {
-        background: rgba(102, 126, 234, 0.05);
-        border-left-color: #667eea;
-    }
-
-    .quick-action-btn {
-        border-radius: 12px;
-        padding: 20px;
-        text-align: center;
-        transition: all 0.3s ease;
-        cursor: pointer;
-        border: 2px solid transparent;
-    }
-
-    .quick-action-btn:hover {
-        transform: translateY(-4px);
-        border-color: #667eea;
-        background: rgba(102, 126, 234, 0.05) !important;
-    }
+        .chart-card:hover {
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1) !important;
+        }
 
     .trend-badge {
         padding: 4px 12px;
@@ -109,19 +83,6 @@
         color: #48bb78;
     }
 
-    .trend-down {
-        background: rgba(245, 101, 101, 0.15);
-        color: #f56565;
-    }
-
-    .data-table-row {
-        transition: background 0.2s ease;
-    }
-
-    .data-table-row:hover {
-        background: rgba(102, 126, 234, 0.03);
-    }
-
     .status-dot {
         width: 8px;
         height: 8px;
@@ -130,31 +91,27 @@
         margin-right: 8px;
     }
 
-    .status-active { background: #48bb78; }
-    .status-pending { background: #ed8936; }
-    .status-inactive { background: #cbd5e0; }
+    .status-active {
+        background: #48bb78;
+    }
+
+    .status-pending {
+        background: #ed8936;
+    }
+
+    .status-inactive {
+        background: #cbd5e0;
+    }
 </style>
 
 <!-- Page Header -->
 <MudPaper Class="page-header pa-6 mb-6" Elevation="0">
-    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Style="position: relative; z-index: 1;">
+    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
         <MudStack Spacing="1">
-            <MudText Typo="Typo.h4" Style="font-weight: 700;">
-                Welcome back, Admin! 👋
-            </MudText>
+            <MudText Typo="Typo.h4" Style="font-weight: 700;">Welcome back, Admin! 👋</MudText>
             <MudText Typo="Typo.body1" Style="opacity: 0.9;">
                 Here's what's happening with your recruitment platform today
             </MudText>
-        </MudStack>
-        <MudStack Row="true" Spacing="2">
-            <MudButton Variant="Variant.Filled" 
-                       Style="background: white; color: #667eea;"
-                       StartIcon="@Icons.Material.Filled.Add"
-                       OnClick="@(() => NavigationManager.NavigateTo("/admin/jobs/new"))">
-                Post New Job
-            </MudButton>
-            <MudIconButton Icon="@Icons.Material.Filled.Notifications" 
-                           Style="background: rgba(255,255,255,0.2); color: white;" />
         </MudStack>
     </MudStack>
 </MudPaper>
@@ -164,122 +121,77 @@
         <!-- Stats Cards -->
         <MudItem xs="12" sm="6" md="3">
             <MudPaper Elevation="3" Class="stat-card primary pa-4">
-                <MudStack Spacing="2" Style="position: relative; z-index: 1;">
-                    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Start">
-                        <MudIcon Icon="@Icons.Material.Filled.Work" 
-                                 Size="Size.Large" 
-                                 Style="color: #667eea; font-size: 48px;" />
+                <MudStack Spacing="2">
+                    <MudStack Row="true" Justify="Justify.SpaceBetween">
+                        <MudIcon Icon="@Icons.Material.Filled.Work" Size="Size.Large" Style="color:#667eea; font-size:48px;" />
                         <MudChip T="string" Size="Size.Small" Class="trend-badge trend-up">
-                            <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Size="Size.Small" Class="mr-1" />
-                            +12%
+                            <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Size="Size.Small" Class="mr-1" /> +12%
                         </MudChip>
                     </MudStack>
-                    <MudText Typo="Typo.h3" Style="font-weight: 700; color: #1a202c;">
-                        @totalJobs
-                    </MudText>
-                    <MudText Typo="Typo.body2" Color="Color.Secondary">
-                        Total Job Posts
-                    </MudText>
-                    <MudText Typo="Typo.body2" Style="color: #667eea; font-weight: 600;">
-                        @activeJobs Active
-                    </MudText>
+                    <MudText Typo="Typo.h3" Style="font-weight:700;">@totalJobs</MudText>
+                    <MudText Typo="Typo.body2">Total Job Posts</MudText>
+                    <MudText Typo="Typo.body2" Style="color:#667eea;">@activeJobs Active</MudText>
                 </MudStack>
             </MudPaper>
         </MudItem>
 
         <MudItem xs="12" sm="6" md="3">
             <MudPaper Elevation="3" Class="stat-card success pa-4">
-                <MudStack Spacing="2" Style="position: relative; z-index: 1;">
-                    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Start">
-                        <MudIcon Icon="@Icons.Material.Filled.People" 
-                                 Size="Size.Large" 
-                                 Style="color: #48bb78; font-size: 48px;" />
+                <MudStack Spacing="2">
+                    <MudStack Row="true" Justify="Justify.SpaceBetween">
+                        <MudIcon Icon="@Icons.Material.Filled.People" Size="Size.Large" Style="color:#48bb78; font-size:48px;" />
                         <MudChip T="string" Size="Size.Small" Class="trend-badge trend-up">
-                            <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Size="Size.Small" Class="mr-1" />
-                            +8%
+                            <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Size="Size.Small" Class="mr-1" /> +8%
                         </MudChip>
                     </MudStack>
-                    <MudText Typo="Typo.h3" Style="font-weight: 700; color: #1a202c;">
-                        @totalApplicants
-                    </MudText>
-                    <MudText Typo="Typo.body2" Color="Color.Secondary">
-                        Total Applicants
-                    </MudText>
-                    <MudText Typo="Typo.body2" Style="color: #48bb78; font-weight: 600;">
-                        @newApplicants New This Week
-                    </MudText>
+                    <MudText Typo="Typo.h3" Style="font-weight:700;">@totalApplicants</MudText>
+                    <MudText Typo="Typo.body2">Total Applicants</MudText>
+                    <MudText Typo="Typo.body2" Style="color:#48bb78;">@newApplicants New This Week</MudText>
                 </MudStack>
             </MudPaper>
         </MudItem>
 
         <MudItem xs="12" sm="6" md="3">
             <MudPaper Elevation="3" Class="stat-card warning pa-4">
-                <MudStack Spacing="2" Style="position: relative; z-index: 1;">
-                    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Start">
-                        <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" 
-                                 Size="Size.Large" 
-                                 Style="color: #ed8936; font-size: 48px;" />
+                <MudStack Spacing="2">
+                    <MudStack Row="true" Justify="Justify.SpaceBetween">
+                        <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" Size="Size.Large" Style="color:#ed8936; font-size:48px;" />
                         <MudChip T="string" Size="Size.Small" Class="trend-badge trend-up">
-                            <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Size="Size.Small" Class="mr-1" />
-                            +15%
+                            <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Size="Size.Small" Class="mr-1" /> +15%
                         </MudChip>
                     </MudStack>
-                    <MudText Typo="Typo.h3" Style="font-weight: 700; color: #1a202c;">
-                        @totalInterviews
-                    </MudText>
-                    <MudText Typo="Typo.body2" Color="Color.Secondary">
-                        Scheduled Interviews
-                    </MudText>
-                    <MudText Typo="Typo.body2" Style="color: #ed8936; font-weight: 600;">
-                        @upcomingInterviews Upcoming
-                    </MudText>
+                    <MudText Typo="Typo.h3" Style="font-weight:700;">@totalInterviews</MudText>
+                    <MudText Typo="Typo.body2">Scheduled Interviews</MudText>
+                    <MudText Typo="Typo.body2" Style="color:#ed8936;">@upcomingInterviews Upcoming</MudText>
                 </MudStack>
             </MudPaper>
         </MudItem>
 
         <MudItem xs="12" sm="6" md="3">
             <MudPaper Elevation="3" Class="stat-card info pa-4">
-                <MudStack Spacing="2" Style="position: relative; z-index: 1;">
-                    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Start">
-                        <MudIcon Icon="@Icons.Material.Filled.CheckCircle" 
-                                 Size="Size.Large" 
-                                 Style="color: #4299e1; font-size: 48px;" />
+                <MudStack Spacing="2">
+                    <MudStack Row="true" Justify="Justify.SpaceBetween">
+                        <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Large" Style="color:#4299e1; font-size:48px;" />
                         <MudChip T="string" Size="Size.Small" Class="trend-badge trend-up">
-                            <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Size="Size.Small" Class="mr-1" />
-                            +5%
+                            <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Size="Size.Small" Class="mr-1" /> +5%
                         </MudChip>
                     </MudStack>
-                    <MudText Typo="Typo.h3" Style="font-weight: 700; color: #1a202c;">
-                        @totalHired
-                    </MudText>
-                    <MudText Typo="Typo.body2" Color="Color.Secondary">
-                        Successful Hires
-                    </MudText>
-                    <MudText Typo="Typo.body2" Style="color: #4299e1; font-weight: 600;">
-                        @hiredThisMonth This Month
-                    </MudText>
+                    <MudText Typo="Typo.h3" Style="font-weight:700;">@totalHired</MudText>
+                    <MudText Typo="Typo.body2">Successful Hires</MudText>
+                    <MudText Typo="Typo.body2" Style="color:#4299e1;">@hiredThisMonth This Month</MudText>
                 </MudStack>
             </MudPaper>
         </MudItem>
 
-        <!-- Charts Section -->
+        <!-- Top Jobs Chart -->
         <MudItem xs="12" md="8">
             <MudPaper Elevation="3" Class="pa-4 chart-card">
                 <MudStack Spacing="3">
-                    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                        <MudText Typo="Typo.h6" Style="font-weight: 600;">
-                            Application Trends
-                        </MudText>
-                        <MudButtonGroup Variant="Variant.Outlined" Size="Size.Small">
-                            <MudButton OnClick="@(() => chartPeriod = "week")">Week</MudButton>
-                            <MudButton OnClick="@(() => chartPeriod = "month")">Month</MudButton>
-                            <MudButton OnClick="@(() => chartPeriod = "year")">Year</MudButton>
-                        </MudButtonGroup>
-                    </MudStack>
-                    <MudChart ChartType="ChartType.Line" 
-                              ChartSeries="@applicationTrendSeries" 
-                              XAxisLabels="@chartLabels" 
-                              Width="100%" 
+                    <MudText Typo="Typo.h6" Style="font-weight:600;">Top Applied Jobs</MudText>
+                    <MudChart ChartType="ChartType.Bar"
+                              ChartSeries="@topJobsSeries"
+                              XAxisLabels="@topJobsLabels"
+                              Width="100%"
                               Height="350px"
                               ChartOptions="@chartOptions" />
                 </MudStack>
@@ -288,250 +200,12 @@
 
         <MudItem xs="12" md="4">
             <MudPaper Elevation="3" Class="pa-4 chart-card">
-                <MudStack Spacing="3">
-                    <MudText Typo="Typo.h6" Style="font-weight: 600;">
-                        Application Status
-                    </MudText>
-                    <MudChart ChartType="ChartType.Donut" 
-                              InputData="@applicationStatusData" 
-                              InputLabels="@applicationStatusLabels"
-                              Width="100%" 
-                              Height="300px" />
-                    <MudStack Spacing="2">
-                        <MudStack Row="true" Justify="Justify.SpaceBetween">
-                            <MudText Typo="Typo.body2">
-                                <span class="status-dot status-active"></span>
-                                Approved
-                            </MudText>
-                            <MudText Typo="Typo.body2" Style="font-weight: 600;">45%</MudText>
-                        </MudStack>
-                        <MudStack Row="true" Justify="Justify.SpaceBetween">
-                            <MudText Typo="Typo.body2">
-                                <span class="status-dot status-pending"></span>
-                                Pending
-                            </MudText>
-                            <MudText Typo="Typo.body2" Style="font-weight: 600;">35%</MudText>
-                        </MudStack>
-                        <MudStack Row="true" Justify="Justify.SpaceBetween">
-                            <MudText Typo="Typo.body2">
-                                <span class="status-dot status-inactive"></span>
-                                Rejected
-                            </MudText>
-                            <MudText Typo="Typo.body2" Style="font-weight: 600;">20%</MudText>
-                        </MudStack>
-                    </MudStack>
-                </MudStack>
-            </MudPaper>
-        </MudItem>
-
-@*         <!-- Quick Actions -->
-        <MudItem xs="12">
-            <MudPaper Elevation="3" Class="pa-4">
-                <MudStack Spacing="3">
-                    <MudText Typo="Typo.h6" Style="font-weight: 600;">
-                        <MudIcon Icon="@Icons.Material.Filled.FlashOn" Class="mr-2" />
-                        Quick Actions
-                    </MudText>
-                    <MudGrid Spacing="3">
-                        <MudItem xs="6" sm="4" md="2">
-                            <MudPaper Elevation="1" Class="quick-action-btn" OnClick="@(() => NavigationManager.NavigateTo("/admin/jobs/new"))">
-                                <MudStack AlignItems="AlignItems.Center" Spacing="2">
-                                    <MudIcon Icon="@Icons.Material.Filled.AddCircle" Color="Color.Primary" Size="Size.Large" />
-                                    <MudText Typo="Typo.body2" Style="font-weight: 600;">Post Job</MudText>
-                                </MudStack>
-                            </MudPaper>
-                        </MudItem>
-                        <MudItem xs="6" sm="4" md="2">
-                            <MudPaper Elevation="1" Class="quick-action-btn" OnClick="@(() => NavigationManager.NavigateTo("/admin/applicants"))">
-                                <MudStack AlignItems="AlignItems.Center" Spacing="2">
-                                    <MudIcon Icon="@Icons.Material.Filled.PersonSearch" Color="Color.Success" Size="Size.Large" />
-                                    <MudText Typo="Typo.body2" Style="font-weight: 600;">View Applicants</MudText>
-                                </MudStack>
-                            </MudPaper>
-                        </MudItem>
-                        <MudItem xs="6" sm="4" md="2">
-                            <MudPaper Elevation="1" Class="quick-action-btn" OnClick="@(() => NavigationManager.NavigateTo("/admin/interviews"))">
-                                <MudStack AlignItems="AlignItems.Center" Spacing="2">
-                                    <MudIcon Icon="@Icons.Material.Filled.Event" Color="Color.Warning" Size="Size.Large" />
-                                    <MudText Typo="Typo.body2" Style="font-weight: 600;">Schedule Interview</MudText>
-                                </MudStack>
-                            </MudPaper>
-                        </MudItem>
-                        <MudItem xs="6" sm="4" md="2">
-                            <MudPaper Elevation="1" Class="quick-action-btn" OnClick="@(() => NavigationManager.NavigateTo("/admin/reports"))">
-                                <MudStack AlignItems="AlignItems.Center" Spacing="2">
-                                    <MudIcon Icon="@Icons.Material.Filled.BarChart" Color="Color.Info" Size="Size.Large" />
-                                    <MudText Typo="Typo.body2" Style="font-weight: 600;">View Reports</MudText>
-                                </MudStack>
-                            </MudPaper>
-                        </MudItem>
-                        <MudItem xs="6" sm="4" md="2">
-                            <MudPaper Elevation="1" Class="quick-action-btn" OnClick="@(() => NavigationManager.NavigateTo("/admin/users"))">
-                                <MudStack AlignItems="AlignItems.Center" Spacing="2">
-                                    <MudIcon Icon="@Icons.Material.Filled.ManageAccounts" Color="Color.Secondary" Size="Size.Large" />
-                                    <MudText Typo="Typo.body2" Style="font-weight: 600;">Manage Users</MudText>
-                                </MudStack>
-                            </MudPaper>
-                        </MudItem>
-                        <MudItem xs="6" sm="4" md="2">
-                            <MudPaper Elevation="1" Class="quick-action-btn" OnClick="@(() => NavigationManager.NavigateTo("/admin/settings"))">
-                                <MudStack AlignItems="AlignItems.Center" Spacing="2">
-                                    <MudIcon Icon="@Icons.Material.Filled.Settings" Color="Color.Default" Size="Size.Large" />
-                                    <MudText Typo="Typo.body2" Style="font-weight: 600;">Settings</MudText>
-                                </MudStack>
-                            </MudPaper>
-                        </MudItem>
-                    </MudGrid>
-                </MudStack>
-            </MudPaper>
-        </MudItem> *@
-
-        <!-- Recent Applications -->
-        <MudItem xs="12" md="8">
-            <MudPaper Elevation="3" Class="pa-4">
-                <MudStack Spacing="3">
-                    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                        <MudText Typo="Typo.h6" Style="font-weight: 600;">
-                            Recent Applications
-                        </MudText>
-                        <MudButton Variant="Variant.Text" 
-                                   Color="Color.Primary" 
-                                   EndIcon="@Icons.Material.Filled.ArrowForward"
-                                   OnClick="@(() => NavigationManager.NavigateTo("/admin/applications"))">
-                            View All
-                        </MudButton>
-                    </MudStack>
-                    <MudTable Items="@recentApplications" Hover="true" Dense="true" Elevation="0">
-                        <HeaderContent>
-                            <MudTh>Applicant</MudTh>
-                            <MudTh>Position</MudTh>
-                            <MudTh>Applied Date</MudTh>
-                            <MudTh>Status</MudTh>
-                            <MudTh>Actions</MudTh>
-                        </HeaderContent>
-                        <RowTemplate>
-                            <MudTd DataLabel="Applicant">
-                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
-                                    <MudAvatar Color="Color.Primary" Size="Size.Small">
-                                        @context.ApplicantName.Substring(0, 1)
-                                    </MudAvatar>
-                                    <MudStack Spacing="0">
-                                        <MudText Typo="Typo.body2" Style="font-weight: 600;">@context.ApplicantName</MudText>
-                                        <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Email</MudText>
-                                    </MudStack>
-                                </MudStack>
-                            </MudTd>
-                            <MudTd DataLabel="Position">@context.Position</MudTd>
-                            <MudTd DataLabel="Applied Date">@context.AppliedDate.ToString("MMM dd, yyyy")</MudTd>
-                            <MudTd DataLabel="Status">
-                                <MudChip T="string" Size="Size.Small"
-                                         Color="@GetStatusColor(context.Status)"
-                                         Variant="Variant.Filled">
-                                    @context.Status
-                                </MudChip>
-                            </MudTd>
-                            <MudTd DataLabel="Actions">
-                                <MudStack Row="true" Spacing="1">
-                                    <MudIconButton Icon="@Icons.Material.Filled.Visibility" 
-                                                   Size="Size.Small" 
-                                                   Color="Color.Primary"
-                                                   OnClick="@(() => ViewApplication(context.Id))" />
-                                    <MudIconButton Icon="@Icons.Material.Filled.CheckCircle" 
-                                                   Size="Size.Small" 
-                                                   Color="Color.Success"
-                                                   OnClick="@(() => ApproveApplication(context.Id))" />
-                                    <MudIconButton Icon="@Icons.Material.Filled.Cancel" 
-                                                   Size="Size.Small" 
-                                                   Color="Color.Error"
-                                                   OnClick="@(() => RejectApplication(context.Id))" />
-                                </MudStack>
-                            </MudTd>
-                        </RowTemplate>
-                    </MudTable>
-                </MudStack>
-            </MudPaper>
-        </MudItem>
-
-        <!-- Recent Activity -->
-        <MudItem xs="12" md="4">
-            <MudPaper Elevation="3" Class="pa-4">
-                <MudStack Spacing="3">
-                    <MudText Typo="Typo.h6" Style="font-weight: 600;">
-                        Recent Activity
-                    </MudText>
-                    <MudStack Spacing="0">
-                        @foreach (var activity in recentActivities)
-                        {
-                            <div class="activity-item">
-                                <MudStack Row="true" Spacing="2">
-                                    <MudIcon Icon="@activity.Icon" Color="@activity.Color" Size="Size.Small" />
-                                    <MudStack Spacing="0" Style="flex: 1;">
-                                        <MudText Typo="Typo.body2" Style="font-weight: 600;">
-                                            @activity.Title
-                                        </MudText>
-                                        <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                            @activity.Description
-                                        </MudText>
-                                        <MudText Typo="Typo.caption" Color="Color.Secondary" Style="margin-top: 4px;">
-                                            @activity.TimeAgo
-                                        </MudText>
-                                    </MudStack>
-                                </MudStack>
-                            </div>
-                        }
-                    </MudStack>
-                </MudStack>
-            </MudPaper>
-        </MudItem>
-
-        <!-- Top Performing Jobs -->
-        <MudItem xs="12">
-            <MudPaper Elevation="3" Class="pa-4">
-                <MudStack Spacing="3">
-                    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                        <MudText Typo="Typo.h6" Style="font-weight: 600;">
-                            Top Performing Jobs
-                        </MudText>
-                        <MudButton Variant="Variant.Text" 
-                                   Color="Color.Primary" 
-                                   EndIcon="@Icons.Material.Filled.ArrowForward"
-                                   OnClick="@(() => NavigationManager.NavigateTo("/admin/jobs"))">
-                            View All Jobs
-                        </MudButton>
-                    </MudStack>
-                    <MudGrid Spacing="3">
-                        @foreach (var job in topJobs)
-                        {
-                            <MudItem xs="12" sm="6" md="4">
-                                <MudPaper Elevation="1" Class="pa-3" Style="border-left: 4px solid #667eea;">
-                                    <MudStack Spacing="2">
-                                        <MudText Typo="Typo.subtitle1" Style="font-weight: 600;">
-                                            @job.Title
-                                        </MudText>
-                                        <MudStack Row="true" Spacing="4">
-                                            <MudStack Spacing="0">
-                                                <MudText Typo="Typo.h6" Color="Color.Primary">@job.Applications</MudText>
-                                                <MudText Typo="Typo.caption" Color="Color.Secondary">Applications</MudText>
-                                            </MudStack>
-                                            <MudStack Spacing="0">
-                                                <MudText Typo="Typo.h6" Color="Color.Success">@job.Interviews</MudText>
-                                                <MudText Typo="Typo.caption" Color="Color.Secondary">Interviews</MudText>
-                                            </MudStack>
-                                            <MudStack Spacing="0">
-                                                <MudText Typo="Typo.h6" Color="Color.Info">@job.Hired</MudText>
-                                                <MudText Typo="Typo.caption" Color="Color.Secondary">Hired</MudText>
-                                            </MudStack>
-                                        </MudStack>
-                                        <MudProgressLinear Color="Color.Primary" Value="@job.FillRate" Size="Size.Small" />
-                                        <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                            @job.FillRate% Fill Rate
-                                        </MudText>
-                                    </MudStack>
-                                </MudPaper>
-                            </MudItem>
-                        }
-                    </MudGrid>
-                </MudStack>
+                <MudText Typo="Typo.h6" Style="font-weight:600;">Application Status</MudText>
+                <MudChart ChartType="ChartType.Donut"
+                          InputData="@applicationStatusData"
+                          InputLabels="@applicationStatusLabels"
+                          Width="100%"
+                          Height="300px" />
             </MudPaper>
         </MudItem>
     </MudGrid>
@@ -539,148 +213,84 @@
 
 @code {
     // Stats
-    private int totalJobs = 145;
-    private int activeJobs = 87;
-    private int totalApplicants = 2847;
-    private int newApplicants = 156;
-    private int totalInterviews = 234;
-    private int upcomingInterviews = 45;
-    private int totalHired = 98;
-    private int hiredThisMonth = 12;
+    private int totalJobs;
+    private int activeJobs;
+    private int totalApplicants;
+    private int newApplicants;
+    private int totalInterviews;
+    private int upcomingInterviews;
+    private int totalHired;
+    private int hiredThisMonth;
 
     // Chart Data
-    private string chartPeriod = "month";
     private List<ChartSeries> applicationTrendSeries = new();
     private string[] chartLabels = Array.Empty<string>();
     private ChartOptions chartOptions = new();
-    private double[] applicationStatusData = { 45, 35, 20 };
-    private string[] applicationStatusLabels = { "Approved", "Pending", "Rejected" };
+    private double[] applicationStatusData = Array.Empty<double>();
+    private string[] applicationStatusLabels = Array.Empty<string>();
 
-    // Tables Data
-    private List<ApplicationDto> recentApplications = new();
-    private List<ActivityDto> recentActivities = new();
-    private List<TopJobDto> topJobs = new();
+    // Top Job Applications Data
+    private List<ChartSeries> topJobsSeries = new();
+    private string[] topJobsLabels = Array.Empty<string>();
 
     protected override async Task OnInitializedAsync()
     {
-        InitializeChartData();
-        LoadRecentApplications();
-        LoadRecentActivities();
-        LoadTopJobs();
+        await LoadStats();
+        await LoadTopJobs();
+        await LoadApplicationStatusChart();
+        totalJobs = await DashboardService.TotalJobCounts();
+        topJobsSeries = new List<ChartSeries>
+{
+    new ChartSeries { Name = "Applicants", Data = (await DashboardService.GetTopAppliedJobs()).Select(j => (double)j.ApplicantCount).ToArray() }
+};
     }
 
-    private void InitializeChartData()
+    private async Task LoadStats()
     {
-        chartLabels = new[] { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
-        
-        applicationTrendSeries = new List<ChartSeries>
-        {
-            new ChartSeries { Name = "Applications", Data = new double[] { 180, 220, 195, 250, 280, 310, 295, 330, 350, 380, 410, 445 } },
-            new ChartSeries { Name = "Interviews", Data = new double[] { 90, 110, 98, 125, 140, 155, 148, 165, 175, 190, 205, 222 } },
-            new ChartSeries { Name = "Hired", Data = new double[] { 45, 55, 49, 62, 70, 77, 74, 82, 87, 95, 102, 111 } }
-        };
+        totalJobs = await DashboardService.TotalJobCounts();
+        totalApplicants = await DashboardService.TotalApplicants();
+        totalInterviews = await DashboardService.ScheduledInterviews();
+        totalHired = await DashboardService.SuccessfulHires();
 
-        chartOptions = new ChartOptions
-        {
-            YAxisTicks = 50,
-            MaxNumYAxisTicks = 10,
-            YAxisLines = true,
-            XAxisLines = false
-        };
+        // Example placeholders if service doesn't provide these yet
+        activeJobs = totalJobs / 2;
+        newApplicants = totalApplicants / 10;
+        upcomingInterviews = totalInterviews / 5;
+        hiredThisMonth = totalHired / 8;
     }
 
-    private void LoadRecentApplications()
+    private async Task LoadTopJobs()
     {
-        recentApplications = new List<ApplicationDto>
-        {
-            new() { Id = 1, ApplicantName = "Juan Dela Cruz", Email = "juan@email.com", Position = "Senior Developer", AppliedDate = DateTime.Now.AddDays(-1), Status = "Pending" },
-            new() { Id = 2, ApplicantName = "Maria Santos", Email = "maria@email.com", Position = "UI/UX Designer", AppliedDate = DateTime.Now.AddDays(-2), Status = "Approved" },
-            new() { Id = 3, ApplicantName = "Carlos Reyes", Email = "carlos@email.com", Position = "Project Manager", AppliedDate = DateTime.Now.AddDays(-3), Status = "Interview" },
-            new() { Id = 4, ApplicantName = "Ana Garcia", Email = "ana@email.com", Position = "Marketing Manager", AppliedDate = DateTime.Now.AddDays(-4), Status = "Pending" },
-            new() { Id = 5, ApplicantName = "Miguel Torres", Email = "miguel@email.com", Position = "Data Analyst", AppliedDate = DateTime.Now.AddDays(-5), Status = "Approved" }
-        };
+         //Assuming your service has a method like GetTopAppliedJobs()
+        var topJobs = await DashboardService.GetTopAppliedJobs();
+
+        topJobsLabels = topJobs.Select(j => j.JobTitle).ToArray();
+        var applicantsData = topJobs.Select(j => (double)j.ApplicantCount).ToArray();
+
+        topJobsSeries = new List<ChartSeries>
+         {
+             new ChartSeries { Name = "Applicants", Data = applicantsData }
+         };
     }
 
-    private void LoadRecentActivities()
+    private async Task LoadApplicationStatusChart()
     {
-        recentActivities = new List<ActivityDto>
-        {
-            new() { Icon = Icons.Material.Filled.PersonAdd, Color = Color.Success, Title = "New Application", Description = "Juan Dela Cruz applied for Senior Developer", TimeAgo = "5 minutes ago" },
-            new() { Icon = Icons.Material.Filled.Event, Color = Color.Warning, Title = "Interview Scheduled", Description = "Maria Santos - UI/UX Designer position", TimeAgo = "1 hour ago" },
-            new() { Icon = Icons.Material.Filled.CheckCircle, Color = Color.Info, Title = "Application Approved", Description = "Carlos Reyes moved to interview stage", TimeAgo = "2 hours ago" },
-            new() { Icon = Icons.Material.Filled.Work, Color = Color.Primary, Title = "New Job Posted", Description = "Backend Developer position posted", TimeAgo = "5 hours ago" },
-            new() { Icon = Icons.Material.Filled.ThumbUp, Color = Color.Success, Title = "Candidate Hired", Description = "Ana Garcia hired as Marketing Manager", TimeAgo = "1 day ago" }
-        };
+        var statusCounts = await DashboardService.GetApplicationStatusCounts();
+
+        applicationStatusLabels = statusCounts.Select(s => s.Status).ToArray();
+        applicationStatusData = statusCounts.Select(s => (double)s.Count).ToArray();
     }
 
-    private void LoadTopJobs()
-    {
-        topJobs = new List<TopJobDto>
-        {
-            new() { Title = "Senior Full Stack Developer", Applications = 125, Interviews = 32, Hired = 3, FillRate = 75 },
-            new() { Title = "UI/UX Designer", Applications = 98, Interviews = 28, Hired = 2, FillRate = 68 },
-            new() { Title = "Project Manager", Applications = 87, Interviews = 25, Hired = 2, FillRate = 62 },
-            new() { Title = "Data Analyst", Applications = 76, Interviews = 22, Hired = 1, FillRate = 55 },
-            new() { Title = "Marketing Manager", Applications = 65, Interviews = 18, Hired = 1, FillRate = 48 },
-            new() { Title = "DevOps Engineer", Applications = 54, Interviews = 15, Hired = 1, FillRate = 42 }
-        };
-    }
-
-    private Color GetStatusColor(string status)
-    {
-        return status switch
-        {
-            "Approved" => Color.Success,
-            "Pending" => Color.Warning,
-            "Interview" => Color.Info,
-            "Rejected" => Color.Error,
-            _ => Color.Default
-        };
-    }
-
-    private void ViewApplication(int id)
-    {
-        NavigationManager.NavigateTo($"/admin/applications/{id}");
-    }
-
-    private void ApproveApplication(int id)
-    {
-        Snackbar.Add("Application approved successfully!", Severity.Success);
-        // Update application status logic
-    }
-
-    private void RejectApplication(int id)
-    {
-        Snackbar.Add("Application rejected", Severity.Warning);
-        // Update application status logic
-    }
-
-    // DTOs
-    public class ApplicationDto
-    {
-        public int Id { get; set; }
-        public string ApplicantName { get; set; }
-        public string Email { get; set; }
-        public string Position { get; set; }
-        public DateTime AppliedDate { get; set; }
-        public string Status { get; set; }
-    }
-
-    public class ActivityDto
-    {
-        public string Icon { get; set; }
-        public Color Color { get; set; }
-        public string Title { get; set; }
-        public string Description { get; set; }
-        public string TimeAgo { get; set; }
-    }
-
+    // DTO for Top Jobs
     public class TopJobDto
     {
-        public string Title { get; set; }
-        public int Applications { get; set; }
-        public int Interviews { get; set; }
-        public int Hired { get; set; }
-        public int FillRate { get; set; }
+        public string JobTitle { get; set; } = string.Empty;
+        public int ApplicantCount { get; set; }
+    }
+    public class ApplicationStatusDto
+    {
+        public string Status { get; set; } = string.Empty;
+        public int Count { get; set; }
     }
 }
+

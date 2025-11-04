@@ -14,27 +14,51 @@ namespace HelloJobPH.Server.Service.Dashboard
         }
         public async Task<int> GetActiveApplicationAsync()
         {
-            return await _context.Application
-      .CountAsync(a =>
-          a.ApplicationStatus == ApplicationStatus.Pending ||
-          a.ApplicationStatus == ApplicationStatus.Viewed ||
-          a.ApplicationStatus == ApplicationStatus.Accepted ||
-          a.ApplicationStatus == ApplicationStatus.Initial ||
-          a.ApplicationStatus == ApplicationStatus.Technical ||
-          a.ApplicationStatus == ApplicationStatus.Final ||
-          a.ApplicationStatus == ApplicationStatus.JobOffer ||
-          a.ApplicationStatus == ApplicationStatus.Reschedule);
+            try
+            {
+                return await _context.Application
+.CountAsync(a =>
+a.ApplicationStatus == ApplicationStatus.Pending ||
+a.ApplicationStatus == ApplicationStatus.Viewed ||
+a.ApplicationStatus == ApplicationStatus.Accepted ||
+a.ApplicationStatus == ApplicationStatus.Initial ||
+a.ApplicationStatus == ApplicationStatus.Technical ||
+a.ApplicationStatus == ApplicationStatus.Final ||
+a.ApplicationStatus == ApplicationStatus.JobOffer ||
+a.ApplicationStatus == ApplicationStatus.Reschedule);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
 
         public async Task<int> GetApprovedHiredAsync()
         {
-            return await _context.Application
-         .CountAsync(a => a.ApplicationStatus == ApplicationStatus.Hired);
+            try
+            {
+                return await _context.Application
+       .CountAsync(a => a.ApplicationStatus == ApplicationStatus.Hired);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
 
         public async Task<int> GetTotalJobPostAsync()
         {
-            return await _context.JobPosting.CountAsync();
+            try
+            {
+                return await _context.JobPosting.CountAsync();
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
     }
 }

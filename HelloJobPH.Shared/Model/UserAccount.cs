@@ -13,7 +13,7 @@ namespace HelloJobPH.Shared.Model
         public string Email { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
         public string Role { get; set; } = string.Empty;
-        public bool IsLoggedIn { get; set; } = false;
+        public byte IsDeleted { get; set; } = 0;
         public int userDetailsId { get; set; }
         public Applicant? Applicant { get; set; }
         public HumanResources? HumanResource { get; set; }

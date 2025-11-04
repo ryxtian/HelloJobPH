@@ -1,7 +1,323 @@
 ﻿@page "/superadmin/approval"
+@using HelloJobPH.Employer.Services.SuperAdmin
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+@layout SuperAdminLayout
+@inject IDialogService DialogService
+@inject IClientSuperAdminService _service
 
-<h3>Approval</h3>
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 16px;
+    }
+
+    .employer-card {
+        transition: all 0.3s ease;
+        border-radius: 12px;
+        border: 1px solid rgba(0,0,0,0.08);
+    }
+
+        .employer-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1) !important;
+        }
+
+    .search-bar {
+        border-radius: 50px;
+    }
+
+    .status-badge {
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .status-active {
+        background: rgba(72, 187, 120, 0.15);
+        color: #48bb78;
+    }
+
+    .status-inactive {
+        background: rgba(203, 213, 224, 0.5);
+        color: #718096;
+    }
+
+    .status-pending {
+        background: rgba(237, 137, 54, 0.15);
+        color: #ed8936;
+    }
+</style>
+
+<!-- Page Header -->
+<MudPaper Class="page-header pa-6 mb-6" Elevation="0">
+    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+        <MudStack Spacing="1">
+            <MudText Typo="Typo.h4" Style="font-weight: 700;">
+                <MudIcon Icon="@Icons.Material.Filled.Business" Class="mr-2" />
+                Employers
+            </MudText>
+            <MudText Typo="Typo.body1" Style="opacity: 0.9;">
+                Manage and monitor all registered employers
+            </MudText>
+        </MudStack>
+    </MudStack>
+</MudPaper>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pa-0">
+    <!-- Search and Filters -->
+    <MudPaper Elevation="2" Class="pa-4 mb-4" Style="border-radius: 12px;">
+        <MudGrid Spacing="3" AlignItems="Center">
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudSelect @bind-Value="sortOption"
+                           Label="Sort By"
+                           Variant="Variant.Outlined"
+                           OnClick="FilterEmployers">
+                    <MudSelectItem Value="@("name")">Company Name</MudSelectItem>
+                    <MudSelectItem Value="@("date-new")">Newest First</MudSelectItem>
+                    <MudSelectItem Value="@("date-old")">Oldest First</MudSelectItem>
+                    <MudSelectItem Value="@("jobs")">Most Jobs</MudSelectItem>
+                </MudSelect>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+
+    <!-- Stats Summary -->
+    <MudGrid Spacing="3" Class="mb-4">
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Elevation="2" Class="pa-4" Style="border-left: 4px solid #48bb78; border-radius: 8px;">
+                <MudStack Spacing="1">
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">Total Employers</MudText>
+                    <MudText Typo="Typo.h5" Style="font-weight: 700;">@employers.Count</MudText>
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+
+    </MudGrid>
+
+    <!-- Employers Table -->
+    <MudPaper Elevation="2" Style="border-radius: 12px;">
+        <MudTable Items="@filteredEmployers"
+                  Hover="true"
+                  Breakpoint="Breakpoint.Sm"
+                  Loading="@isLoading"
+                  LoadingProgressColor="Color.Primary">
+            <HeaderContent>
+                <MudTh>Company</MudTh>
+                <MudTh>Contact Person</MudTh>
+                <MudTh>Industry</MudTh>
+        
+                <MudTh>Status</MudTh>
+             
+                <MudTh Style="text-align: center;">Actions</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Company">
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                        <MudAvatar Color="Color.Primary" Size="Size.Medium">
+                            @context.CompanyName.Substring(0, 1)
+                        </MudAvatar>
+                        <MudStack Spacing="0">
+                            <MudText Typo="Typo.body2" Style="font-weight: 600;">@context.CompanyName</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">@context.ContactEmail</MudText>
+                        </MudStack>
+                    </MudStack>
+                </MudTd>
+                <MudTd DataLabel="Contact Person">
+                    <MudStack Spacing="0">
+
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@context.ContactNumber</MudText>
+                    </MudStack>
+                </MudTd>
+                <MudTd DataLabel="Industry">
+                    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@context.Industry</MudChip>
+                </MudTd>
+                @*       <MudTd DataLabel="Job Posts">
+                    <MudText Typo="Typo.body2" Style="font-weight: 600;">@context.JobPostsCount</MudText>
+                </MudTd> *@
+                 <MudTd DataLabel="Status">
+                    <MudChip T="string" Size="Size.Small" 
+                             Class="@GetStatusClass(context.Status)">
+                        @context.Status
+                    </MudChip>
+                </MudTd> 
+                @*   <MudTd DataLabel="Member Since">
+                    <MudText Typo="Typo.body2">@context.JoinedDate.ToString("MMM dd, yyyy")</MudText>
+                </MudTd> *@
+                <MudTd DataLabel="Actions" Style="text-align: center;">
+                    <MudStack Row="true" Spacing="1" Justify="Justify.Center">
+                        <MudIconButton Icon="@Icons.Material.Filled.Check"
+                                       Size="Size.Small"
+                                       Color="Color.Primary"
+                                       Title="Approved"
+                                       OnClick="@(() => Approved(context.EmployerId))" />
+
+         
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Size="Size.Small"
+                                       Color="Color.Error"
+                                       Title="Delete"
+                                       OnClick="@(() => DeleteEmployer(context.EmployerId))" />
+
+
+                    </MudStack>
+                </MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager PageSizeOptions="new int[] { 10, 25, 50, 100 }" />
+            </PagerContent>
+        </MudTable>
+    </MudPaper>
+</MudContainer>
 
 @code {
+    private List<EmployerListDtos> employers = new();
+    private List<EmployerListDtos> filteredEmployers = new();
+    private string searchQuery = "";
+    private string statusFilter = "All";
+    private string sortOption = "name";
+    private bool isLoading = false;
 
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadEmployers();
+    }
+
+    private async Task LoadEmployers()
+    {
+        isLoading = true;
+
+        employers = await _service.ForApprovalList();
+
+
+        filteredEmployers = employers;
+        isLoading = false;
+    }
+
+    private void FilterEmployers()
+    {
+        filteredEmployers = employers.Where(e =>
+        {
+            // Search filter
+            bool matchesSearch = string.IsNullOrWhiteSpace(searchQuery) ||
+                e.CompanyName.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                e.ContactEmail.Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                e.Industry.Contains(searchQuery, StringComparison.OrdinalIgnoreCase);
+
+            // Status filter
+            bool matchesStatus = statusFilter == "All" || e.Status == statusFilter;
+
+            return matchesSearch && matchesStatus;
+        }).ToList();
+
+        // Apply sorting
+        filteredEmployers = sortOption switch
+        {
+            // "name" => filteredEmployers.OrderBy(e => e.CompanyName).ToList(),
+            // "date-new" => filteredEmployers.OrderByDescending(e => e.JoinedDate).ToList(),
+            // "date-old" => filteredEmployers.OrderBy(e => e.JoinedDate).ToList(),
+            // "jobs" => filteredEmployers.OrderByDescending(e => e.JobPostsCount).ToList(),
+            _ => filteredEmployers
+        };
+
+        StateHasChanged();
+    }
+
+    private string GetStatusClass(string status)
+    {
+        return status switch
+        {
+            "Active" => "status-badge status-active",
+            "Inactive" => "status-badge status-inactive",
+            "Pending" => "status-badge status-pending",
+            _ => "status-badge"
+        };
+    }
+    private void EditEmployer(int id)
+    {
+        NavigationManager.NavigateTo($"/admin/employers/{id}/edit");
+    }
+
+
+    private async Task Approved(int id)
+    {
+        bool? confirm = await DialogService.ShowMessageBox(
+            "Confirm Approval",
+            "Are you sure you want to approve this employer?",
+            yesText: "Approve",
+            cancelText: "Cancel");
+
+        if (confirm == true)
+        {
+            try
+            {
+                bool result = await _service.ApprovedEmployer(id);
+
+                if (result)
+                {
+                    Snackbar.Add("Employer approved successfully!", Severity.Success);
+                    await LoadEmployers(); // Refresh list
+                }
+                else
+                {
+                    Snackbar.Add("Failed to approve employer.", Severity.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+            }
+        }
+    }
+
+
+
+
+    private async Task DeleteEmployer(int id)
+    {
+        bool? confirm = await DialogService.ShowMessageBox(
+            "Confirm disapprove",
+            "Are you sure you want to permanently disapprove this employer?",
+            yesText: "disapprove",
+            cancelText: "Cancel");
+
+        if (confirm == true)
+        {
+            try
+            {
+                bool result = await _service.DisapprovedEmployer(id);
+
+                if (result)
+                {
+                    employers.RemoveAll(e => e.EmployerId == id);
+                    Snackbar.Add("Employer disapprove successfully!", Severity.Success);
+                }
+                else
+                {
+                    Snackbar.Add("Failed to disapprove employer.", Severity.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+            }
+        }
+    }
+
+
+    public class EmployerDto
+    {
+        public int Id { get; set; }
+        public string CompanyName { get; set; }
+        public string Email { get; set; }
+        public string ContactPerson { get; set; }
+        public string Phone { get; set; }
+        public string Industry { get; set; }
+        public int JobPostsCount { get; set; }
+        public string Status { get; set; }
+        public DateTime JoinedDate { get; set; }
+    }
 }

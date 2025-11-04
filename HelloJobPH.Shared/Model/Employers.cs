@@ -23,6 +23,7 @@ namespace HelloJobPH.Shared.Model
         public string CompanyAddress { get; set; } = string.Empty;
 
         public string City { get; set; } = string.Empty;
+        public string Status { get; set; } = "Pending";
 
         public string Province { get; set; } = string.Empty;
         public string ZipCode { get; set; } = string.Empty;
@@ -37,6 +38,9 @@ namespace HelloJobPH.Shared.Model
         public string Website { get; set; } = string.Empty;
 
         public int UserAccountId { get; set; }
+        public List<JobPosting>? JobPost { get; set; }
+        public List<HumanResources>? HumanResources { get; set; }
+        
         public UserAccount? UserAccount { get; set; }
         public DateTime DateRegistered { get; set; } = DateTime.UtcNow;
 

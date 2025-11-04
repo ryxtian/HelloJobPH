@@ -27,8 +27,4 @@
     <ProjectReference Include="..\HelloJobPH.Shared\HelloJobPH.Shared.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="NewFolder\" />
-  </ItemGroup>
-
 </Project>

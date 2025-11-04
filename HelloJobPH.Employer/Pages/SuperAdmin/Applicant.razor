@@ -1,0 +1,519 @@
+﻿@page "/superadmin/applicants"
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+@layout SuperAdminLayout
+@inject IClientSuperAdminService _service
+
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 16px;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .page-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        }
+
+    .applicant-card {
+        transition: all 0.3s ease;
+        border-radius: 12px;
+        border-left: 4px solid #667eea;
+    }
+
+        .applicant-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1) !important;
+        }
+
+        .applicant-card.blocked {
+            border-left-color: #f56565;
+            opacity: 0.7;
+        }
+
+    .status-badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .status-active {
+        background: rgba(72, 187, 120, 0.15);
+        color: #48bb78;
+    }
+
+    .status-blocked {
+        background: rgba(245, 101, 101, 0.15);
+        color: #f56565;
+    }
+
+    .status-verified {
+        background: rgba(66, 153, 225, 0.15);
+        color: #4299e1;
+    }
+
+    .filter-chip {
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+        .filter-chip:hover {
+            transform: scale(1.05);
+        }
+
+    .applicant-avatar {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.5rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .info-chip {
+        padding: 4px 12px;
+        border-radius: 16px;
+        background: rgba(102, 126, 234, 0.1);
+        font-size: 0.75rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+</style>
+
+<!-- Page Header -->
+<MudPaper Class="page-header pa-6 mb-6" Elevation="0">
+    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Style="position: relative; z-index: 1;">
+        <MudStack Spacing="1">
+            <MudText Typo="Typo.h4" Style="font-weight: 700;">
+                Applicants Management
+            </MudText>
+            <MudText Typo="Typo.body1" Style="opacity: 0.9;">
+                Monitor and manage all applicants across the platform
+            </MudText>
+        </MudStack>
+
+    </MudStack>
+</MudPaper>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="pa-0">
+    <!-- Stats Overview -->
+    <MudGrid Spacing="3" Class="mb-4">
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Elevation="2" Class="pa-4">
+                <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                    <MudStack Spacing="1">
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">Total Applicants</MudText>
+                        <MudText Typo="Typo.h4" Style="font-weight: 700;">@applicants.Count</MudText>
+                    </MudStack>
+                    <MudIcon Icon="@Icons.Material.Filled.People" Color="Color.Primary" Size="Size.Large" />
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Elevation="2" Class="pa-4">
+                <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                    <MudStack Spacing="1">
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">Active Applicants</MudText>
+                        <MudText Typo="Typo.h4" Style="font-weight: 700; color: #48bb78;">@applicants.Count(a => a.Status == "Active")</MudText>
+                    </MudStack>
+                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Large" />
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudPaper Elevation="2" Class="pa-4">
+                <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                    <MudStack Spacing="1">
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">Blocked Applicants</MudText>
+                        <MudText Typo="Typo.h4" Style="font-weight: 700; color: #f56565;">@applicants.Count(a => a.Status == "Blocked")</MudText>
+                    </MudStack>
+                    <MudIcon Icon="@Icons.Material.Filled.Block" Color="Color.Error" Size="Size.Large" />
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+       @*  <MudItem xs="12" sm="6" md="3">
+            <MudPaper Elevation="2" Class="pa-4">
+                <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                     <MudStack Spacing="1">
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">Verified Applicants</MudText>
+                        <MudText Typo="Typo.h4" Style="font-weight: 700; color: #4299e1;">@applicants.Count(a => a.IsVerified)</MudText>
+                    </MudStack> 
+                    <MudIcon Icon="@Icons.Material.Filled.VerifiedUser" Color="Color.Info" Size="Size.Large" />
+                </MudStack>
+            </MudPaper>
+        </MudItem> *@
+    </MudGrid>
+
+    <!-- Filters and Search -->
+    <MudPaper Elevation="2" Class="pa-4 mb-4">
+        <MudGrid Spacing="3">
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="searchQuery"
+                              Placeholder="Search by name, email, or phone..."
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              Variant="Variant.Outlined"
+                              Immediate="true"
+                              OnDebounceIntervalElapsed="FilterApplicants"
+                              DebounceInterval="300" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Style="flex-wrap: wrap;">
+                    <MudText Typo="Typo.body2" Style="white-space: nowrap;">Filter by:</MudText>
+                    <MudChip T="string"
+                             Text="All"
+                             Variant="@(selectedFilter == "All" ? Variant.Filled : Variant.Outlined)"
+                             Color="Color.Primary"
+                             OnClick="@(() => ApplyFilter("All"))"
+                             Class="filter-chip" />
+                    <MudChip T="string"
+                             Text="Active"
+                             Variant="@(selectedFilter == "Active" ? Variant.Filled : Variant.Outlined)"
+                             Color="Color.Success"
+                             OnClick="@(() => ApplyFilter("Active"))"
+                             Class="filter-chip" />
+                    <MudChip T="string"
+                             Text="Blocked"
+                             Variant="@(selectedFilter == "Blocked" ? Variant.Filled : Variant.Outlined)"
+                             Color="Color.Error"
+                             OnClick="@(() => ApplyFilter("Blocked"))"
+                             Class="filter-chip" />
+                </MudStack>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+
+    <!-- Applicants List -->
+    <MudGrid Spacing="3">
+        @foreach (var applicant in filteredApplicants)
+        {
+            <MudItem xs="12">
+                <MudPaper Elevation="2" Class="@($"applicant-card pa-4 {(applicant.Status == "Blocked" ? "blocked" : "")}")">
+                    <MudGrid Spacing="3">
+                        <MudItem xs="12" md="9">
+                            <MudStack Row="true" Spacing="3">
+                                <!-- Applicant Avatar -->
+                                <div class="applicant-avatar">
+                                    @applicant.FullName.Substring(0, 1)
+                                </div>
+
+                                <MudStack Spacing="1" Style="flex: 1;">
+                                    <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Style="flex-wrap: wrap;">
+                                        <MudText Typo="Typo.h6" Style="font-weight: 600;">
+                                            @applicant.FullName
+                                        </MudText>
+                                        <span class="@($"status-badge status-{applicant.Status.ToLower()}")">
+                                            @applicant.Status
+                                        </span>
+                                       
+                                    </MudStack>
+
+                                    <MudStack Row="true" Spacing="3" Style="flex-wrap: wrap;" Class="mt-2">
+                                        <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                                            <MudIcon Icon="@Icons.Material.Filled.Email" Size="Size.Small" Color="Color.Secondary" />
+                                            <MudText Typo="Typo.body2" Color="Color.Secondary">@applicant.UserAccount.Email</MudText>
+                                        </MudStack>
+                                        <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                                            <MudIcon Icon="@Icons.Material.Filled.Phone" Size="Size.Small" Color="Color.Secondary" />
+                                            <MudText Typo="Typo.body2" Color="Color.Secondary">@applicant.Phone</MudText>
+                                        </MudStack>
+                                        <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
+                                            <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" Color="Color.Secondary" />
+                                            <MudText Typo="Typo.body2" Color="Color.Secondary">@applicant.Address</MudText>
+                                        </MudStack>
+                                    </MudStack>
+
+                                   @*  <MudStack Row="true" Spacing="2" Class="mt-2" Style="flex-wrap: wrap;">
+                                        <span class="info-chip">
+                                            <MudIcon Icon="@Icons.Material.Filled.Work" Size="Size.Small" />
+                                            @applicant.TotalApplications Applications
+                                        </span>
+                                        <span class="info-chip">
+                                            <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" Size="Size.Small" />
+                                            @applicant.InterviewsScheduled Interviews
+                                        </span>
+                                        <span class="info-chip">
+                                            <MudIcon Icon="@Icons.Material.Filled.School" Size="Size.Small" />
+                                            @applicant.Education
+                                        </span>
+                                        <span class="info-chip">
+                                            <MudIcon Icon="@Icons.Material.Filled.RateReview" Size="Size.Small" />
+                                            @applicant.YearsOfExperience years exp
+                                        </span>
+                                    </MudStack> *@
+@* 
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2">
+                                        Registered: @applicant.RegistrationDate.ToString("MMM dd, yyyy") • Last Active: @applicant.LastActive.ToString("MMM dd, yyyy")
+                                    </MudText> *@
+
+                               @*      @if (applicant.Status == "Blocked" && !string.IsNullOrEmpty(applicant.BlockReason))
+                                    {
+                                        <MudAlert Severity="Severity.Error" Dense="true" NoIcon="true" Class="mt-2">
+                                            <MudText Typo="Typo.caption">
+                                                <strong>Blocked Reason:</strong> @applicant.BlockReason
+                                            </MudText>
+                                        </MudAlert>
+                                    } *@
+                                </MudStack>
+                            </MudStack>
+                        </MudItem>
+
+                        <MudItem xs="12" md="3">
+                            <MudStack Spacing="2" AlignItems="AlignItems.End" Justify="Justify.SpaceBetween" Style="height: 100%;">
+                                @* <MudStack Spacing="2" Style="width: 100%;">
+                                    @if (applicant.Skills.Any())
+                                    {
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary" Style="font-weight: 600;">Top Skills:</MudText>
+                                        <MudStack Row="true" Spacing="1" Style="flex-wrap: wrap;">
+                                            @foreach (var skill in applicant.Skills.Take(4))
+                                            {
+                                                <MudChip T="string" Size="Size.Small" Text="@skill" Color="Color.Primary" Variant="Variant.Text" />
+                                            }
+                                        </MudStack>
+                                    }
+                                </MudStack> *@
+
+                                <MudStack Row="true" Spacing="2" Style="width: 100%;" Justify="Justify.FlexEnd">
+                                    <MudButton Variant="Variant.Outlined"
+                                               Color="Color.Primary"
+                                               StartIcon="@Icons.Material.Filled.Visibility"
+                                               Size="Size.Small"
+                                               OnClick="@(() => ViewApplicantDetails(applicant.ApplicantId))">
+                                        View
+                                    </MudButton>
+
+                                    @if (applicant.Status == "Active")
+                                    {
+                                        <MudButton Variant="Variant.Filled"
+                                                   Color="Color.Error"
+                                                   StartIcon="@Icons.Material.Filled.Block"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => OpenBlockDialog(applicant))">
+                                            Block
+                                        </MudButton>
+                                    }
+                                    else if (applicant.Status == "Blocked")
+                                    {
+                                        <MudButton Variant="Variant.Filled"
+                                                   Color="Color.Success"
+                                                   StartIcon="@Icons.Material.Filled.CheckCircle"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => UnblockApplicant(applicant.ApplicantId))">
+                                            Unblock
+                                        </MudButton>
+                                    }
+                                </MudStack>
+                            </MudStack>
+                        </MudItem>
+                    </MudGrid>
+                </MudPaper>
+            </MudItem>
+        }
+
+        @if (!filteredApplicants.Any())
+        {
+            <MudItem xs="12">
+                <MudPaper Elevation="0" Class="pa-8" Style="text-align: center;">
+                    <MudIcon Icon="@Icons.Material.Filled.PersonOff" Size="Size.Large" Color="Color.Secondary" Style="font-size: 64px;" />
+                    <MudText Typo="Typo.h6" Color="Color.Secondary" Class="mt-4">
+                        No applicants found
+                    </MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        Try adjusting your filters or search query
+                    </MudText>
+                </MudPaper>
+            </MudItem>
+        }
+    </MudGrid>
+</MudContainer>
+
+<!-- Block Applicant Dialog -->
+<MudDialog @bind-IsVisible="showBlockDialog" Options="dialogOptions">
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Block" Class="mr-2" Color="Color.Error" />
+            Block Applicant
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudStack Spacing="3">
+            <MudAlert Severity="Severity.Warning">
+                You are about to block this applicant. They will no longer be able to apply for jobs or access their applications.
+            </MudAlert>
+
+            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+                <div class="applicant-avatar" style="width: 48px; height: 48px; font-size: 1.2rem;">
+                    @selectedApplicant?.FullName.Substring(0, 1)
+                </div>
+                <MudStack Spacing="0">
+                    <MudText Typo="Typo.body1" Style="font-weight: 600;">
+                        @selectedApplicant?.FullName
+                    </MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        @selectedApplicant?.UserAccount.Email
+                    </MudText>
+                </MudStack>
+            </MudStack>
+
+            <MudSelect @bind-Value="blockReasonCategory"
+                       Label="Block Reason Category"
+                       Variant="Variant.Outlined"
+                       Required="true">
+                <MudSelectItem Value="@("Spam or Fake Profile")">Spam or Fake Profile</MudSelectItem>
+                <MudSelectItem Value="@("Inappropriate Behavior")">Inappropriate Behavior</MudSelectItem>
+                <MudSelectItem Value="@("Policy Violation")">Policy Violation</MudSelectItem>
+                <MudSelectItem Value="@("Fraudulent Information")">Fraudulent Information</MudSelectItem>
+                <MudSelectItem Value="@("Other")">Other</MudSelectItem>
+            </MudSelect>
+
+            <MudTextField @bind-Value="blockReason"
+                          Label="Additional details"
+                          Variant="Variant.Outlined"
+                          Lines="3"
+                          Required="true"
+                          HelperText="Please provide detailed reason for blocking this applicant" />
+
+            <MudCheckBox @bind-Value="notifyApplicant"
+                         Label="Send notification email to applicant"
+                         Color="Color.Primary" />
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseBlockDialog" Variant="Variant.Text">Cancel</MudButton>
+        <MudButton OnClick="ConfirmBlockApplicant"
+                   Variant="Variant.Filled"
+                   Color="Color.Error"
+                   Disabled="string.IsNullOrWhiteSpace(blockReasonCategory) || string.IsNullOrWhiteSpace(blockReason)">
+            Block Applicant
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private List<ApplicantDtos> applicants = new();
+    private List<ApplicantDtos> filteredApplicants = new();
+    private string searchQuery = "";
+    private string selectedFilter = "All";
+
+    private bool showBlockDialog = false;
+    private ApplicantDtos? selectedApplicant;
+    private string blockReasonCategory = "";
+    private string blockReason = "";
+    private bool notifyApplicant = true;
+
+    private DialogOptions dialogOptions = new() { MaxWidth = MaxWidth.Small, FullWidth = true };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadApplicants();
+    }
+
+    private async Task LoadApplicants()
+    {
+        // TODO: Replace with actual API call
+        await Task.Delay(500); // Simulate API call
+        applicants = await _service.ApplicantList();
+
+
+        FilterApplicants();
+    }
+
+    private void FilterApplicants()
+    {
+        filteredApplicants = applicants;
+
+
+        // Apply search filter
+        if (!string.IsNullOrWhiteSpace(searchQuery))
+        {
+            var query = searchQuery.ToLower();
+            filteredApplicants = filteredApplicants.Where(a =>
+                a.FullName.ToLower().Contains(query) ||
+                a.UserAccount.Email.ToLower().Contains(query) ||
+                a.Phone.ToLower().Contains(query) ||
+                a.Address.ToLower().Contains(query)
+            ).ToList();
+        }
+    }
+
+    private void ApplyFilter(string filter)
+    {
+        selectedFilter = filter;
+        FilterApplicants();
+    }
+
+    private void OpenBlockDialog(ApplicantDtos applicant)
+    {
+        selectedApplicant = applicant;
+        blockReasonCategory = "";
+        blockReason = "";
+        notifyApplicant = true;
+        showBlockDialog = true;
+    }
+
+    private void CloseBlockDialog()
+    {
+        showBlockDialog = false;
+        selectedApplicant = null;
+        blockReasonCategory = "";
+        blockReason = "";
+        notifyApplicant = true;
+    }
+
+    private async Task ConfirmBlockApplicant()
+    {
+        if (selectedApplicant != null && !string.IsNullOrWhiteSpace(blockReasonCategory) && !string.IsNullOrWhiteSpace(blockReason))
+        {
+            // TODO: Replace with actual API call
+            await Task.Delay(500);
+
+            selectedApplicant.Status = "Blocked";
+            //selectedApplicant.BlockReason = $"{blockReasonCategory}: {blockReason}";
+
+            var message = notifyApplicant
+                ? $"Applicant '{selectedApplicant.FullName}' has been blocked and notified via email"
+                : $"Applicant '{selectedApplicant.FullName}' has been blocked";
+
+            Snackbar.Add(message, Severity.Success);
+            CloseBlockDialog();
+            FilterApplicants();
+        }
+    }
+
+    private async Task UnblockApplicant(int applicantId)
+    {
+        var applicant = applicants.FirstOrDefault(a => a.ApplicantId == applicantId);
+        if (applicant != null)
+        {
+            // TODO: Replace with actual API call
+            await Task.Delay(500);
+
+            applicant.Status = "Active";
+            //applicant.BlockReason = null;
+
+            Snackbar.Add($"Applicant '{applicant.FullName}' has been unblocked", Severity.Success);
+            FilterApplicants();
+        }
+    }
+
+    private void ViewApplicantDetails(int applicantId)
+    {
+        NavigationManager.NavigateTo($"/superadmin/applicants/{applicantId}");
+    }
+
+
+}
