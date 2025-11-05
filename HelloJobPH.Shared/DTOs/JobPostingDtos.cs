@@ -16,7 +16,6 @@ namespace HelloJobPH.Shared.DTOs
         public string Title { get; set; } = string.Empty;
         [Required(ErrorMessage = "Title is required.")]
         public string Description { get; set; } = string.Empty;
-        [Required(ErrorMessage = "Title is required.")]
         public string Location { get; set; } = string.Empty;
         [Required(ErrorMessage = "Title is required.")]
         public EmploymentType EmploymentType { get; set; } // e.g., Full-Time, Part-Time, Contract
@@ -30,6 +29,7 @@ namespace HelloJobPH.Shared.DTOs
         public int HumanResourceId { get; set; }
         //public int HumanResourceId { get; set; } = 0;
         public HumanResources? HumanResource { get; set; }
+        public Employers? Employers { get; set; }
         public DateTime PostedDate { get; set; }
         public DateTime? ExpiredDate { get; set; }
         public string? ScheduleDays { get; set; }

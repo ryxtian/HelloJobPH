@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using HelloJobPH.Employer.Pages.SuperAdmin;
 using HelloJobPH.Employer.Services.HumanResource;
 using HelloJobPH.Server.Data;
 using HelloJobPH.Server.Utility;
@@ -28,13 +29,11 @@ namespace HelloJobPH.Server.Service.JobPost
         {
             try
             {
-                // Step 1: Load JobPosting list from DB (filtered by IsDeleted)
-                var jobPostings = await _context.JobPosting
-                    .Where(j => j.IsDeleted == 0)
-                    .ToListAsync(); // fetch to memory
+       
 
                 // Step 2: Project to DTO in memory, safely accessing navigation properties
-                var response = jobPostings.Select(j => new JobPostingDtos
+                var response = await _context.JobPosting.
+                    Select(j => new JobPostingDtos
                 {
                     JobPostingId = j.JobPostingId,
                     Title = j.Title,
@@ -46,11 +45,10 @@ namespace HelloJobPH.Server.Service.JobPost
                     JobCategory = j.JobCategory,
                     PostedDate = j.PostedDate,
                     IsDeleted = j.IsDeleted,
-
-                    // Null-safe access to navigation properties
-                    Location = j.Employers?.CompanyAddress ?? "N/A",
-                    CompanyName = j.Employers?.CompanyName ?? "N/A"
-                }).ToList();
+                    Location = j.Employers.CompanyAddress,
+                    CompanyName = j.Employers.CompanyName
+                }).Where(j => j.IsDeleted == 0)
+                    .ToListAsync();
 
                 return response;
             }

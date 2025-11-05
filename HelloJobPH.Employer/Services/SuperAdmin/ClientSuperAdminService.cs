@@ -7,6 +7,7 @@ using static HelloJobPH.Employer.Pages.SuperAdmin.AdminDashboard;
 namespace HelloJobPH.Employer.Services.SuperAdmin
 {
 
+
     public class ClientSuperAdminService : IClientSuperAdminService
     {
         private readonly HttpClient _http;
@@ -80,7 +81,7 @@ namespace HelloJobPH.Employer.Services.SuperAdmin
 
         public async Task<List<JobPostingListDtos>> JobPostList()
         {
-            var result = await _http.GetFromJsonAsync<List<JobPostingListDtos>>("api/SuperAdmin/JobPostList") ?? [];
+            var result = await _http.GetFromJsonAsync<List<JobPostingListDtos>>("api/SuperAdmin/JobPostList");
             return result ?? [];
         }
 
@@ -92,22 +93,51 @@ namespace HelloJobPH.Employer.Services.SuperAdmin
             return result ?? [];
         }
 
-        public async Task<bool> BlockApplicant()
+        public async Task<bool> BlockApplicant(int id)
         {
-            var response = await _http.PutAsJsonAsync<ApplicantDtos>("api/superadmin/SuperAdmin/block", null);
-            return true;
+            var response = await _http.PutAsync($"api/superadmin/block/{id}", null);
+            return response.IsSuccessStatusCode;
         }
 
-        public async Task<bool> UnBlockApplicant()
+        public async Task<bool> UnBlockApplicant(int id)
         {
-            var response = await _http.PutAsJsonAsync<ApplicantDtos>("api/superadmin/SuperAdmin/unblock", null);
-            return true;
+            var response = await _http.PutAsync($"api/superadmin/unblock/{id}", null);
+            return response.IsSuccessStatusCode;
         }
 
-        public async Task<ApplicantDtos> ViewApplicant(int id)
+        public async Task<ApplicantViewDtos> ViewApplicant(int id)
         {
-            var response = await _http.GetFromJsonAsync<ApplicantDtos>($"api/superadmin/SuperAdmin/{id}");
+            var response = await _http.GetFromJsonAsync<ApplicantViewDtos>($"api/superadmin/{id}");
             return response;
+        }
+
+        public async Task<bool> BlockJob(int id)
+        {
+            var response = await _http.PutAsync($"api/superadmin/block-job/{id}", null);
+            return response.IsSuccessStatusCode;
+        }
+
+        public async Task<bool> UnBlockJob(int id)
+        {
+            var response = await _http.PutAsync($"api/superadmin/unblock-job/{id}", null);
+            return response.IsSuccessStatusCode;
+        }
+
+
+        public async Task<JobPostingDtos> GetJobDetails(int id)
+        {
+            // Call your API endpoint
+            var response = await _http.GetAsync($"api/superadmin/get-job/{id}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Deserialize the JSON response into JobPostingDtos
+                var job = await response.Content.ReadFromJsonAsync<JobPostingDtos>();
+                return job;
+            }
+
+            // Handle error or return null
+            return null;
         }
     }
 }

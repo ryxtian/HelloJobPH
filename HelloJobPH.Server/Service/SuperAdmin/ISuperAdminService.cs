@@ -10,7 +10,7 @@ namespace HelloJobPH.Server.Service.SuperAdmin
         Task<List<EmployerListDtos>> EmployersList();
         Task<List<EmployerListDtos>> ForApprovalList();
 
-        Task<List<JobPostingListDtos>> JobPostList();
+    
         Task<List<ApplicantDtos>> ApplicantList();
 
         //For Approval
@@ -30,6 +30,13 @@ namespace HelloJobPH.Server.Service.SuperAdmin
 
         Task<bool> BlockApplicantAsync(int id);
         Task<bool> UnBlockApplicantAsync(int id);
-        Task<ApplicantDtos?> ViewApplicantAsync(int id);
+        Task<ApplicantViewDtos?> ViewApplicantAsync(int id);
+
+
+        //Jobpost
+        Task<List<JobPostingListDtos>> JobPostList();
+        Task<JobPostingDtos> GetJobDetails(int id);
+        Task<bool> UnBlockJob(int id);
+        Task<bool> BlockJob(int id);
     }
 }

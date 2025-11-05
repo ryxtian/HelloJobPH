@@ -1,0 +1,135 @@
+﻿@inject IClientSuperAdminService _service
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        @if (applicant == null)
+        {
+            <div class="d-flex justify-center align-center pa-8">
+                <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+            </div>
+        }
+        else
+        {
+            <MudStack Spacing="3">
+                @* Header Section *@
+                <MudPaper Elevation="0" Class="pa-4 rounded-lg" Style="background: linear-gradient(135deg, var(--mud-palette-primary) 0%, var(--mud-palette-primary-darken) 100%);">
+                    <MudStack Spacing="1">
+                        <MudText Typo="Typo.h5" Style="color: white; font-weight: 600;">
+                            @($"{applicant.Firstname} {applicant.Lastname}")
+                        </MudText>
+                        <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+                            <MudIcon Icon="@Icons.Material.Filled.Email" Size="Size.Small" Style="color: rgba(255,255,255,0.9);" />
+                            <MudText Typo="Typo.body2" Style="color: rgba(255,255,255,0.9);">@applicant.Email</MudText>
+                        </MudStack>
+                        <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+                            <MudIcon Icon="@Icons.Material.Filled.Phone" Size="Size.Small" Style="color: rgba(255,255,255,0.9);" />
+                            <MudText Typo="Typo.body2" Style="color: rgba(255,255,255,0.9);">@applicant.Phone</MudText>
+                        </MudStack>
+                        <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+                            <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" Style="color: rgba(255,255,255,0.9);" />
+                            <MudText Typo="Typo.body2" Style="color: rgba(255,255,255,0.9);">@applicant.Location</MudText>
+                        </MudStack>
+                    </MudStack>
+                </MudPaper>
+
+                @* Work Experience Section *@
+                <MudPaper Elevation="0" Class="pa-4 rounded-lg" Outlined="true">
+                    <MudStack Spacing="2">
+                        <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+                            <MudIcon Icon="@Icons.Material.Filled.Work" Color="Color.Primary" />
+                            <MudText Typo="Typo.h6" Color="Color.Primary">Work Experience</MudText>
+                        </MudStack>
+                        @if (applicant.WorkExperiences?.Any() == true)
+                        {
+                            <MudStack Spacing="2">
+                                @foreach (var work in applicant.WorkExperiences)
+                                {
+                                    <MudPaper Elevation="0" Class="pa-3 rounded" Style="background-color: var(--mud-palette-background-grey);">
+                                        <MudStack Spacing="1">
+                                            <MudText Typo="Typo.subtitle1" Style="font-weight: 600;">@work.PositionTitle</MudText>
+                                            <MudText Typo="Typo.body2" Color="Color.Dark">@work.CompanyName</MudText>
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Size="Size.Small" Class="mr-1" />
+                                                @work.StartDate?.ToString("MMM yyyy") - @(work.EndDate?.ToString("MMM yyyy") ?? "Present")
+                                            </MudText>
+                                        </MudStack>
+                                    </MudPaper>
+                                }
+                            </MudStack>
+                        }
+                        else
+                        {
+                            <MudAlert Severity="Severity.Info" Dense="true" NoIcon="true" Class="rounded">
+                                No work experiences found.
+                            </MudAlert>
+                        }
+                    </MudStack>
+                </MudPaper>
+
+                @* Education Section *@
+                <MudPaper Elevation="0" Class="pa-4 rounded-lg" Outlined="true">
+                    <MudStack Spacing="2">
+                        <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+                            <MudIcon Icon="@Icons.Material.Filled.School" Color="Color.Primary" />
+                            <MudText Typo="Typo.h6" Color="Color.Primary">Education</MudText>
+                        </MudStack>
+                        @if (applicant.EducationalAttainment?.Any() == true)
+                        {
+                            <MudStack Spacing="2">
+                                @foreach (var edu in applicant.EducationalAttainment)
+                                {
+                                    <MudPaper Elevation="0" Class="pa-3 rounded" Style="background-color: var(--mud-palette-background-grey);">
+                                        <MudStack Spacing="1">
+                                            <MudText Typo="Typo.subtitle1" Style="font-weight: 600;">@edu.Degree</MudText>
+                                            <MudText Typo="Typo.body2" Color="Color.Dark">@edu.SchoolName</MudText>
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Size="Size.Small" Class="mr-1" />
+                                                Graduated @edu.YearEnded
+                                            </MudText>
+                                        </MudStack>
+                                    </MudPaper>
+                                }
+                            </MudStack>
+                        }
+                        else
+                        {
+                            <MudAlert Severity="Severity.Info" Dense="true" NoIcon="true" Class="rounded">
+                                No educational attainments found.
+                            </MudAlert>
+                        }
+                    </MudStack>
+                </MudPaper>
+            </MudStack>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Primary"
+                   Variant="Variant.Filled"
+                   OnClick="Close"
+                   StartIcon="@Icons.Material.Filled.Close">
+            Close
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+    [Parameter] public int ApplicantId { get; set; }
+    private ApplicantViewDtos? applicant;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            applicant = await _service.ViewApplicant(ApplicantId);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading applicant details: {ex.Message}", Severity.Error);
+            MudDialog.Close();
+        }
+    }
+
+    private void Close() => MudDialog.Close();
+}

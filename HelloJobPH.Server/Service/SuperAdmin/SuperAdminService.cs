@@ -168,40 +168,33 @@ HelloJobPH Team";
         }
         public async Task<List<JobPostingListDtos>> JobPostList()
         {
-            try
-            {
-                var today = DateTime.UtcNow;
+            var today = DateTime.UtcNow;
 
-                // Simple, clean EF LINQ query like EmployersList
-                List<JobPostingListDtos> jobPosts = await _context.JobPosting
-                    .Where(j => j.IsDeleted == 0 &&
-                                (j.ExpiredDate == null || j.ExpiredDate >= today))
-                    .Select(j => new JobPostingListDtos
-                    {
-                        JobPostingId = j.JobPostingId,
-                        Title = j.Title,
-                        Description = j.Description,
-                        Location = j.Location,
-                        EmploymentType = j.EmploymentType,
-                        SalaryFrom = j.SalaryFrom,
-                        SalaryTo = j.SalaryTo,
-                        JobCategory = j.JobCategory,
-                        JobRequirements = j.JobRequirements,
-                        PostedDate = j.PostedDate,
-                        ExpiredDate = j.ExpiredDate,
-                        ScheduleDays = j.ScheduleDays,
-                        ScheduleTime = j.ScheduleTime
-                    })
-                    .OrderByDescending(j => j.PostedDate)
-                    .ToListAsync();
+            var jobPosts = await _context.JobPosting
+                .Select(j => new JobPostingListDtos
+                {
+                    JobPostingId = j.JobPostingId,
+                    Title = j.Title,
+                    Description = j.Description,
+                    Location = j.Location,
+                    EmploymentType = j.EmploymentType,
+                    SalaryFrom = j.SalaryFrom,
+                    SalaryTo = j.SalaryTo,
+                    JobCategory = j.JobCategory,
+                    JobRequirements = j.JobRequirements,
+                    PostedDate = j.PostedDate,
+                    ExpiredDate = j.ExpiredDate,
+                    ScheduleDays = j.ScheduleDays,
+                    ScheduleTime = j.ScheduleTime,
+                    IsDeleted = j.IsDeleted
+                })
+.Where(j => j.ExpiredDate == null || j.ExpiredDate >= today)
+.OrderByDescending(j => j.PostedDate)
+                .ToListAsync();
 
-                return jobPosts;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Error fetching job postings: {ex.Message}");
-            }
+            return jobPosts;
         }
+
 
         public async Task<List<ApplicantDtos>> ApplicantList()
         {
@@ -213,7 +206,11 @@ HelloJobPH Team";
                     Middlename = a.Middlename,
                     Surname = a.Surname,
                     Address = a.Address,
-                    Phone = a.Phone
+                    Phone = a.Phone,
+                    Email = a.UserAccount.Email,
+                    IsDeleted = a.UserAccount.IsDeleted
+
+
                 })
                 .ToListAsync();
 
@@ -241,28 +238,92 @@ HelloJobPH Team";
             var user = await _context.UserAccount.FirstOrDefaultAsync(i => i.UserAccountId == applicant.UserAccountId);
             if (user == null) return false;
 
-            user.UserAccountId = 1; // or applicant.Status = "Active";
+            user.IsDeleted = 0; // or applicant.Status = "Active";
             _context.Applicant.Update(applicant);
             await _context.SaveChangesAsync();
             return true;
         }
-
-        public async Task<ApplicantDtos?> ViewApplicantAsync(int id)
+        public async Task<ApplicantViewDtos?> ViewApplicantAsync(int id)
         {
             var applicant = await _context.Applicant
                 .Where(a => a.ApplicantId == id)
-                .Select(a => new ApplicantDtos
+                .Select(a => new ApplicantViewDtos
                 {
                     ApplicantId = a.ApplicantId,
                     Firstname = a.Firstname,
-                    Middlename = a.Middlename,
-                    Surname = a.Surname,
-                    Address = a.Address,
-                    Phone = a.Phone
+                    Lastname = a.Surname, // Assuming Surname maps to Lastname
+                    Phone = a.Phone,
+                    Email = a.UserAccount.Email,
+                    Location = a.Address,
+                    WorkExperiences = a.WorkExperiences
+                                       .Select(w => new WorkExperienceDtos
+                                       {
+                                           CompanyName = w.CompanyName,
+                                           PositionTitle = w.PositionTitle,
+                                           StartDate = w.StartDate,
+                                           EndDate = w.EndDate
+                                       }).ToList(),
+                    EducationalAttainment = a.EducationalAttainments
+                                             .Select(e => new EducationalAttainmentDtos
+                                             {
+                                                 SchoolName = e.SchoolName,
+                                                 Degree = e.Degree,
+                                                 YearEnded = e.YearEnded
+                                             }).ToList()
                 })
                 .FirstOrDefaultAsync();
 
             return applicant;
+        }
+
+        public async Task<JobPostingDtos> GetJobDetails(int id)
+        {
+            var job = await _context.JobPosting
+                .Where(j => j.JobPostingId == id)
+                .Select(j => new JobPostingDtos
+                {
+                    JobPostingId = j.JobPostingId,
+                    Title = j.Title,
+                    Description = j.Description,
+                    Location = j.Location,
+                    EmploymentType = j.EmploymentType,
+                    SalaryFrom = j.SalaryFrom,
+                    SalaryTo = j.SalaryTo,
+                    JobCategory = j.JobCategory,
+                    JobRequirements = j.JobRequirements,
+                    PostedDate = j.PostedDate,
+                    ExpiredDate = j.ExpiredDate,
+                    ScheduleDays = j.ScheduleDays,
+                    ScheduleTime = j.ScheduleTime,
+                    IsDeleted = j.IsDeleted
+                })
+                .FirstOrDefaultAsync();
+
+            return job;
+        }
+
+        public async Task<bool> UnBlockJob(int id)
+        {
+            var job = await _context.JobPosting.FindAsync(id);
+            if (job == null)
+                return false;
+
+            job.IsDeleted = 0; // or applicant.Status = "Blocked";
+            _context.JobPosting.Update(job);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> BlockJob(int id)
+        {
+            var job = await _context.JobPosting.FindAsync(id);
+            if (job == null)
+                return false;
+
+            job.IsDeleted = 1;
+            _context.JobPosting.Update(job);
+            await _context.SaveChangesAsync();
+            return true;
         }
     }
 }

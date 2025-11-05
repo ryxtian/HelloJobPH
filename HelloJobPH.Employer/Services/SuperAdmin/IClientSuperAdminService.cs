@@ -9,7 +9,7 @@ namespace HelloJobPH.Employer.Services.SuperAdmin
 
         Task<List<EmployerListDtos>> EmployerList();
         Task<List<EmployerListDtos>> ForApprovalList();
-        Task<List<JobPostingListDtos>> JobPostList();
+
 
         Task<List<ApplicantDtos>> ApplicantList();
 
@@ -31,12 +31,17 @@ namespace HelloJobPH.Employer.Services.SuperAdmin
 
 
 
-        //user account
 
-        Task<bool> BlockApplicant();
-        Task<bool> UnBlockApplicant();
-        Task<ApplicantDtos> ViewApplicant(int id);
+        Task<bool> BlockApplicant(int id);
+        Task<bool> UnBlockApplicant(int id);
+        Task<ApplicantViewDtos> ViewApplicant(int id);
 
 
+        Task<bool> BlockJob(int id);
+        Task<bool> UnBlockJob(int id);
+
+
+        Task<List<JobPostingListDtos>> JobPostList();
+        Task<JobPostingDtos> GetJobDetails(int id);
     }
 }

@@ -3,6 +3,7 @@ using HelloJobPH.Employer.JwtAuthStateProviders;
 using HelloJobPH.Server.Data;
 using HelloJobPH.Server.Mapper;
 using HelloJobPH.Server.Middleware;
+using HelloJobPH.Server.Service.AI;
 using HelloJobPH.Server.Service.Auth;
 using HelloJobPH.Server.Service.Candidate;
 using HelloJobPH.Server.Service.Dashboard;
@@ -21,6 +22,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using GenerativeAI;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -104,6 +106,7 @@ builder.Services.AddScoped<IInterviewService, InterviewService>();
 builder.Services.AddScoped<IOverviewService, OverviewService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<ISuperAdminService, SuperAdminService>();
+builder.Services.AddSingleton<AiOverviewService>();
 //builder.Services.AddScoped<IUserAccountRepository, UserAccountRepository>();
 //builder.Services.AddScoped<IApplicantRepository, ApplicantRepository>();
 

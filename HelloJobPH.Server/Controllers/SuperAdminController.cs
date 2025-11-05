@@ -94,8 +94,8 @@ namespace HelloJobPH.Server.Controllers
             return Ok(lsit);
         }
 
-        [HttpPut("block")]
-        public async Task<IActionResult> BlockApplicant([FromQuery] int id)
+        [HttpPut("block/{id}")]
+        public async Task<IActionResult> BlockApplicant([FromRoute] int id)
         {
             var result = await _service.BlockApplicantAsync(id);
             if (!result)
@@ -104,8 +104,8 @@ namespace HelloJobPH.Server.Controllers
             return Ok(true);
         }
 
-        [HttpPut("unblock")]
-        public async Task<IActionResult> UnBlockApplicant([FromQuery] int id)
+        [HttpPut("unblock/{id}")]
+        public async Task<IActionResult> UnblockApplicant([FromRoute] int id)
         {
             var result = await _service.UnBlockApplicantAsync(id);
             if (!result)
@@ -114,7 +114,7 @@ namespace HelloJobPH.Server.Controllers
             return Ok(true);
         }
 
-  
+
         [HttpGet("{id}")]
         public async Task<ActionResult<ApplicantDtos>> ViewApplicant(int id)
         {
@@ -123,6 +123,32 @@ namespace HelloJobPH.Server.Controllers
                 return NotFound(new { message = "Applicant not found." });
 
             return Ok(applicant);
+        }
+        [HttpGet("get-job/{id}")]
+        public async Task<IActionResult>GetJobDetails(int id)
+        {
+            var result = await _service.GetJobDetails(id);
+            return Ok(result);
+        }
+
+        [HttpPut("block-job/{id}")]
+        public async Task<IActionResult> blockJob([FromRoute] int id)
+        {
+            var result = await _service.BlockJob(id);
+            if (!result)
+                return NotFound(new { message = "Applicant not found or already unblocked." });
+
+            return Ok(true);
+        }
+
+        [HttpPut("unblock-job/{id}")]
+        public async Task<IActionResult> UnblockJob([FromRoute] int id)
+        {
+            var result = await _service.UnBlockJob(id);
+            if (!result)
+                return NotFound(new { message = "Applicant not found or already unblocked." });
+
+            return Ok(true);
         }
     }
 }

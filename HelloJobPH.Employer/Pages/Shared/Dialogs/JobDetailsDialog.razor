@@ -1,0 +1,226 @@
+﻿@inject IClientSuperAdminService _service
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        @if (jobDetails == null)
+        {
+            <div class="d-flex justify-center align-center pa-8">
+                <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+            </div>
+        }
+        else
+        {
+            <div class="job-details-container">
+                @* Header Section *@
+                <MudPaper Elevation="0" Class="pa-4 rounded-lg mb-4" Style="background: linear-gradient(135deg, var(--mud-palette-primary) 0%, var(--mud-palette-primary-darken) 100%);">
+                    <MudText Typo="Typo.h5" Style="color: white; font-weight: 600; margin-bottom: 12px;">
+                        @jobDetails.Title
+                    </MudText>
+                    <div class="d-flex flex-wrap gap-2">
+                        @if (jobDetails.JobCategory!=null)
+                        {
+                            <MudChip T="string" Size="Size.Small" Style="background-color: rgba(255,255,255,0.2); color: white;">
+                                @jobDetails.JobCategory
+                            </MudChip>
+                        }
+                        @if (jobDetails.EmploymentType!=null)
+                        {
+                            <MudChip T="string" Size="Size.Small" Style="background-color: rgba(255,255,255,0.2); color: white;">
+                                @jobDetails.EmploymentType
+                            </MudChip>
+                        }
+                        @if (jobDetails.IsDeleted == 1)
+                        {
+                            <MudChip T="string" Size="Size.Small" Color="Color.Error" Icon="@Icons.Material.Filled.Block">
+                                Blocked
+                            </MudChip>
+                        }
+                        else
+                        {
+                            <MudChip T="string" Size="Size.Small" Color="Color.Success" Icon="@Icons.Material.Filled.CheckCircle">
+                                Active
+                            </MudChip>
+                        }
+                    </div>
+                </MudPaper>
+
+                @* Key Information Grid *@
+                <MudGrid Spacing="3" Class="mb-4">
+                    <MudItem xs="12" sm="6">
+                        <MudPaper Elevation="0" Class="pa-3 rounded" Outlined="true">
+                            <div class="d-flex align-center gap-2 mb-2">
+                                <MudIcon Icon="@Icons.Material.Filled.LocationOn" Color="Color.Primary" Size="Size.Small" />
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Location</MudText>
+                            </div>
+                            <MudText Typo="Typo.body1">@(jobDetails.Location ?? "Not specified")</MudText>
+                        </MudPaper>
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudPaper Elevation="0" Class="pa-3 rounded" Outlined="true">
+                            <div class="d-flex align-center gap-2 mb-2">
+                                <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Color="Color.Success" Size="Size.Small" />
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Salary Range</MudText>
+                            </div>
+                            <MudText Typo="Typo.body1">
+                                @if (jobDetails.SalaryFrom.HasValue && jobDetails.SalaryTo.HasValue)
+                                {
+                                    @($"₱{jobDetails.SalaryFrom:N0} - ₱{jobDetails.SalaryTo:N0}")
+                                }
+                                else if (jobDetails.SalaryFrom.HasValue)
+                                {
+                                    @($"From ₱{jobDetails.SalaryFrom:N0}")
+                                }
+                                else if (jobDetails.SalaryTo.HasValue)
+                                {
+                                    @($"Up to ₱{jobDetails.SalaryTo:N0}")
+                                }
+                                else
+                                {
+                                    <text>Not specified</text>
+                                }
+                            </MudText>
+                        </MudPaper>
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudPaper Elevation="0" Class="pa-3 rounded" Outlined="true">
+                            <div class="d-flex align-center gap-2 mb-2">
+                                <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Color="Color.Info" Size="Size.Small" />
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Posted Date</MudText>
+                            </div>
+                            <MudText Typo="Typo.body1">@jobDetails.PostedDate.ToString("MMMM dd, yyyy")</MudText>
+                        </MudPaper>
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudPaper Elevation="0" Class="pa-3 rounded" Outlined="true">
+                            <div class="d-flex align-center gap-2 mb-2">
+                                <MudIcon Icon="@Icons.Material.Filled.EventBusy" Color="Color.Warning" Size="Size.Small" />
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Expiration Date</MudText>
+                            </div>
+                            <MudText Typo="Typo.body1">
+                                @if (jobDetails.ExpiredDate.HasValue)
+                                {
+                                    var daysLeft = (jobDetails.ExpiredDate.Value - DateTime.UtcNow).Days;
+                                    @jobDetails.ExpiredDate.Value.ToString("MMMM dd, yyyy")
+                                    @if (daysLeft > 0)
+                                    {
+                                        <MudText Typo="Typo.caption" Color="@(daysLeft <= 7 ? Color.Error : Color.Secondary)">
+                                            (@daysLeft days remaining)
+                                        </MudText>
+                                    }
+                                    else if (daysLeft == 0)
+                                    {
+                                        <MudText Typo="Typo.caption" Color="Color.Error">(Expires today)</MudText>
+                                    }
+                                    else
+                                    {
+                                        <MudText Typo="Typo.caption" Color="Color.Error">(Expired)</MudText>
+                                    }
+                                }
+                                else
+                                {
+                                    <text>No expiration</text>
+                                }
+                            </MudText>
+                        </MudPaper>
+                    </MudItem>
+                </MudGrid>
+
+                @* Schedule Information *@
+                @if (!string.IsNullOrEmpty(jobDetails.ScheduleDays) || !string.IsNullOrEmpty(jobDetails.ScheduleTime))
+                {
+                    <MudPaper Elevation="0" Class="pa-4 rounded mb-4" Outlined="true">
+                        <div class="d-flex align-center gap-2 mb-3">
+                            <MudIcon Icon="@Icons.Material.Filled.Schedule" Color="Color.Primary" />
+                            <MudText Typo="Typo.h6" Color="Color.Primary">Schedule</MudText>
+                        </div>
+                        <MudGrid Spacing="2">
+                            @if (!string.IsNullOrEmpty(jobDetails.ScheduleDays))
+                            {
+                                <MudItem xs="12" sm="6">
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">Working Days</MudText>
+                                    <MudText Typo="Typo.body1">@jobDetails.ScheduleDays</MudText>
+                                </MudItem>
+                            }
+                            @if (!string.IsNullOrEmpty(jobDetails.ScheduleTime))
+                            {
+                                <MudItem xs="12" sm="6">
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">Working Hours</MudText>
+                                    <MudText Typo="Typo.body1">@jobDetails.ScheduleTime</MudText>
+                                </MudItem>
+                            }
+                        </MudGrid>
+                    </MudPaper>
+                }
+
+                @* Description *@
+                @if (!string.IsNullOrEmpty(jobDetails.Description))
+                {
+                    <MudPaper Elevation="0" Class="pa-4 rounded mb-4" Outlined="true">
+                        <div class="d-flex align-center gap-2 mb-3">
+                            <MudIcon Icon="@Icons.Material.Filled.Description" Color="Color.Primary" />
+                            <MudText Typo="Typo.h6" Color="Color.Primary">Job Description</MudText>
+                        </div>
+                        <MudText Typo="Typo.body2" Style="white-space: pre-line; line-height: 1.6;">
+                            @jobDetails.Description
+                        </MudText>
+                    </MudPaper>
+                }
+
+                @* Requirements *@
+                @if (!string.IsNullOrEmpty(jobDetails.JobRequirements))
+                {
+                    <MudPaper Elevation="0" Class="pa-4 rounded" Outlined="true">
+                        <div class="d-flex align-center gap-2 mb-3">
+                            <MudIcon Icon="@Icons.Material.Filled.Checklist" Color="Color.Primary" />
+                            <MudText Typo="Typo.h6" Color="Color.Primary">Requirements</MudText>
+                        </div>
+                        <MudText Typo="Typo.body2" Style="white-space: pre-line; line-height: 1.6;">
+                            @jobDetails.JobRequirements
+                        </MudText>
+                    </MudPaper>
+                }
+            </div>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Primary"
+                   Variant="Variant.Filled"
+                   OnClick="Close"
+                   StartIcon="@Icons.Material.Filled.Close">
+            Close
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+<style>
+    .job-details-container {
+        max-height: 70vh;
+        overflow-y: auto;
+    }
+
+    .gap-2 {
+        gap: 8px;
+    }
+</style>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+    [Parameter] public int JobId { get; set; }
+    private JobPostingDtos? jobDetails;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            jobDetails = await _service.GetJobDetails(JobId);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading job details: {ex.Message}", Severity.Error);
+            MudDialog.Close();
+        }
+    }
+
+    private void Close() => MudDialog.Close();
+}

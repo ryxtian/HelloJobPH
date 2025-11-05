@@ -1,5 +1,6 @@
 ﻿@page "/superadmin/applicants"
 @inject NavigationManager NavigationManager
+@inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @layout SuperAdminLayout
 @inject IClientSuperAdminService _service
@@ -128,7 +129,7 @@
                 <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
                     <MudStack Spacing="1">
                         <MudText Typo="Typo.body2" Color="Color.Secondary">Active Applicants</MudText>
-                        <MudText Typo="Typo.h4" Style="font-weight: 700; color: #48bb78;">@applicants.Count(a => a.Status == "Active")</MudText>
+                        <MudText Typo="Typo.h4" Style="font-weight: 700; color: #48bb78;">@applicants.Count(a => a.IsDeleted == 0)</MudText>
                     </MudStack>
                     <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Large" />
                 </MudStack>
@@ -139,7 +140,7 @@
                 <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
                     <MudStack Spacing="1">
                         <MudText Typo="Typo.body2" Color="Color.Secondary">Blocked Applicants</MudText>
-                        <MudText Typo="Typo.h4" Style="font-weight: 700; color: #f56565;">@applicants.Count(a => a.Status == "Blocked")</MudText>
+                        <MudText Typo="Typo.h4" Style="font-weight: 700; color: #f56565;">@applicants.Count(a => a.IsDeleted == 1)</MudText>
                     </MudStack>
                     <MudIcon Icon="@Icons.Material.Filled.Block" Color="Color.Error" Size="Size.Large" />
                 </MudStack>
@@ -202,7 +203,7 @@
         @foreach (var applicant in filteredApplicants)
         {
             <MudItem xs="12">
-                <MudPaper Elevation="2" Class="@($"applicant-card pa-4 {(applicant.Status == "Blocked" ? "blocked" : "")}")">
+                <MudPaper Elevation="2" Class="@($"applicant-card pa-4 {(applicant.IsDeleted == 1 ? "blocked" : "")}")">
                     <MudGrid Spacing="3">
                         <MudItem xs="12" md="9">
                             <MudStack Row="true" Spacing="3">
@@ -216,8 +217,8 @@
                                         <MudText Typo="Typo.h6" Style="font-weight: 600;">
                                             @applicant.FullName
                                         </MudText>
-                                        <span class="@($"status-badge status-{applicant.Status.ToLower()}")">
-                                            @applicant.Status
+                                        <span class="@($"status-badge status-{applicant.IsDeleted}")">
+                                            @(applicant.IsDeleted == 0 ? "Active" : "Blocked")
                                         </span>
                                        
                                     </MudStack>
@@ -225,7 +226,7 @@
                                     <MudStack Row="true" Spacing="3" Style="flex-wrap: wrap;" Class="mt-2">
                                         <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
                                             <MudIcon Icon="@Icons.Material.Filled.Email" Size="Size.Small" Color="Color.Secondary" />
-                                            <MudText Typo="Typo.body2" Color="Color.Secondary">@applicant.UserAccount.Email</MudText>
+                                            <MudText Typo="Typo.body2" Color="Color.Secondary">@applicant.Email</MudText>
                                         </MudStack>
                                         <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center">
                                             <MudIcon Icon="@Icons.Material.Filled.Phone" Size="Size.Small" Color="Color.Secondary" />
@@ -296,17 +297,17 @@
                                         View
                                     </MudButton>
 
-                                    @if (applicant.Status == "Active")
+                                    @if (applicant.IsDeleted == 0)
                                     {
                                         <MudButton Variant="Variant.Filled"
                                                    Color="Color.Error"
                                                    StartIcon="@Icons.Material.Filled.Block"
                                                    Size="Size.Small"
-                                                   OnClick="@(() => OpenBlockDialog(applicant))">
+                                                   OnClick="@(() => ConfirmBlockApplicant(applicant.ApplicantId))">
                                             Block
                                         </MudButton>
                                     }
-                                    else if (applicant.Status == "Blocked")
+                                    else if (applicant.IsDeleted == 1)
                                     {
                                         <MudButton Variant="Variant.Filled"
                                                    Color="Color.Success"
@@ -341,7 +342,7 @@
     </MudGrid>
 </MudContainer>
 
-<!-- Block Applicant Dialog -->
+@* <!-- Block Applicant Dialog -->
 <MudDialog @bind-IsVisible="showBlockDialog" Options="dialogOptions">
     <TitleContent>
         <MudText Typo="Typo.h6">
@@ -401,7 +402,7 @@
             Block Applicant
         </MudButton>
     </DialogActions>
-</MudDialog>
+</MudDialog> *@
 
 @code {
     private List<ApplicantDtos> applicants = new();
@@ -474,45 +475,89 @@
         notifyApplicant = true;
     }
 
-    private async Task ConfirmBlockApplicant()
+    private async Task ConfirmBlockApplicant(int applicantId)
     {
-        if (selectedApplicant != null && !string.IsNullOrWhiteSpace(blockReasonCategory) && !string.IsNullOrWhiteSpace(blockReason))
+        var applicant = applicants.FirstOrDefault(a => a.ApplicantId == applicantId);
+        if (applicant == null)
         {
-            // TODO: Replace with actual API call
-            await Task.Delay(500);
+            Snackbar.Add("Applicant not found.", Severity.Error);
+            return;
+        }
 
-            selectedApplicant.Status = "Blocked";
-            //selectedApplicant.BlockReason = $"{blockReasonCategory}: {blockReason}";
+        bool? confirm = await DialogService.ShowMessageBox(
+            "Confirm block",
+            $"Are you sure you want to block '{applicant.FullName}'?",
+            yesText: "Block",
+            cancelText: "Cancel"
+        );
 
-            var message = notifyApplicant
-                ? $"Applicant '{selectedApplicant.FullName}' has been blocked and notified via email"
-                : $"Applicant '{selectedApplicant.FullName}' has been blocked";
+        if (confirm == true)
+        {
+            try
+            {
+                bool result = await _service.BlockApplicant(applicant.ApplicantId);
 
-            Snackbar.Add(message, Severity.Success);
-            CloseBlockDialog();
-            FilterApplicants();
+                if (result)
+                {
+                    applicant.IsDeleted = 1; // update locally
+                    Snackbar.Add($"Applicant '{applicant.FullName}' has been blocked", Severity.Success);
+                    CloseBlockDialog();
+                    FilterApplicants();
+                }
+                else
+                {
+                    Snackbar.Add($"Failed to block '{applicant.FullName}'", Severity.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+            }
         }
     }
 
     private async Task UnblockApplicant(int applicantId)
     {
         var applicant = applicants.FirstOrDefault(a => a.ApplicantId == applicantId);
-        if (applicant != null)
+        if (applicant == null) return;
+
+        bool? confirm = await DialogService.ShowMessageBox(
+            "Confirm unblock",
+            $"Are you sure you want to unblock '{applicant.FullName}'?",
+            yesText: "Yes",
+            cancelText: "No"
+        );
+
+        if (confirm == true)
         {
-            // TODO: Replace with actual API call
-            await Task.Delay(500);
+            try
+            {
+                bool result = await _service.UnBlockApplicant(applicantId);
 
-            applicant.Status = "Active";
-            //applicant.BlockReason = null;
-
-            Snackbar.Add($"Applicant '{applicant.FullName}' has been unblocked", Severity.Success);
-            FilterApplicants();
+                if (result)
+                {
+                    applicant.IsDeleted = 0; // update locally
+                    Snackbar.Add($"Applicant '{applicant.FullName}' has been unblocked", Severity.Success);
+                    FilterApplicants();
+                }
+                else
+                {
+                    Snackbar.Add($"Failed to unblock '{applicant.FullName}'", Severity.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+            }
         }
     }
 
     private void ViewApplicantDetails(int applicantId)
     {
-        NavigationManager.NavigateTo($"/superadmin/applicants/{applicantId}");
+        var parameters = new DialogParameters { ["ApplicantId"] = applicantId };
+        var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true };
+
+        DialogService.Show<ApplicantViewDialog>("Applicant Details", parameters, options);
     }
 
 

@@ -20,11 +20,11 @@
 
     <main>
         <div class="top-row d-flex justify-content-between align-items-center px-4 py-2 bg-light">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+     
 
             @if (user != null && user.Identity != null && user.Identity.IsAuthenticated)
             {
-                <div class="d-flex align-items-center">
+                <div class="d-flex align-items-center float-end">
                     <MudText Typo="Typo.subtitle1" Class="mr-2">
                         👋 Hello, <b>@fullName</b>
                     </MudText>
@@ -43,6 +43,7 @@
 @code {
     private ClaimsPrincipal? user;
     private string? fullName;
+    private string? userRole;
 
     protected override async Task OnInitializedAsync()
     {
@@ -53,6 +54,7 @@
         {
             var firstName = user.FindFirst(c => c.Type == ClaimTypes.Name)?.Value;
             var lastName = user.FindFirst(c => c.Type == ClaimTypes.Surname)?.Value;
+            userRole = user.FindFirst(c => c.Type == ClaimTypes.Role)?.Value;
             fullName = $"{firstName} {lastName}";
         }
     }

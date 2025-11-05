@@ -22,7 +22,7 @@ namespace HelloJobPH.Shared.Model
         public JobCategory JobCategory { get; set; }
         public string JobRequirements { get; set; } = string.Empty;
         public int? HumanResourceId { get; set; }
-        public int? EmployersId { get; set; }
+        public int? EmployerId { get; set; }
         public List<Application>? Application { get; set; }
         public HumanResources? HumanResource { get; set; }
         public Employers? Employers { get; set; }
