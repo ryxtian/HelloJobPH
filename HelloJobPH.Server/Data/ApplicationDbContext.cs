@@ -12,6 +12,7 @@ namespace HelloJobPH.Server.Data
         public DbSet<JobPosting> JobPosting { get; set; }
         public DbSet<HumanResources> HumanResource { get; set; }
         public DbSet<Application> Application { get; set; }
+        public DbSet<Resume> Resume { get; set; }
         public DbSet<Interview> Interview { get; set; }
         public DbSet<WorkExperience> WorkExperience { get; set; }
         public DbSet<EducationalAttainment> EducationalAttainment { get; set; }

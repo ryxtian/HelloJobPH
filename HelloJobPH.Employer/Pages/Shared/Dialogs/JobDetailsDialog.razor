@@ -91,67 +91,7 @@
                             <MudText Typo="Typo.body1">@jobDetails.PostedDate.ToString("MMMM dd, yyyy")</MudText>
                         </MudPaper>
                     </MudItem>
-                    <MudItem xs="12" sm="6">
-                        <MudPaper Elevation="0" Class="pa-3 rounded" Outlined="true">
-                            <div class="d-flex align-center gap-2 mb-2">
-                                <MudIcon Icon="@Icons.Material.Filled.EventBusy" Color="Color.Warning" Size="Size.Small" />
-                                <MudText Typo="Typo.caption" Color="Color.Secondary">Expiration Date</MudText>
-                            </div>
-                            <MudText Typo="Typo.body1">
-                                @if (jobDetails.ExpiredDate.HasValue)
-                                {
-                                    var daysLeft = (jobDetails.ExpiredDate.Value - DateTime.UtcNow).Days;
-                                    @jobDetails.ExpiredDate.Value.ToString("MMMM dd, yyyy")
-                                    @if (daysLeft > 0)
-                                    {
-                                        <MudText Typo="Typo.caption" Color="@(daysLeft <= 7 ? Color.Error : Color.Secondary)">
-                                            (@daysLeft days remaining)
-                                        </MudText>
-                                    }
-                                    else if (daysLeft == 0)
-                                    {
-                                        <MudText Typo="Typo.caption" Color="Color.Error">(Expires today)</MudText>
-                                    }
-                                    else
-                                    {
-                                        <MudText Typo="Typo.caption" Color="Color.Error">(Expired)</MudText>
-                                    }
-                                }
-                                else
-                                {
-                                    <text>No expiration</text>
-                                }
-                            </MudText>
-                        </MudPaper>
-                    </MudItem>
                 </MudGrid>
-
-                @* Schedule Information *@
-                @if (!string.IsNullOrEmpty(jobDetails.ScheduleDays) || !string.IsNullOrEmpty(jobDetails.ScheduleTime))
-                {
-                    <MudPaper Elevation="0" Class="pa-4 rounded mb-4" Outlined="true">
-                        <div class="d-flex align-center gap-2 mb-3">
-                            <MudIcon Icon="@Icons.Material.Filled.Schedule" Color="Color.Primary" />
-                            <MudText Typo="Typo.h6" Color="Color.Primary">Schedule</MudText>
-                        </div>
-                        <MudGrid Spacing="2">
-                            @if (!string.IsNullOrEmpty(jobDetails.ScheduleDays))
-                            {
-                                <MudItem xs="12" sm="6">
-                                    <MudText Typo="Typo.caption" Color="Color.Secondary">Working Days</MudText>
-                                    <MudText Typo="Typo.body1">@jobDetails.ScheduleDays</MudText>
-                                </MudItem>
-                            }
-                            @if (!string.IsNullOrEmpty(jobDetails.ScheduleTime))
-                            {
-                                <MudItem xs="12" sm="6">
-                                    <MudText Typo="Typo.caption" Color="Color.Secondary">Working Hours</MudText>
-                                    <MudText Typo="Typo.body1">@jobDetails.ScheduleTime</MudText>
-                                </MudItem>
-                            }
-                        </MudGrid>
-                    </MudPaper>
-                }
 
                 @* Description *@
                 @if (!string.IsNullOrEmpty(jobDetails.Description))

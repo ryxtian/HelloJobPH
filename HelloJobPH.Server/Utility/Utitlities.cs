@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace HelloJobPH.Server.Utility
 {

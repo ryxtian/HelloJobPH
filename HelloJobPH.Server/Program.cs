@@ -131,7 +131,13 @@ if (app.Environment.IsDevelopment())
 }
 app.UseMiddleware<ExceptionMiddleware>();
 
-app.UseHttpsRedirection();
+using (var scope = app.Services.CreateScope())
+     {
+         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+         var seeder = new Seeder(context);
+         await seeder.SeedAsync();
+     }
+    app.UseHttpsRedirection();
 app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
 app.UseAuthorization();

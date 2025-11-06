@@ -345,11 +345,11 @@ namespace HelloJobPH.Server.Migrations
                     b.Property<int>("EmploymentType")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("ExpiredDate")
-                        .HasColumnType("datetime2");
-
                     b.Property<int?>("HumanResourceId")
                         .HasColumnType("int");
+
+                    b.Property<byte>("IsActive")
+                        .HasColumnType("tinyint");
 
                     b.Property<byte>("IsDeleted")
                         .HasColumnType("tinyint");
@@ -373,12 +373,6 @@ namespace HelloJobPH.Server.Migrations
 
                     b.Property<decimal?>("SalaryTo")
                         .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("ScheduleDays")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ScheduleTime")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Title")
                         .IsRequired()

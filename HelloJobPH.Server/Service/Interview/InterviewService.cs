@@ -34,7 +34,6 @@ namespace HelloJobPH.Server.Service.Interview
                     .Select(a => new InterviewListDtos
                     {
                         ApplicationId = a.ApplicationId,
-                        //ResumeUrl = a.ResumeUrl,
                         Firstname = a.Applicant.Firstname,
                         Lastname = a.Applicant.Surname,
                         Email = a.Applicant.UserAccount.Email,
@@ -46,7 +45,6 @@ namespace HelloJobPH.Server.Service.Interview
                         Status = a.ApplicationStatus
                     })
                     .ToListAsync();
-
                 return result;
             }
             catch (Exception)
@@ -54,8 +52,6 @@ namespace HelloJobPH.Server.Service.Interview
                 throw;
             }
         }
-
-
         public async Task<List<InterviewListDtos>> InitialList()
         {
             var userId = Utilities.GetUserId();
@@ -68,7 +64,6 @@ namespace HelloJobPH.Server.Service.Interview
                     .Select(a => new InterviewListDtos
                     {
                         ApplicationId = a.ApplicationId,
-                        //ResumeUrl = a.ResumeUrl,
                         Firstname = a.Applicant.Firstname,
                         Lastname = a.Applicant.Surname,
                         Email = a.Applicant.UserAccount.Email,
@@ -102,15 +97,14 @@ namespace HelloJobPH.Server.Service.Interview
                     .Select(a => new InterviewListDtos
                     {
                         ApplicationId = a.ApplicationId,
-                        //ResumeUrl = a.ResumeUrl,
                         Firstname = a.Applicant.Firstname,
                         Lastname = a.Applicant.Surname,
                         Email = a.Applicant.UserAccount.Email,
                         JobTitle = a.JobPosting.Title,
                         Type = a.JobPosting.EmploymentType,
                         DateApplied = a.DateApply,
-                        TimeInterview = a.Interview.ScheduledTime,
-                        DateInterview = a.Interview.ScheduledDate,
+                        TimeInterview = a.Interview != null ? a.Interview.ScheduledTime : null,
+                        DateInterview = a.Interview != null ? a.Interview.ScheduledDate : null,
                         Status = a.ApplicationStatus
                     })
                     .ToListAsync();
@@ -252,12 +246,10 @@ Best regards,
                 else
                     return false;
 
-                //update.Location = location;
                 _context.Interview.Update(update);
                 await _context.SaveChangesAsync();
             }
 
-            // 3️⃣ Professional email content for technical interview
             var subject = $"Invitation for Technical Interview – {candidate.JobTitle}";
 
             var body = $@"Dear {candidate.Firstname},
@@ -389,12 +381,10 @@ Best regards,
                 JobTitle = application.JobPosting.Title
             };
 
-            // 2️⃣ Update application status
             application.ApplicationStatus = Shared.Enums.ApplicationStatus.Failed;
             _context.Application.Update(application);
             await _context.SaveChangesAsync();
 
-            // 3️⃣ Create professional rejection email content
             var subject = $"Application Update – {candidate.JobTitle} Position";
 
             var body = $@"Dear {candidate.Firstname},

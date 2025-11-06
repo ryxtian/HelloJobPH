@@ -14,7 +14,6 @@ namespace HelloJobPH.Shared.Model
         public string Password { get; set; } = string.Empty;
         public string Role { get; set; } = string.Empty;
         public byte IsDeleted { get; set; } = 0;
-        public int userDetailsId { get; set; }
         public Applicant? Applicant { get; set; }
         public HumanResources? HumanResource { get; set; }
         public Employers? Employer { get; set; }

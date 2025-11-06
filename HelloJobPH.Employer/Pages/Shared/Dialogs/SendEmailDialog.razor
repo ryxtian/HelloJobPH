@@ -1,6 +1,7 @@
 ﻿@using MudBlazor
 @using MudBlazor.Components
 @inject ISnackbar Snackbar
+@inject IDialogService DialogService
 @inject IClientCandidateService Service
 <MudDialog>
     <DialogContent>
@@ -41,10 +42,10 @@
 
     protected override void OnInitialized()
     {
-  
+
         emailModel.InterviewDate = DateTime.Now.AddDays(1); // Default to tomorrow
         emailModel.InterviewTime = TimeSpan.FromHours(9);   // Default to 9:00 AM
-    
+
     }
 
     private void Cancel() => MudDialog.Cancel();
@@ -57,22 +58,31 @@
             Snackbar.Add("Please fill all required fields.", Severity.Error);
             return;
         }
+        bool? confirm = await DialogService.ShowMessageBox(
+"Confirm for initial",
+"Are you sure you want to proceed this interview to initial?",
+yesText: "Confirm",
+cancelText: "Cancel");
 
-        bool success = await Service.ForInitial(
-         Candidate.ApplicationId,
-         emailModel.InterviewDate!.Value.ToString("yyyy-MM-dd"),
-         emailModel.InterviewTime!.Value.ToString(@"hh\:mm"),
-         emailModel.Location
-     );
+        if (confirm == true)
+        {
 
-        if (success)
-        {
-            Snackbar.Add("Email sent successfully.", Severity.Success);
-            MudDialog.Close(DialogResult.Ok(true));
-        }
-        else
-        {
-            Snackbar.Add("Failed to send email. Candidate not found.", Severity.Error);
+            bool success = await Service.ForInitial(
+             Candidate.ApplicationId,
+             emailModel.InterviewDate!.Value.ToString("yyyy-MM-dd"),
+             emailModel.InterviewTime!.Value.ToString(@"hh\:mm"),
+             emailModel.Location
+         );
+
+            if (success)
+            {
+                Snackbar.Add("Email sent successfully.", Severity.Success);
+                MudDialog.Close(DialogResult.Ok(true));
+            }
+            else
+            {
+                Snackbar.Add("Failed to send email. Candidate not found.", Severity.Error);
+            }
         }
     }
 

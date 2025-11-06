@@ -75,7 +75,16 @@ namespace HelloJobPH.Employer.Services.JobPosting
                 return $"Failed to update job post. Server responded with: {error}";
             }
         }
-
+        public async Task<bool> Activate(int id)
+        {
+            var response = await _http.PutAsync($"{BaseUrl}/Activate/{id}", null);
+            return response.IsSuccessStatusCode;
+        }
+        public async Task<bool> Deactivate(int id)
+        {
+            var response = await _http.PutAsync($"{BaseUrl}/Deactivate/{id}", null);
+            return response.IsSuccessStatusCode;
+        }
 
     }
 }

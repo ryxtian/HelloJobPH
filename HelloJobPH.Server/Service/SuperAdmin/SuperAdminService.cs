@@ -183,9 +183,7 @@ HelloJobPH Team";
                     JobCategory = j.JobCategory,
                     JobRequirements = j.JobRequirements,
                     PostedDate = j.PostedDate,
-                    ExpiredDate = j.ExpiredDate,
-                    ScheduleDays = j.ScheduleDays,
-                    ScheduleTime = j.ScheduleTime,
+
                     IsDeleted = j.IsDeleted
                 })
 .Where(j => j.ExpiredDate == null || j.ExpiredDate >= today)
@@ -292,9 +290,7 @@ HelloJobPH Team";
                     JobCategory = j.JobCategory,
                     JobRequirements = j.JobRequirements,
                     PostedDate = j.PostedDate,
-                    ExpiredDate = j.ExpiredDate,
-                    ScheduleDays = j.ScheduleDays,
-                    ScheduleTime = j.ScheduleTime,
+
                     IsDeleted = j.IsDeleted
                 })
                 .FirstOrDefaultAsync();

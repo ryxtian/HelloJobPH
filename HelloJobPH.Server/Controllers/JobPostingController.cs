@@ -82,5 +82,27 @@ namespace HelloJobPH.Server.Controllers
 
             return NoContent();
         }
+        [HttpPut("Activate/{id}")]
+        public async Task<IActionResult> Activate(int id)
+        {
+            var deleted = await _jobPostService.Activate(id);
+            if (!deleted)
+            {
+                return NotFound($"Job post with ID {id} not found.");
+            }
+
+            return NoContent();
+        }
+        [HttpPut("Deactivate/{id}")]
+        public async Task<IActionResult> Deactivate(int id)
+        {
+            var deleted = await _jobPostService.Deactivate(id);
+            if (!deleted)
+            {
+                return NotFound($"Job post with ID {id} not found.");
+            }
+
+            return NoContent();
+        }
     }
 }

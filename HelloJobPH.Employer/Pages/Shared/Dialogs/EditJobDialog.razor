@@ -92,6 +92,7 @@
                               Placeholder="Maximum salary" />
             </MudItem>
 
+         
             <!-- Job Requirements -->
             <MudItem xs="12">
                 <MudTextField Label="Job Requirements"
@@ -103,14 +104,7 @@
                               Placeholder="List the required skills, qualifications, and experience..." />
             </MudItem>
 
-            <!-- Expiry Date -->
-            <MudItem xs="12" sm="6">
-                <MudDatePicker Label="Application Deadline"
-                               @bind-Date="Job.ExpiredDate"
-                               Required="true"
-                               Variant="Variant.Outlined"
-                               MinDate="DateTime.Today" />
-            </MudItem>
+
 
             <!-- Action Buttons -->
             <MudItem xs="12" Class="mt-4">
@@ -140,6 +134,7 @@
 
     [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
     private JobPostingDtos Job = new();
+    private List<JobPostingDtos> Joblist = new();
     private bool isSaving = false;
     private MudForm _form;
 
@@ -161,12 +156,10 @@
                 SalaryFrom = ExistingJob.SalaryFrom,
                 SalaryTo = ExistingJob.SalaryTo,
                 JobCategory = ExistingJob.JobCategory,
-                ExpiredDate = ExistingJob.ExpiredDate,
-         
-                ScheduleDays = ExistingJob.ScheduleDays,
-                ScheduleTime = ExistingJob.ScheduleTime
+
             };
         }
+
     }
     private async Task SubmitForm()
     {
@@ -178,10 +171,19 @@
         }
         try
         {
-            var message = await _jobpost.UpdateAsync(Job);
-            await _form.ResetAsync();
-            Snackbar.Add(message, Severity.Success);
-            NavigationManager.NavigateTo("/jobpost/jobpost");
+            bool? confirm = await DialogService.ShowMessageBox(
+"Confirm update",
+"Are you sure you want to update this post?",
+yesText: "update",
+cancelText: "Cancel");
+
+            if (confirm == true)
+            {
+                var message = await _jobpost.UpdateAsync(Job);
+                await _form.ResetAsync();
+                Snackbar.Add(message, Severity.Success);
+                NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+            }
         }
         catch (Exception ex)
         {

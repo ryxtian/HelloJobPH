@@ -10,6 +10,8 @@ namespace HelloJobPH.Server.Service.JobPost
         Task<bool> AddAsync(JobPostingDtos jobPostingDto);
         Task<bool> UpdateAsync(JobPostingDtos jobPostingDto);
         Task<bool> DeleteAsync(int id);
+        Task<bool> Activate(int id);
+        Task<bool> Deactivate(int id);
     }
 
 }

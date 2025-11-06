@@ -4,6 +4,7 @@
 @inject IClientCandidateService Service
 @inject IClientInterviewService Interview
 @inject NavigationManager Navigation
+@inject IDialogService DialogService
 @inject IJSRuntime JS
 <MudDialog>
     <DialogContent>
@@ -61,25 +62,33 @@
             return;
         }
 
-        bool success = await Interview.Reschedule(
-         Candidate.ApplicationId,
-         emailModel.InterviewDate!.Value.ToString("yyyy-MM-dd"),
-         emailModel.InterviewTime!.Value.ToString(@"hh\:mm"),
-         emailModel.Location
-     );
+        bool? confirm = await DialogService.ShowMessageBox(
+"Confirm reschedule",
+"Are you sure you want to reschedule this interview?",
+yesText: "reschedule",
+cancelText: "Cancel");
 
-        if (success)
+        if (confirm == true)
         {
-            Snackbar.Add("Email sent successfully.", Severity.Success);
-            await JS.InvokeVoidAsync("location.reload");
-            MudDialog.Close(DialogResult.Ok(true));
-           
+            bool success = await Interview.Reschedule(
+             Candidate.ApplicationId,
+             emailModel.InterviewDate!.Value.ToString("yyyy-MM-dd"),
+             emailModel.InterviewTime!.Value.ToString(@"hh\:mm"),
+             emailModel.Location
+         );
+
+            if (success)
+            {
+                Snackbar.Add("Email sent successfully.", Severity.Success);
+                await JS.InvokeVoidAsync("location.reload");
+                MudDialog.Close(DialogResult.Ok(true));
+
+            }
+            else
+            {
+                Snackbar.Add("Failed to send email. Candidate not found.", Severity.Error);
+            }
         }
-        else
-        {
-            Snackbar.Add("Failed to send email. Candidate not found.", Severity.Error);
-        }
-      
     }
 
     public class EmailModel

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using HelloJobPH.Server.Data;
+using HelloJobPH.Server.Utility;
 using HelloJobPH.Shared.DTOs;
 using HelloJobPH.Shared.Model;
 using Microsoft.EntityFrameworkCore;
@@ -90,11 +91,13 @@ namespace HelloJobPH.Server.Service.HumanResource
 
         public async Task<List<HumanResourceDtos>> RetrieveAllAsync()
         {
+            var userId = Utilities.GetUserId();
+
+            
             try
             {
                 var response = await _context.HumanResource
-                    .Include(hr => hr.UserAccount) // include related UserAccount
-                    .Where(hr => hr.IsDeleted == 0)
+                    .Where(hr => hr.IsDeleted == 0 && hr.EmployerId == userId)
                     .Select(hr => new HumanResourceDtos
                     {
                         HumanResourceId = hr.HumanResourceId,

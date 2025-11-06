@@ -3,6 +3,7 @@
 @inject ISnackbar Snackbar
 @inject IClientCandidateService Service
 @inject IClientInterviewService Interview
+@inject IDialogService DialogService
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
 <MudDialog>
@@ -60,26 +61,34 @@
             Snackbar.Add("Please fill all required fields.", Severity.Error);
             return;
         }
+        bool? confirm = await DialogService.ShowMessageBox(
+"Confirm for technical",
+"Are you sure you want to proceed this interview to technical?",
+yesText: "Confirm",
+cancelText: "Cancel");
 
-        bool success = await Interview.ForTechnical(
-         Candidate.ApplicationId,
-         emailModel.InterviewDate!.Value.ToString("yyyy-MM-dd"),
-         emailModel.InterviewTime!.Value.ToString(@"hh\:mm"),
-         emailModel.Location
-     );
-
-        if (success)
+        if (confirm == true)
         {
-            Snackbar.Add("Email sent successfully.", Severity.Success);
-            await JS.InvokeVoidAsync("location.reload");
-            MudDialog.Close(DialogResult.Ok(true));
 
-        }
-        else
-        {
-            Snackbar.Add("Failed to send email. Candidate not found.", Severity.Error);
-        }
+            bool success = await Interview.ForTechnical(
+             Candidate.ApplicationId,
+             emailModel.InterviewDate!.Value.ToString("yyyy-MM-dd"),
+             emailModel.InterviewTime!.Value.ToString(@"hh\:mm"),
+             emailModel.Location
+         );
 
+            if (success)
+            {
+                Snackbar.Add("Email sent successfully.", Severity.Success);
+                await JS.InvokeVoidAsync("location.reload");
+                MudDialog.Close(DialogResult.Ok(true));
+
+            }
+            else
+            {
+                Snackbar.Add("Failed to send email. Candidate not found.", Severity.Error);
+            }
+        }
     }
 
     public class EmailModel

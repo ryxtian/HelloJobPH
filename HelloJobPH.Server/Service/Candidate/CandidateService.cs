@@ -134,12 +134,12 @@ namespace HelloJobPH.Server.Service.Candidate
                     return false;
                 }
 
-                bool isTaken = await _context.Interview.AnyAsync(d => d.ScheduledTime == parseTime && d.ScheduledDate.ToString() == time);
+                //bool isTaken = await _context.Interview.AnyAsync(d => d.ScheduledTime == parseTime && d.ScheduledDate.ToString() == time);
 
-                if (!isTaken)
-                {
-                    return false;
-                }
+                //if (!isTaken)
+                //{
+                   // return false;
+                //}
 
                 // 1️⃣ Get candidate details via navigation properties
                 var application = await _context.Application
@@ -148,8 +148,18 @@ namespace HelloJobPH.Server.Service.Candidate
                     .Include(a => a.JobPosting)
                     .FirstOrDefaultAsync(a => a.ApplicationId == applicationId);
 
+
+
+                
+
                 if (application == null || string.IsNullOrEmpty(application.Applicant?.UserAccount?.Email))
                     return false;
+
+                application.ApplicationStatus = ApplicationStatus.Initial;
+
+                _context.Application.Update(application);
+                await _context.SaveChangesAsync();
+
 
                 var candidate = new CandidateEmailDto
                 {

@@ -27,27 +27,36 @@ namespace HelloJobPH.Server.Service.JobPost
 
         public async Task<List<JobPostingDtos>> RetrieveAllAsync()
         {
+            var userId = Utilities.GetUserId();
+
+            var hr = await _context.HumanResource
+                .FirstOrDefaultAsync(i => i.UserAccountId == userId);
+
+            if (hr is null)
+            {
+                throw new Exception("Human resource not found.");
+            }
+
             try
             {
-       
-
-                // Step 2: Project to DTO in memory, safely accessing navigation properties
-                var response = await _context.JobPosting.
-                    Select(j => new JobPostingDtos
-                {
-                    JobPostingId = j.JobPostingId,
-                    Title = j.Title,
-                    Description = j.Description,
-                    EmploymentType = j.EmploymentType,
-                    SalaryFrom = j.SalaryFrom,
-                    SalaryTo = j.SalaryTo,
-                    JobRequirements = j.JobRequirements,
-                    JobCategory = j.JobCategory,
-                    PostedDate = j.PostedDate,
-                    IsDeleted = j.IsDeleted,
-                    Location = j.Employers.CompanyAddress,
-                    CompanyName = j.Employers.CompanyName
-                }).Where(j => j.IsDeleted == 0)
+                var response = await _context.JobPosting
+                    .Where(j => j.IsDeleted == 0 && j.EmployerId == hr.EmployerId) // ✅ filter by employer ID
+                    .Select(j => new JobPostingDtos
+                    {
+                        JobPostingId = j.JobPostingId,
+                        Title = j.Title,
+                        Description = j.Description,
+                        EmploymentType = j.EmploymentType,
+                        SalaryFrom = j.SalaryFrom,
+                        SalaryTo = j.SalaryTo,
+                        JobRequirements = j.JobRequirements,
+                        JobCategory = j.JobCategory,
+                        PostedDate = j.PostedDate,
+                        IsActive = j.IsActive,
+                        IsDeleted = j.IsDeleted,
+                        Location = j.Employers.CompanyAddress + ", " + j.Employers.City + ", " + j.Employers.Province,
+                        CompanyName = j.Employers.CompanyName
+                    })
                     .ToListAsync();
 
                 return response;
@@ -57,6 +66,7 @@ namespace HelloJobPH.Server.Service.JobPost
                 throw;
             }
         }
+
 
         public async Task<JobPostingDtos> GetByIdAsync(int id)
         {
@@ -72,7 +82,7 @@ namespace HelloJobPH.Server.Service.JobPost
                     EmploymentType = entity.EmploymentType,
                     PostedDate = entity.PostedDate,
                     JobCategory = entity.JobCategory,
-                    ExpiredDate = entity.ExpiredDate,
+
                     SalaryFrom = entity.SalaryFrom,
                     JobRequirements = entity.JobRequirements,
                     SalaryTo = entity.SalaryTo,
@@ -110,9 +120,10 @@ namespace HelloJobPH.Server.Service.JobPost
                     SalaryTo = jobPostingDto.SalaryTo,
                     JobRequirements = jobPostingDto.JobRequirements,
                     JobCategory = jobPostingDto.JobCategory,
+
                     PostedDate = DateTime.Now,
-                    ExpiredDate = jobPostingDto.ExpiredDate ?? DateTime.Now,
                     HumanResourceId = hr.HumanResourceId,
+                    EmployerId = hr.EmployerId,
                 };
 
                 await _context.AddAsync(saving);
@@ -161,8 +172,7 @@ namespace HelloJobPH.Server.Service.JobPost
                 existing.IsDeleted = jobPostingDto.IsDeleted;
                 existing.HumanResourceId = hr.HumanResourceId;
                 existing.PostedDate = DateTime.Now;
-                existing.ExpiredDate = jobPostingDto.ExpiredDate ?? DateTime.Now;
-
+                existing.EmployerId = hr.EmployerId;
 
                 _context.JobPosting.Update(existing);
                 await _context.SaveChangesAsync();
@@ -188,6 +198,52 @@ namespace HelloJobPH.Server.Service.JobPost
                     return false;
 
                 existing.IsDeleted = 1;
+
+                _context.JobPosting.Update(existing);
+                await _context.SaveChangesAsync();
+
+                return true;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+        public async Task<bool> Activate(int id)
+        {
+            try
+            {
+                var existing = await _context.JobPosting
+     .FirstOrDefaultAsync(i => i.JobPostingId == id);
+
+                if (existing == null)
+                    return false;
+
+                existing.IsActive = 1;
+
+                _context.JobPosting.Update(existing);
+                await _context.SaveChangesAsync();
+
+                return true;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+        public async Task<bool> Deactivate(int id)
+        {
+            try
+            {
+                var existing = await _context.JobPosting
+     .FirstOrDefaultAsync(i => i.JobPostingId == id);
+
+                if (existing == null)
+                    return false;
+
+                existing.IsActive = 0;
 
                 _context.JobPosting.Update(existing);
                 await _context.SaveChangesAsync();

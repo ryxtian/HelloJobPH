@@ -19,6 +19,7 @@ namespace HelloJobPH.Shared.Model
         public decimal? SalaryFrom { get; set; }
         public decimal? SalaryTo { get; set; }
         public byte IsDeleted { get; set; } = 0;
+        public byte IsActive { get; set; } = 1;
         public JobCategory JobCategory { get; set; }
         public string JobRequirements { get; set; } = string.Empty;
         public int? HumanResourceId { get; set; }
@@ -27,8 +28,6 @@ namespace HelloJobPH.Shared.Model
         public HumanResources? HumanResource { get; set; }
         public Employers? Employers { get; set; }
         public DateTime PostedDate { get; set; }
-        public DateTime ExpiredDate { get; set; }
-        public string? ScheduleDays { get; set; }
-        public string? ScheduleTime { get; set; }
+
     }
 }

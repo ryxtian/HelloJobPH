@@ -50,12 +50,12 @@
                                           Style="box-shadow: 0 4px 12px rgba(var(--mud-palette-primary-rgb), 0.3);">
                                     <MudIcon Icon="@Icons.Material.Filled.Work" Size="Size.Medium" />
                                 </MudAvatar>
-                                <MudChip T="string" Size="Size.Small" 
+   @*                              <MudChip T="string" Size="Size.Small" 
                                         Color="Color.Success" 
                                         Variant="Variant.Filled"
                                         Style="font-weight: 600;">
                                     Active
-                                </MudChip>
+                                </MudChip> *@
                             </MudStack>
 
                             <!-- Job Title -->
@@ -125,6 +125,28 @@
                                           Style="text-transform: none; font-weight: 600;">
                                     Edit
                                 </MudButton>
+                        @if (job.IsActive != 0)
+                                {
+                                    <MudButton Variant="Variant.Outlined"
+                                               OnClick="@(() => OnDeactivate(job.JobPostingId))"
+                                               Color="Color.Warning"
+                                               StartIcon="@Icons.Material.Filled.VisibilityOff"
+                                               FullWidth="true"
+                                               Style="text-transform: none; font-weight: 600;">
+                                        Deactivate
+                                    </MudButton>
+                                }
+                                else
+                                {
+                                    <MudButton Variant="Variant.Filled"
+                                               OnClick="@(() => Activate(job.JobPostingId))"
+                                               Color="Color.Secondary"
+                                               StartIcon="@Icons.Material.Filled.Visibility"
+                                               FullWidth="true"
+                                               Style="text-transform: none; font-weight: 600;">
+                                        Activate
+                                    </MudButton>
+                                }
                                 <MudButton Variant="Variant.Outlined" 
                                           OnClick="@(() => OnDelete(@job.JobPostingId))" 
                                           Color="Color.Error"
@@ -218,26 +240,88 @@
     // }
 
 
-    public void OnEdit(int id)
-    {
-        Navigation.NavigateTo($"/JobPost/editjobPost/{id}");
-    }
+
     public async Task OnDelete(int id)
     {
         isDeleting = true;
         try
         {
-            var success = await JobPostingService.SoftDeleteJobPost(id);
+            bool? confirm = await DialogService.ShowMessageBox(
+         "Confirm remove",
+         "Are you sure you want to remove this post?",
+         yesText: "remove",
+         cancelText: "Cancel");
 
-            if (success)
+            if (confirm == true)
             {
-                Snackbar.Add("Job post deleted successfully.", Severity.Success);
+                var success = await JobPostingService.SoftDeleteJobPost(id);
+
+                if (success)
+                {
+                    Snackbar.Add("Job post deleted successfully.", Severity.Success);
+                    jobPostings = await JobPostingService.RetrieveAllAsync();
+                }
+                else
+                {
+                    Snackbar.Add("Failed to delete job post.", Severity.Error);
+                }                
+            }
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Exception during soft delete: {ex.Message}");
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isDeleting = false;
+        }
+    }
+    public async Task OnDeactivate(int id)
+    {
+        isDeleting = true;
+        try
+        {
+            bool? confirm = await DialogService.ShowMessageBox(
+         "Confirm deactivate",
+         "Are you sure you want to deactivate this post?",
+         yesText: "deactivate",
+         cancelText: "Cancel");
+
+            if (confirm == true)
+            {
+                var success = await JobPostingService.Deactivate(id);
+                jobPostings = await JobPostingService.RetrieveAllAsync(); 
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Exception during soft delete: {ex.Message}");
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isDeleting = false;
+        }
+    }
+    public async Task Activate(int id)
+    {
+        isDeleting = true;
+        try
+        {
+            bool? confirm = await DialogService.ShowMessageBox(
+         "Confirm activate",
+         "Are you sure you want to activate this post?",
+         yesText: "activate",
+         cancelText: "Cancel");
+
+            if (confirm == true)
+            {
+                var success = await JobPostingService.Activate(id);
                 jobPostings = await JobPostingService.RetrieveAllAsync();
             }
-            else
-            {
-                Snackbar.Add("Failed to delete job post.", Severity.Error);
-            }
+
         }
         catch (Exception ex)
         {

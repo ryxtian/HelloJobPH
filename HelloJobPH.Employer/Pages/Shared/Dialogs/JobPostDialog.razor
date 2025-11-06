@@ -99,15 +99,11 @@
                                   Variant="Variant.Outlined"
                                   Placeholder="List the required skills, qualifications, and experience..." />
                 </MudItem>
+                           <!-- Schedule Time -->
 
-                <!-- Expiry Date -->
-                <MudItem xs="12" sm="6">
-                    <MudDatePicker Label="Application Deadline"
-                                   @bind-Date="jobpost.ExpiredDate"
-                                   Required="true"
-                                   Variant="Variant.Outlined"
-                                   MinDate="DateTime.Today" />
-                </MudItem>
+
+
+    
 
                 <!-- Submit Button -->
                 <MudItem xs="12" Class="mt-4">
@@ -143,7 +139,7 @@
                 var message = await _jobpost.AddAsync(jobpost);
                 Snackbar.Add("Successfully saved", Severity.Success);
                 Console.WriteLine("success");
-                NavigationManager.NavigateTo("/jobpost/jobPost");
+                NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
             }
             catch (Exception ex)
             {
