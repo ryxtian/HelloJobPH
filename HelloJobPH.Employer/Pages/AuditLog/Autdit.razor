@@ -1,4 +1,4 @@
-﻿@page "/candidate/candidate"
+﻿@page "/audit/auditlog"
 @inject IClientCandidateService CandidateService
 @inject IDialogService DialogService
 <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-4">
@@ -9,10 +9,10 @@
                 <MudStack Spacing="1">
                     <MudText Typo="Typo.h5" Color="Color.Primary">
                         <MudIcon Icon="@Icons.Material.Filled.PersonSearch" Class="mr-2" />
-                        Candidate Applications
+                        Audit
                     </MudText>
                     <MudText Typo="Typo.body2" Color="Color.Secondary">
-                        Review and manage candidate applications
+                        Audit Log
                     </MudText>
                 </MudStack>
                 <MudChip T="string" Icon="@Icons.Material.Filled.People" Color="Color.Info" Variant="Variant.Filled">
@@ -23,11 +23,11 @@
             <MudDivider />
 
             <!-- Table Section -->
-            <MudTable Dense="false" 
-                      Hover="true" 
-                      Bordered="false" 
+            <MudTable Dense="false"
+                      Hover="true"
+                      Bordered="false"
                       Striped="true"
-                      Breakpoint="Breakpoint.Sm" 
+                      Breakpoint="Breakpoint.Sm"
                       Items="@candidates"
                       Elevation="0">
                 <HeaderContent>
@@ -35,8 +35,8 @@
                     <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Position</strong></MudText></MudTh>
                     <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Status</strong></MudText></MudTh>
                     <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Resume</strong></MudText></MudTh>
-                    <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Date Applied</strong></MudText></MudTh>
-                    <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Type</strong></MudText></MudTh>
+                    <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Manage By</strong></MudText></MudTh>
+
                     <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Actions</strong></MudText></MudTh>
                 </HeaderContent>
                 <RowTemplate>
@@ -59,9 +59,9 @@
                         </MudChip>
                     </MudTd>
                     <MudTd DataLabel="Resume">
-                        <MudButton StartIcon="@Icons.Material.Filled.Description" 
-                                   Size="Size.Small" 
-                                   Variant="Variant.Text" 
+                        <MudButton StartIcon="@Icons.Material.Filled.Description"
+                                   Size="Size.Small"
+                                   Variant="Variant.Text"
                                    Color="Color.Primary">
                             View Resume
                         </MudButton>
@@ -72,16 +72,14 @@
                             <MudText Typo="Typo.body2">@context.DateApplied.ToString("dd MMM yyyy")</MudText>
                         </MudStack>
                     </MudTd>
-                    <MudTd DataLabel="Type">
-                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@context.Type</MudChip>
-                    </MudTd>
+
                     <MudTd DataLabel="Actions">
-                        <MudMenu Icon="@Icons.Material.Filled.MoreVert" 
-                                 Size="Size.Small" 
+                        <MudMenu Icon="@Icons.Material.Filled.MoreVert"
+                                 Size="Size.Small"
                                  Dense="true"
                                  AnchorOrigin="Origin.BottomLeft">
-                            <MudMenuItem Icon="@Icons.Material.Filled.CheckCircle" 
-                                        OnClick="@(() => Accept(context.ApplicationId))">
+                            <MudMenuItem Icon="@Icons.Material.Filled.CheckCircle"
+                                         OnClick="@(() => Accept(context.ApplicationId))">
                                 Accept
                             </MudMenuItem>
                             <MudMenuItem Icon="@Icons.Material.Filled.Cancel" Class="mud-error-text">

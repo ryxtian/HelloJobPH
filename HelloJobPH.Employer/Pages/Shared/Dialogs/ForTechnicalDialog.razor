@@ -26,6 +26,7 @@
                            Class="mb-2"
                            PickerVariant="PickerVariant.Dialog" />
 
+            <MudTextField Label="Assign to" @bind-Value="emailModel.Location" Required="true" />
             <MudTextField Label="Location" @bind-Value="emailModel.Location" Lines="3" TextArea="true" Required="true" />
 
             <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="ForTechnical">Send</MudButton>

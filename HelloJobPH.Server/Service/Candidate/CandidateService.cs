@@ -23,21 +23,29 @@ namespace HelloJobPH.Server.Service.Candidate
         }
         public async Task<bool> CandidateAccepttAsync(int id)
         {
-     
-                var userId = Utilities.GetUserId();
-                if (userId is null)
-                {
-                    throw new Exception("Invalid or missing user ID in claims.");
-                }
+
+            var userId = Utilities.GetUserId();
+
+            if (userId == null)
+            {
+                throw new Exception("Invalid or missing user ID in claims.");
+            }
+            var hr = await _context.HumanResource.FirstOrDefaultAsync
+            (u => u.UserAccountId == userId);
+
+            if (hr == null)
+            {
+                throw new Exception("Invalid or missing user ID in claims.");
+            }
 
 
-                var response = await _context.Application.FirstOrDefaultAsync(i => i.ApplicationId == id);
+            var response = await _context.Application.FirstOrDefaultAsync(i => i.ApplicationId == id);
                 if (response == null)
                 {
                     throw new Exception("Application not found.");
                 }
                 response.ApplicationStatus = ApplicationStatus.Accepted;
-                response.HumanResourceId = userId;
+                response.HumanResourcesId = hr.HumanResourceId;
                 _context.Update(response);
                 await _context.SaveChangesAsync();
                 return true;
@@ -70,28 +78,6 @@ namespace HelloJobPH.Server.Service.Candidate
 
                 return result;
 
-
-                //var result = await (
-                //    from app in _context.Application
-                //    join applicant in _context.Applicant on app.ApplicantId equals applicant.ApplicantId
-                //    join user in _context.UserAccount on applicant.UserAccountId equals user.UserAccountId
-                //    join job in _context.JobPosting on app.JobPostId equals job.JobPostingId
-                //    where app.ApplicationStatus == ApplicationStatus.Pending
-                //    select new ApplicationListDtos
-                //    {
-                //        ApplicationId = app.ApplicationId,
-                //        Type = job.EmploymentType,
-                //        Firstname = applicant.Firstname,
-                //        Lastname = applicant.Surname,
-                //        Email = user.Email,
-                //        JobTitle = job.Title,
-                //        //CompanyName = job.CompanyName,
-                //        DateApplied = app.DateApply,
-                //        Status = app.ApplicationStatus
-                //    }
-                //).ToListAsync();
-
-                //return result;
             }
             catch (Exception)
             {
@@ -107,9 +93,15 @@ namespace HelloJobPH.Server.Service.Candidate
             {
                 throw new Exception("Invalid or missing user ID in claims.");
             }
-                
+            var hr = await _context.HumanResource.FirstOrDefaultAsync
+            (u => u.UserAccountId == userId);
+
+            if (hr == null)
+            {
+                throw new Exception("Invalid or missing user ID in claims.");
+            }
             var result = await _context.Application
-                .Where(a => a.ApplicationStatus == ApplicationStatus.Accepted && a.HumanResourceId == userId)
+                .Where(a => a.ApplicationStatus == ApplicationStatus.Accepted && a.HumanResourcesId == hr.HumanResourceId)
                 .Select(a => new ApplicationListDtos
                 {
                     ApplicationId = a.ApplicationId,
@@ -134,12 +126,12 @@ namespace HelloJobPH.Server.Service.Candidate
                     return false;
                 }
 
-                //bool isTaken = await _context.Interview.AnyAsync(d => d.ScheduledTime == parseTime && d.ScheduledDate.ToString() == time);
+                bool isTaken = await _context.Interview.AnyAsync(d => d.ScheduledTime == parseTime && d.ScheduledDate.ToString() == time);
 
-                //if (!isTaken)
-                //{
-                   // return false;
-                //}
+                if (!isTaken)
+                {
+                    return false;
+                }
 
                 // 1️⃣ Get candidate details via navigation properties
                 var application = await _context.Application

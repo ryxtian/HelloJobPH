@@ -16,9 +16,9 @@ namespace HelloJobPH.Shared.Model
         public int? ResumeId { get; set; }
         public DateTime DateApply { get; set; }
         public ApplicationStatus ApplicationStatus { get; set; }
-        public int? JobPostId { get; set; }
+        public int? JobPostingId { get; set; }
         public byte IsDeleted { get; set; } = 0;
-        public int? HumanResourceId { get; set; }//xxxx
+        public int? HumanResourcesId { get; set; }//xxxx
         public HumanResources? HumanResources { get; set; }//xxx
         public JobPosting? JobPosting { get; set; }
         public Applicant? Applicant { get; set; }

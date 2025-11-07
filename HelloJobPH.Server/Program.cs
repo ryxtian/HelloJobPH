@@ -1,11 +1,15 @@
 using AutoMapper;
+using GenerativeAI;
 using HelloJobPH.Employer.JwtAuthStateProviders;
+using HelloJobPH.Employer.Services.Chat;
+using HelloJobPH.Server.ChatSystemHub;
 using HelloJobPH.Server.Data;
 using HelloJobPH.Server.Mapper;
 using HelloJobPH.Server.Middleware;
 using HelloJobPH.Server.Service.AI;
 using HelloJobPH.Server.Service.Auth;
 using HelloJobPH.Server.Service.Candidate;
+using HelloJobPH.Server.Service.Chat;
 using HelloJobPH.Server.Service.Dashboard;
 using HelloJobPH.Server.Service.Email;
 using HelloJobPH.Server.Service.HumanResource;
@@ -22,7 +26,6 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using GenerativeAI;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -106,6 +109,7 @@ builder.Services.AddScoped<IInterviewService, InterviewService>();
 builder.Services.AddScoped<IOverviewService, OverviewService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<ISuperAdminService, SuperAdminService>();
+builder.Services.AddScoped<IChatService, ChatService>();
 builder.Services.AddSingleton<AiOverviewService>();
 //builder.Services.AddScoped<IUserAccountRepository, UserAccountRepository>();
 //builder.Services.AddScoped<IApplicantRepository, ApplicantRepository>();
@@ -121,6 +125,9 @@ builder.Services.AddAutoMapper(typeof(Mapping).Assembly);
 //{
 //    options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
 //});
+
+builder.Services.AddSignalR();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -146,6 +153,6 @@ app.MapControllers();
 app.MapFallbackToFile("index.html");
 var httpContextAccessor = app.Services.GetRequiredService<IHttpContextAccessor>();
 HelloJobPH.Server.Utility.Utilities.Configure(httpContextAccessor);
-
+app.MapHub<Chathub>("/chathub");
 
 app.Run();

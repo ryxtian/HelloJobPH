@@ -12,6 +12,8 @@
     <PackageReference Include="Google_GenerativeAI" Version="3.4.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Core" Version="1.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" Version="8.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0">
       <PrivateAssets>all</PrivateAssets>
@@ -31,10 +33,6 @@
   <ItemGroup>
     <ProjectReference Include="..\HelloJobPH.Employer\HelloJobPH.Employer.csproj" />
     <ProjectReference Include="..\HelloJobPH.Shared\HelloJobPH.Shared.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Hub\" />
   </ItemGroup>
 
 </Project>

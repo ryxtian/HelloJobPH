@@ -1,10 +1,87 @@
 ﻿@page "/Interview/initial"
-
+@using HelloJobPH.Employer.Services.Chat
+@using Microsoft.AspNetCore.SignalR.Client
+@inject IClientChatService ChatService
 @inject NavigationManager Navigation
 @inject IClientInterviewService CandidateService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject IJSRuntime JS
+@inject NavigationManager NavigationManger
+
+
+
+
+<style>
+    .chat-container {
+        position: fixed;
+        bottom: 1rem;
+        width: 320px;
+        height: 400px;
+        display: flex;
+        flex-direction: column;
+        background-color: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.75rem;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        overflow: hidden;
+        z-index: 200;
+        margin-right: 1rem;
+    }
+
+    .chat-header {
+        background-color: #f9fafb;
+        padding: 0.5rem 1rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .chat-body {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding: 0.75rem;
+    }
+
+    .chat-message {
+        display: flex;
+        margin-bottom: 0.5rem;
+    }
+
+        .chat-message.sent {
+            justify-content: flex-end;
+        }
+
+        .chat-message.received {
+            justify-content: flex-start;
+        }
+
+    .chat-bubble {
+        background-color: #f3f4f6;
+        border-radius: 12px;
+        padding: 0.5rem 0.75rem;
+        max-width: 75%;
+    }
+
+    .chat-message.sent .chat-bubble {
+        background-color: #e3f2fd;
+    }
+
+    .animate-fade-in {
+        animation: fadeIn 0.25s ease-in-out;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
 <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-4">
     <MudPaper Elevation="2" Class="pa-6">
         <MudStack Spacing="4">
@@ -107,6 +184,10 @@
                                         OnClick="@(()=> NavigateToOverview(context.ApplicationId))">
                                 Overview
                             </MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.ChatBubble"
+                                        OnClick="@(() => OpenChat(context))">
+                                Chat
+                            </MudMenuItem>
                         </MudMenu>
                     </MudTd>
                 </RowTemplate>
@@ -124,12 +205,156 @@
     </MudPaper>
 </MudContainer>
 
+
+
+
+
+
+
+@foreach (var chat in openChats)
+{
+    <MudPaper Elevation="10" Class="chat-container animate-fade-in" style="@($"right:{chat.OffsetRight}px")">
+        <!-- Header -->
+        <MudStack Row AlignItems="AlignItems.Center" JustifyContent="SpaceBetween" Class="chat-header">
+            <MudText Typo="Typo.subtitle2">@chat.CandidateName</MudText>
+            <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" OnClick="@(() => CloseChat(chat))" />
+        </MudStack>
+
+        <!-- Messages -->
+        <MudContainer Class="chat-body">
+            @foreach (var msg in chat.Messages)
+            {
+                <MudStack Class="@(msg.SenderId == currentUserId ? "sent-message" : "received-message")" Style="margin-bottom:4px;">
+                    <MudText Typo="Typo.body2">@msg.Message</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                        @msg.SentAt.ToLocalTime().ToShortTimeString()
+                    </MudText>
+                </MudStack>
+            }
+        </MudContainer>
+
+        <MudDivider />
+
+        <!-- Input -->
+        <MudStack Row AlignItems="AlignItems.Center" Spacing="1" Class="p-2">
+            <MudTextField @bind-Value="chat.NewMessage"
+                          Placeholder="Type a message..."
+                          Variant="Variant.Outlined"
+                          Class="flex-grow"
+                          OnKeyDown="@(e => HandleKeyPress(e, chat))" />
+            <MudIconButton Icon="@Icons.Material.Filled.Send"
+                           Color="Color.Primary"
+                           Disabled="@string.IsNullOrWhiteSpace(chat.NewMessage)"
+                           OnClick="@(() => SendMessage(chat))" />
+        </MudStack>
+    </MudPaper>
+}
+
+@if (!IsConnected)
+{
+    <span>Connecting...</span>
+}
+
 @code {
+    private HubConnection hubConnection;
+    private List<ChatSession> openChats = new();
     private List<InterviewListDtos> initial = new();
+    private string currentUserId = "Employer123"; // ⚡ Replace with actual user ID
+
+    public class ChatSession
+    {
+        public int CandidateId { get; set; }
+        public string CandidateName { get; set; } = string.Empty;
+        public List<ChatMessageDtos> Messages { get; set; } = new();
+        public string NewMessage { get; set; } = string.Empty;
+        public int OffsetRight { get; set; }
+    }
 
     protected override async Task OnInitializedAsync()
     {
         initial = await CandidateService.InitialList();
+
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavigationManger.ToAbsoluteUri("/chathub"))
+            .Build();
+
+        // Receive message from SignalR
+        hubConnection.On<ChatMessageDtos>("ReceiveMessage", (message) =>
+        {
+            var chat = openChats.FirstOrDefault(c =>
+                c.CandidateId.ToString() == message.SenderId ||
+                c.CandidateId.ToString() == message.ReceiverId);
+
+            if (chat == null)
+            {
+                // Optional: auto-open chat window if it doesn’t exist yet
+                chat = new ChatSession
+                {
+                    CandidateId = int.Parse(message.SenderId),
+                    CandidateName = "New Candidate",
+                    OffsetRight = openChats.Count * 320
+                };
+                openChats.Add(chat);
+            }
+
+            chat.Messages.Add(message);
+            InvokeAsync(StateHasChanged);
+        });
+
+        await hubConnection.StartAsync();
+    }
+
+    private bool IsConnected => hubConnection?.State == HubConnectionState.Connected;
+
+    private void HandleKeyPress(KeyboardEventArgs e, ChatSession chat)
+    {
+        if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(chat.NewMessage))
+        {
+            _ = SendMessage(chat);
+        }
+    }
+
+    private void CloseChat(ChatSession chat) => openChats.Remove(chat);
+
+    private async Task SendMessage(ChatSession chat)
+    {
+        if (hubConnection == null || string.IsNullOrWhiteSpace(chat.NewMessage))
+            return;
+
+        var chatDto = new ChatMessageDtos
+        {
+            SenderId = currentUserId,
+            ReceiverId = chat.CandidateId.ToString(),
+            Message = chat.NewMessage,
+            SentAt = DateTime.UtcNow,
+            IsRead = false
+        };
+
+        // Add immediately to UI
+        chat.Messages.Add(chatDto);
+        chat.NewMessage = string.Empty;
+
+        // Send via SignalR
+        await hubConnection.SendAsync("SendMessage", chatDto);
+
+        // Persist to database
+        await ChatService.ChatMessage(chatDto);
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void OpenChat(InterviewListDtos candidate)
+    {
+        if (openChats.Any(c => c.CandidateId == candidate.ApplicationId))
+            return;
+
+        var offset = 20 + (openChats.Count * 340);
+        openChats.Add(new ChatSession
+        {
+            CandidateId = candidate.ApplicationId,
+            CandidateName = $"{candidate.Firstname} {candidate.Lastname}",
+            OffsetRight = offset
+        });
     }
 
     private void NavigateToOverview(int applicationId)

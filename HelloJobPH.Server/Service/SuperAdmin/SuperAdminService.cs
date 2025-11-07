@@ -21,7 +21,7 @@ namespace HelloJobPH.Server.Service.SuperAdmin
         public async Task<List<EmployerListDtos>> EmployersList()
         {
 
-            List<EmployerListDtos> employers = await _context.Employers.Where(i=>i.IsDeleted ==0 && i.Status != "Pending")
+            List<EmployerListDtos> employers = await _context.Employer.Where(i=>i.IsDeleted ==0 && i.Status != "Pending")
                 .Select(e => new EmployerListDtos
                 {
                     EmployerId = e.EmployerId,
@@ -42,7 +42,7 @@ namespace HelloJobPH.Server.Service.SuperAdmin
         public async Task<List<EmployerListDtos>> ForApprovalList()
         {
 
-            List<EmployerListDtos> employers = await _context.Employers.Where(i=>i.Status == "Pending")
+            List<EmployerListDtos> employers = await _context.Employer.Where(i=>i.Status == "Pending")
                 .Select(e => new EmployerListDtos
                 {
                     EmployerId = e.EmployerId,
@@ -62,12 +62,12 @@ namespace HelloJobPH.Server.Service.SuperAdmin
         }
         public async Task<bool> ApprovedEmployer(int id)
         {
-            var employer = await _context.Employers.FindAsync(id);
+            var employer = await _context.Employer.FindAsync(id);
             if (employer == null)
                 return false;
 
             employer.Status = "Active";
-            _context.Employers.Update(employer);
+            _context.Employer.Update(employer);
             await _context.SaveChangesAsync();
 
             // Subject and plain text body for account approval
@@ -94,12 +94,12 @@ HelloJobPH Team";
 
         public async Task<bool> DisableEmployer(int id)
         {
-            var employer = await _context.Employers.FindAsync(id);
+            var employer = await _context.Employer.FindAsync(id);
             if (employer == null)
                 return false;
 
             employer.Status = "Disabled";
-            _context.Employers.Update(employer);
+            _context.Employer.Update(employer);
             await _context.SaveChangesAsync();
 
             return true;
@@ -107,12 +107,12 @@ HelloJobPH Team";
 
         public async Task<bool> DisapprovedEmployer(int id)
         {
-            var employer = await _context.Employers.FindAsync(id);
+            var employer = await _context.Employer.FindAsync(id);
             if (employer == null)
                 return false;
 
             employer.IsDeleted = 1;
-            _context.Employers.Update(employer);
+            _context.Employer.Update(employer);
             await _context.SaveChangesAsync();
 
             return true;

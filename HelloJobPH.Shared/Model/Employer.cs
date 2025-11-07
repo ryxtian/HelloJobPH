@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace HelloJobPH.Shared.Model
 {
-    public class Employers
+    public class Employer
     {
         [Key]
         public int EmployerId { get; set; }
@@ -40,7 +39,7 @@ namespace HelloJobPH.Shared.Model
         public int UserAccountId { get; set; }
         public List<JobPosting>? JobPost { get; set; }
         public List<HumanResources>? HumanResources { get; set; }
-        
+
         public UserAccount? UserAccount { get; set; }
         public DateTime DateRegistered { get; set; } = DateTime.UtcNow;
 

@@ -25,7 +25,7 @@ namespace HelloJobPH.Shared.DTOs
         public byte IsActive { get; set; } = 1;
         public int HumanResourceId { get; set; }
         public HumanResources? HumanResource { get; set; }
-        public Employers? Employers { get; set; }
+        public Employer? Employer { get; set; }
         public DateTime PostedDate { get; set; }
 
         public int? EmployerId { get; set; }

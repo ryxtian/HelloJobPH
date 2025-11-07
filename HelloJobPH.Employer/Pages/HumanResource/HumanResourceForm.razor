@@ -227,7 +227,6 @@
             {
                 if (HumanResourceId.HasValue)
                 {
-                    // Update existing record
                     await _humanService.UpdateAsync(humanResource);
                     Snackbar.Add("Successfully updated!", Severity.Success);
                 }

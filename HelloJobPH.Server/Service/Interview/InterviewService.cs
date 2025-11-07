@@ -24,13 +24,22 @@ namespace HelloJobPH.Server.Service.Interview
         public async Task<List<InterviewListDtos>> FinalList()
         {
             var userId = Utilities.GetUserId();
-            if (userId is null)
-                throw new Exception("User not found!!");
-                
+
+            if (userId == null)
+            {
+                throw new Exception("Invalid or missing user ID in claims.");
+            }
+            var hr = await _context.HumanResource.FirstOrDefaultAsync
+            (u => u.UserAccountId == userId);
+
+            if (hr == null)
+            {
+                throw new Exception("Invalid or missing user ID in claims.");
+            }
             try
             {
                 var result = await _context.Application
-                    .Where(a => a.ApplicationStatus == ApplicationStatus.Final && a.IsDeleted ==0&&a.HumanResourceId == userId)
+                    .Where(a => a.ApplicationStatus == ApplicationStatus.Final && a.IsDeleted ==0&&a.HumanResourcesId == hr.HumanResourceId)
                     .Select(a => new InterviewListDtos
                     {
                         ApplicationId = a.ApplicationId,
@@ -55,12 +64,22 @@ namespace HelloJobPH.Server.Service.Interview
         public async Task<List<InterviewListDtos>> InitialList()
         {
             var userId = Utilities.GetUserId();
-            if (userId is null)
-                throw new Exception("User not found!!");
+
+            if (userId == null)
+            {
+                throw new Exception("Invalid or missing user ID in claims.");
+            }
+            var hr = await _context.HumanResource.FirstOrDefaultAsync
+            (u => u.UserAccountId == userId);
+
+            if (hr == null)
+            {
+                throw new Exception("Invalid or missing user ID in claims.");
+            }
             try
             {
                 var result = await _context.Application
-                    .Where(a => a.ApplicationStatus == ApplicationStatus.Initial && a.IsDeleted == 0 && a.HumanResourceId == userId)
+                    .Where(a => a.ApplicationStatus == ApplicationStatus.Initial && a.IsDeleted == 0 && a.HumanResourcesId == hr.HumanResourceId)
                     .Select(a => new InterviewListDtos
                     {
                         ApplicationId = a.ApplicationId,
@@ -88,12 +107,22 @@ namespace HelloJobPH.Server.Service.Interview
         public async Task<List<InterviewListDtos>> TechnicalList()
         {
             var userId = Utilities.GetUserId();
-            if (userId is null)
-                throw new Exception("User not found!!");
+
+            if (userId == null)
+            {
+                throw new Exception("Invalid or missing user ID in claims.");
+            }
+            var hr = await _context.HumanResource.FirstOrDefaultAsync
+            (u => u.UserAccountId == userId);
+
+            if (hr == null)
+            {
+                throw new Exception("Invalid or missing user ID in claims.");
+            }
             try
             {
                 var result = await _context.Application
-                    .Where(a => a.ApplicationStatus == ApplicationStatus.Technical && a.IsDeleted == 0 && a.HumanResourceId == userId)
+                    .Where(a => a.ApplicationStatus == ApplicationStatus.Technical && a.IsDeleted == 0 && a.HumanResourcesId == hr.HumanResourceId)
                     .Select(a => new InterviewListDtos
                     {
                         ApplicationId = a.ApplicationId,

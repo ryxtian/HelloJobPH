@@ -108,7 +108,7 @@ namespace HelloJobPH.Server.Services
                 {
 
 
-                    var Employer = await _context.Employers.FirstOrDefaultAsync(h => h.UserAccountId == user.UserAccountId);
+                    var Employer = await _context.Employer.FirstOrDefaultAsync(h => h.UserAccountId == user.UserAccountId);
                     if (Employer == null)
                         throw new Exception("User details not found.");
                     // ✅ Claims for the logged-in user
@@ -150,7 +150,7 @@ namespace HelloJobPH.Server.Services
 
                     if (hr.EmployerId != null)
                     {
-                        var employer = await _context.Employers
+                        var employer = await _context.Employer
                             .FirstOrDefaultAsync(e => e.EmployerId == hr.EmployerId);
 
                         if (employer == null)

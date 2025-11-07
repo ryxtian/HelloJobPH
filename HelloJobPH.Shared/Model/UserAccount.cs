@@ -16,6 +16,6 @@ namespace HelloJobPH.Shared.Model
         public byte IsDeleted { get; set; } = 0;
         public Applicant? Applicant { get; set; }
         public HumanResources? HumanResource { get; set; }
-        public Employers? Employer { get; set; }
+        public Employer? Employer { get; set; }
     }
 }

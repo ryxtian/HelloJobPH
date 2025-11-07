@@ -181,9 +181,21 @@
             || (element.JobTitle?.Contains(searchString1, StringComparison.OrdinalIgnoreCase) ?? false);
     }
 
-    public void AddNewRecruiter()
+    public async void AddNewRecruiter()
     {
-        NavigationManager.NavigateTo("/humanresource/addHumanResource");
+        var parameters = new DialogParameters
+    {
+        { "JobPost", new HumanResourceDtos() }
+    };
+
+        var options = new DialogOptions
+        {
+            CloseButton = true,
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true
+        };
+
+        await DialogService.ShowAsync<HumanResourceDialog>("Add Recruiter", parameters, options);
     }
 
     public void OnEdit(int id)

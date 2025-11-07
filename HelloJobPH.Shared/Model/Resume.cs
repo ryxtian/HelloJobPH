@@ -11,7 +11,7 @@ namespace HelloJobPH.Shared.Model
     {
         [Key]
         public int ResumeId { get; set; }
-        public string ResumeUrl { get; set; }
+        public byte[]? ResumeFileData { get; set; }
         public int? ApplicantId { get; set; }
         public byte IsDeleted { get; set; } = 0;
         public Applicant? Applicant { get; set; }

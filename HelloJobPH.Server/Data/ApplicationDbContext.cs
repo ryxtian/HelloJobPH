@@ -17,7 +17,8 @@ namespace HelloJobPH.Server.Data
         public DbSet<WorkExperience> WorkExperience { get; set; }
         public DbSet<EducationalAttainment> EducationalAttainment { get; set; }
         public DbSet<PendingRegistration> PendingRegistration { get; set; }
-        public DbSet<Employers> Employers { get; set; }
+        public DbSet<Shared.Model.Employer> Employer { get; set; }
+         public DbSet<ChatMessage> ChatMessages { get; set; }
         //protected override void OnModelCreating(ModelBuilder modelBuilder)
         //{
         //    base.OnModelCreating(modelBuilder);

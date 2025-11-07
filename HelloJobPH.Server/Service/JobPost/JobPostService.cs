@@ -54,8 +54,8 @@ namespace HelloJobPH.Server.Service.JobPost
                         PostedDate = j.PostedDate,
                         IsActive = j.IsActive,
                         IsDeleted = j.IsDeleted,
-                        Location = j.Employers.CompanyAddress + ", " + j.Employers.City + ", " + j.Employers.Province,
-                        CompanyName = j.Employers.CompanyName
+                        Location = j.Employer.CompanyAddress + ", " + j.Employer.City + ", " + j.Employer.Province,
+                        CompanyName = j.Employer.CompanyName
                     })
                     .ToListAsync();
 

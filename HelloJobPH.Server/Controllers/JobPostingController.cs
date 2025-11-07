@@ -37,7 +37,7 @@ namespace HelloJobPH.Server.Controllers
             return Ok(jobPost);
         }
 
-        // POST: api/JobPosting
+
         [HttpPost]
         public async Task<ActionResult<bool>> Create(JobPostingDtos jobPostDto)
          {

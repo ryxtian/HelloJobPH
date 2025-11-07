@@ -6,11 +6,29 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace HelloJobPH.Server.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class initital : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "ChatMessages",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    SenderId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ReceiverId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CompanyName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Message = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    SentAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsRead = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ChatMessages", x => x.Id);
+                });
+
             migrationBuilder.CreateTable(
                 name: "PendingRegistration",
                 columns: table => new
@@ -42,8 +60,7 @@ namespace HelloJobPH.Server.Migrations
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Role = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    IsDeleted = table.Column<byte>(type: "tinyint", nullable: false),
-                    userDetailsId = table.Column<int>(type: "int", nullable: false)
+                    IsDeleted = table.Column<byte>(type: "tinyint", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -51,7 +68,7 @@ namespace HelloJobPH.Server.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Employers",
+                name: "Employer",
                 columns: table => new
                 {
                     EmployerId = table.Column<int>(type: "int", nullable: false)
@@ -75,9 +92,9 @@ namespace HelloJobPH.Server.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Employers", x => x.EmployerId);
+                    table.PrimaryKey("PK_Employer", x => x.EmployerId);
                     table.ForeignKey(
-                        name: "FK_Employers_UserAccount_UserAccountId",
+                        name: "FK_Employer_UserAccount_UserAccountId",
                         column: x => x.UserAccountId,
                         principalTable: "UserAccount",
                         principalColumn: "UserAccountId",
@@ -97,16 +114,15 @@ namespace HelloJobPH.Server.Migrations
                     ProfilePhotoUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     JobTitle = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     UserAccountId = table.Column<int>(type: "int", nullable: false),
-                    EmployerId = table.Column<int>(type: "int", nullable: false),
-                    EmployersEmployerId = table.Column<int>(type: "int", nullable: true)
+                    EmployerId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_HumanResource", x => x.HumanResourceId);
                     table.ForeignKey(
-                        name: "FK_HumanResource_Employers_EmployersEmployerId",
-                        column: x => x.EmployersEmployerId,
-                        principalTable: "Employers",
+                        name: "FK_HumanResource_Employer_EmployerId",
+                        column: x => x.EmployerId,
+                        principalTable: "Employer",
                         principalColumn: "EmployerId");
                     table.ForeignKey(
                         name: "FK_HumanResource_UserAccount_UserAccountId",
@@ -166,16 +182,15 @@ namespace HelloJobPH.Server.Migrations
                     JobRequirements = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     HumanResourceId = table.Column<int>(type: "int", nullable: true),
                     EmployerId = table.Column<int>(type: "int", nullable: true),
-                    EmployersEmployerId = table.Column<int>(type: "int", nullable: true),
                     PostedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_JobPosting", x => x.JobPostingId);
                     table.ForeignKey(
-                        name: "FK_JobPosting_Employers_EmployersEmployerId",
-                        column: x => x.EmployersEmployerId,
-                        principalTable: "Employers",
+                        name: "FK_JobPosting_Employer_EmployerId",
+                        column: x => x.EmployerId,
+                        principalTable: "Employer",
                         principalColumn: "EmployerId");
                     table.ForeignKey(
                         name: "FK_JobPosting_HumanResource_HumanResourceId",
@@ -266,11 +281,9 @@ namespace HelloJobPH.Server.Migrations
                     ResumeId = table.Column<int>(type: "int", nullable: true),
                     DateApply = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ApplicationStatus = table.Column<int>(type: "int", nullable: false),
-                    JobPostId = table.Column<int>(type: "int", nullable: true),
-                    IsDeleted = table.Column<byte>(type: "tinyint", nullable: false),
-                    HumanResourceId = table.Column<int>(type: "int", nullable: true),
-                    HumanResourcesHumanResourceId = table.Column<int>(type: "int", nullable: true),
                     JobPostingId = table.Column<int>(type: "int", nullable: true),
+                    IsDeleted = table.Column<byte>(type: "tinyint", nullable: false),
+                    HumanResourcesId = table.Column<int>(type: "int", nullable: true),
                     ApplicantId = table.Column<int>(type: "int", nullable: false),
                     CoverLetter = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
@@ -284,8 +297,8 @@ namespace HelloJobPH.Server.Migrations
                         principalColumn: "ApplicantId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Application_HumanResource_HumanResourcesHumanResourceId",
-                        column: x => x.HumanResourcesHumanResourceId,
+                        name: "FK_Application_HumanResource_HumanResourcesId",
+                        column: x => x.HumanResourcesId,
                         principalTable: "HumanResource",
                         principalColumn: "HumanResourceId");
                     table.ForeignKey(
@@ -339,9 +352,9 @@ namespace HelloJobPH.Server.Migrations
                 column: "ApplicantId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Application_HumanResourcesHumanResourceId",
+                name: "IX_Application_HumanResourcesId",
                 table: "Application",
-                column: "HumanResourcesHumanResourceId");
+                column: "HumanResourcesId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Application_JobPostingId",
@@ -354,15 +367,15 @@ namespace HelloJobPH.Server.Migrations
                 column: "ApplicantId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Employers_UserAccountId",
-                table: "Employers",
+                name: "IX_Employer_UserAccountId",
+                table: "Employer",
                 column: "UserAccountId",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_HumanResource_EmployersEmployerId",
+                name: "IX_HumanResource_EmployerId",
                 table: "HumanResource",
-                column: "EmployersEmployerId");
+                column: "EmployerId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_HumanResource_UserAccountId",
@@ -383,9 +396,9 @@ namespace HelloJobPH.Server.Migrations
                 column: "HumanResourceId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_JobPosting_EmployersEmployerId",
+                name: "IX_JobPosting_EmployerId",
                 table: "JobPosting",
-                column: "EmployersEmployerId");
+                column: "EmployerId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_JobPosting_HumanResourceId",
@@ -406,6 +419,9 @@ namespace HelloJobPH.Server.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "ChatMessages");
+
             migrationBuilder.DropTable(
                 name: "EducationalAttainment");
 
@@ -434,7 +450,7 @@ namespace HelloJobPH.Server.Migrations
                 name: "HumanResource");
 
             migrationBuilder.DropTable(
-                name: "Employers");
+                name: "Employer");
 
             migrationBuilder.DropTable(
                 name: "UserAccount");

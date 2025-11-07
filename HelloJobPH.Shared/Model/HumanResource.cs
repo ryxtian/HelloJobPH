@@ -18,8 +18,8 @@ namespace HelloJobPH.Shared.Model
         public string ProfilePhotoUrl { get; set; } = string.Empty;
         public string JobTitle { get; set; } = string.Empty;
         public int UserAccountId { get; set; }
-        public int EmployerId { get; set; }
-        public Employers? Employers { get; set; }
+        public int? EmployerId { get; set; }
+        public Employer? Employer { get; set; }
 
         public UserAccount? UserAccount { get; set; }
         public List<Application> Applications { get; set; }//xxxx
