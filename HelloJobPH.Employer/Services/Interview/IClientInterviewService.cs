@@ -1,4 +1,5 @@
 ﻿using HelloJobPH.Shared.DTOs;
+using HelloJobPH.Shared.Enums;
 
 namespace HelloJobPH.Employer.Services.Interview
 {
@@ -13,5 +14,6 @@ namespace HelloJobPH.Employer.Services.Interview
         Task<bool> ForFinal(int applicationId, string interviewDate, string interviewTime, string? location);
         Task<int> Failed(int id);
         Task<int> Delete(int id);
+        Task<int> MarkAsCompleted(int id);
     }
 }

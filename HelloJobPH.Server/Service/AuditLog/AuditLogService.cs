@@ -25,11 +25,8 @@ namespace HelloJobPH.Server.Service.AuditLog
 
 
             var auditLogs = await _context.AuditLog
-                .Include(a => a.Applicant)
-                .Include(a => a.JobPosting)
-                .Include(a => a.HumanResources)
-                .Include(a => a.Application).
-                Where(i=>i.EmployerId == hr.EmployerId)
+              
+                .Where(i=>i.EmployerId == hr.EmployerId)
                 .Select(a => new AuditLogDtos
                 {
                     AuditLogId = a.AuditLogId,

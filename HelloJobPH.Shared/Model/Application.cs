@@ -18,6 +18,7 @@ namespace HelloJobPH.Shared.Model
         public ApplicationStatus ApplicationStatus { get; set; }
         public int? JobPostingId { get; set; }
         public byte IsDeleted { get; set; } = 0;
+        public byte MarkAsCompleted { get; set; } = 0;
         public int? HumanResourcesId { get; set; }//xxxx
         public HumanResources? HumanResources { get; set; }//xxx
         public JobPosting? JobPosting { get; set; }

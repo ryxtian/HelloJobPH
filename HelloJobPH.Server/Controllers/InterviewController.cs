@@ -1,4 +1,5 @@
 ﻿using HelloJobPH.Server.Service.Interview;
+using HelloJobPH.Shared.Enums;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,7 +15,7 @@ namespace HelloJobPH.Server.Controllers
             _service = service;
         }
         [HttpGet("initial")]
-        public async Task<IActionResult>InitialList()
+        public async Task<IActionResult> InitialList()
         {
             try
             {
@@ -144,6 +145,23 @@ namespace HelloJobPH.Server.Controllers
             try
             {
                 var request = await _service.DeleteApplication(id);
+                if (!request)
+                {
+                    return NotFound($"Application with ID {id} not found.");
+                }
+                return Ok(request);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+        [HttpGet("MarkAsCompleted{id}")]
+        public async Task<IActionResult> MarkAsCompleted(int id)
+        {
+            try
+            {
+                var request = await _service.MarkAsCompleted(id);
                 if (!request)
                 {
                     return NotFound($"Application with ID {id} not found.");

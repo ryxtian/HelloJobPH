@@ -39,7 +39,7 @@ namespace HelloJobPH.Server.Service.Interview
             try
             {
                 var result = await _context.Application
-                    .Where(a => a.ApplicationStatus == ApplicationStatus.Final && a.IsDeleted ==0&&a.HumanResourcesId == hr.HumanResourceId)
+                    .Where(a => a.ApplicationStatus == ApplicationStatus.Final && a.IsDeleted == 0 && a.HumanResourcesId == hr.HumanResourceId)
                     .Select(a => new InterviewListDtos
                     {
                         ApplicationId = a.ApplicationId,
@@ -51,7 +51,8 @@ namespace HelloJobPH.Server.Service.Interview
                         DateApplied = a.DateApply,
                         TimeInterview = a.Interview.ScheduledTime,
                         DateInterview = a.Interview.ScheduledDate,
-                        Status = a.ApplicationStatus
+                        Status = a.ApplicationStatus,
+                        MarkAsCompleted = a.MarkAsCompleted
                     })
                     .ToListAsync();
                 return result;
@@ -62,47 +63,48 @@ namespace HelloJobPH.Server.Service.Interview
             }
         }
         public async Task<List<InterviewListDtos>> InitialList()
-        {
-            var userId = Utilities.GetUserId();
-
-            if (userId == null)
             {
-                throw new Exception("Invalid or missing user ID in claims.");
-            }
-            var hr = await _context.HumanResource.FirstOrDefaultAsync
-            (u => u.UserAccountId == userId);
+                var userId = Utilities.GetUserId();
 
-            if (hr == null)
-            {
-                throw new Exception("Invalid or missing user ID in claims.");
-            }
-            try
-            {
-                var result = await _context.Application
-                    .Where(a => a.ApplicationStatus == ApplicationStatus.Initial && a.IsDeleted == 0 && a.HumanResourcesId == hr.HumanResourceId)
-                    .Select(a => new InterviewListDtos
-                    {
-                        ApplicationId = a.ApplicationId,
-                        Firstname = a.Applicant.Firstname,
-                        Lastname = a.Applicant.Surname,
-                        Email = a.Applicant.UserAccount.Email,
-                        JobTitle = a.JobPosting.Title,
-                        Type = a.JobPosting.EmploymentType,
-                        DateApplied = a.DateApply,
-                        TimeInterview = a.Interview != null ? a.Interview.ScheduledTime : null,
-                        DateInterview = a.Interview != null ? a.Interview.ScheduledDate : null,
-                        Status = a.ApplicationStatus
-                    })
-                    .ToListAsync();
+                if (userId == null)
+                {
+                    throw new Exception("Invalid or missing user ID in claims.");
+                }
+                var hr = await _context.HumanResource.FirstOrDefaultAsync
+                (u => u.UserAccountId == userId);
 
-                return result;
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+                if (hr == null)
+                {
+                    throw new Exception("Invalid or missing user ID in claims.");
+                }
+                try
+                {
+                    var result = await _context.Application
+                        .Where(a => a.ApplicationStatus == ApplicationStatus.Initial && a.IsDeleted == 0 && a.HumanResourcesId == hr.HumanResourceId)
+                        .Select(a => new InterviewListDtos
+                        {
+                            ApplicationId = a.ApplicationId,
+                            Firstname = a.Applicant.Firstname,
+                            Lastname = a.Applicant.Surname,
+                            Email = a.Applicant.UserAccount.Email,
+                            JobTitle = a.JobPosting.Title,
+                            Type = a.JobPosting.EmploymentType,
+                            DateApplied = a.DateApply,
+                            TimeInterview = a.Interview != null ? a.Interview.ScheduledTime : null,
+                            DateInterview = a.Interview != null ? a.Interview.ScheduledDate : null,
+                            Status = a.ApplicationStatus,
+                            MarkAsCompleted = a.MarkAsCompleted
+                        })
+                        .ToListAsync();
 
-        }
+                    return result;
+                }
+                catch (Exception)
+                {
+                    throw;
+                }
+
+            }
 
         public async Task<List<InterviewListDtos>> TechnicalList()
         {
@@ -134,7 +136,8 @@ namespace HelloJobPH.Server.Service.Interview
                         DateApplied = a.DateApply,
                         TimeInterview = a.Interview != null ? a.Interview.ScheduledTime : null,
                         DateInterview = a.Interview != null ? a.Interview.ScheduledDate : null,
-                        Status = a.ApplicationStatus
+                        Status = a.ApplicationStatus,
+                        MarkAsCompleted = a.MarkAsCompleted
                     })
                     .ToListAsync();
 
@@ -155,8 +158,16 @@ namespace HelloJobPH.Server.Service.Interview
                 .Include(a => a.HumanResources) // Include HR if needed for audit
                 .FirstOrDefaultAsync(a => a.ApplicationId == applicationId);
 
+
+
             if (application == null || string.IsNullOrEmpty(application.Applicant?.UserAccount?.Email))
                 return false;
+
+            // 2️⃣ Update application status
+            application.ApplicationStatus = ApplicationStatus.NoAppearance;
+            application.MarkAsCompleted = 0;
+            _context.Application.Update(application);
+           await _context.SaveChangesAsync();
 
             var hr = application.HumanResources;
             if (hr == null)
@@ -242,7 +253,8 @@ Best regards,
 
             // 2️⃣ Update application status
             application.ApplicationStatus = ApplicationStatus.NoAppearance;
-            _context.Update(application);
+            application.MarkAsCompleted = 0;
+            _context.Application.Update(application);
             var result = await _context.SaveChangesAsync();
 
             // 3️⃣ Create audit log
@@ -293,7 +305,8 @@ Best regards,
 
             // 2️⃣ Update application status
             application.ApplicationStatus = ApplicationStatus.Technical;
-            _context.Update(application);
+            application.MarkAsCompleted = 0;
+            _context.Application.Update(application);
             await _context.SaveChangesAsync();
 
             // 3️⃣ Update interview schedule
@@ -382,8 +395,10 @@ Best regards,
 
             // 2️⃣ Update application status
             application.ApplicationStatus = ApplicationStatus.Final;
-            _context.Update(application);
+            application.MarkAsCompleted = 0;
+            _context.Application.Update(application);
             await _context.SaveChangesAsync();
+ 
 
             // 3️⃣ Update interview schedule
             var interview = await _context.Interview.FirstOrDefaultAsync(i => i.ApplicationId == applicationId);
@@ -527,7 +542,43 @@ Best regards,
 
             // 1️⃣ Mark as deleted
             application.IsDeleted = 1;
-            _context.Update(application);
+            _context.Application.Update(application);
+            await _context.SaveChangesAsync();
+
+            // 2️⃣ Add audit log
+            var hr = application.HumanResources;
+            var auditLog = new Shared.Model.AuditLog
+            {
+                ApplicationId = application.ApplicationId,
+                ApplicantId = application.ApplicantId,
+                JobPostingId = application.JobPostingId,
+                HumanResourcesId = hr?.HumanResourceId,
+                EmployerId = hr?.EmployerId,
+                Action = "Application Deleted",
+                Details = $"HR {hr?.Firstname} {hr?.Lastname} marked the application of {application.Applicant?.Firstname} {application.Applicant?.Surname} for {application.JobPosting?.Title} as deleted.",
+                Timestamp = DateTime.UtcNow
+            };
+
+            await _context.AuditLog.AddAsync(auditLog);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<bool> MarkAsCompleted(int id)
+        {
+            var application = await _context.Application
+                .Include(a => a.Applicant)
+                .Include(a => a.JobPosting)
+                .Include(a => a.HumanResources)
+                .FirstOrDefaultAsync(a => a.ApplicationId == id);
+
+            if (application == null)
+                return false;
+
+            // 1️⃣ Mark as deleted
+            application.MarkAsCompleted = 1;
+            _context.Application.Update(application);
             await _context.SaveChangesAsync();
 
             // 2️⃣ Add audit log

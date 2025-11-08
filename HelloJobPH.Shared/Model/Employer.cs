@@ -39,9 +39,9 @@ namespace HelloJobPH.Shared.Model
         public int UserAccountId { get; set; }
         public List<JobPosting>? JobPost { get; set; }
         public List<HumanResources>? HumanResources { get; set; }
+        public List<AuditLog>? AuditLogs { get; set; }
         public List<Application>? Applications { get; set; }
         public UserAccount? UserAccount { get; set; }
-        public List<AuditLog>? AuditLogs { get; set; }
         public DateTime DateRegistered { get; set; } = DateTime.UtcNow;
 
         public bool IsVerified { get; set; } = false;

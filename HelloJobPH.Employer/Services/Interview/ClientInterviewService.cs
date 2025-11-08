@@ -1,4 +1,5 @@
 ﻿using HelloJobPH.Shared.DTOs;
+using HelloJobPH.Shared.Enums;
 using System.Net.Http.Json;
 using static System.Net.WebRequestMethods;
 
@@ -22,6 +23,7 @@ namespace HelloJobPH.Employer.Services.Interview
             var result = await _http.GetFromJsonAsync<List<InterviewListDtos>>("api/Interview/initial");
             return result ?? [];
         }
+
         public async Task<List<InterviewListDtos>> TechnicalList()
         {
             var result = await _http.GetFromJsonAsync<List<InterviewListDtos>>("api/Interview/technical");
@@ -87,6 +89,17 @@ namespace HelloJobPH.Employer.Services.Interview
         public async Task<int> Delete(int id)
         {
             var response = await _http.GetAsync($"api/Interview/Delete{id}");
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<int>();
+                return result;
+            }
+
+            return 0;
+        }
+        public async Task<int> MarkAsCompleted(int id)
+        {
+            var response = await _http.GetAsync($"api/Interview/MarkAsCompleted{id}");
             if (response.IsSuccessStatusCode)
             {
                 var result = await response.Content.ReadFromJsonAsync<int>();

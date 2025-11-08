@@ -3,6 +3,7 @@
 @inject IClientAuditLogService AuditLogService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
+@inject NavigationManager Navigation
 
 <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-4">
     <MudPaper Elevation="2" Class="pa-6">
@@ -126,21 +127,18 @@
                                  Dense="true"
                                  AnchorOrigin="Origin.BottomLeft">
                             <MudMenuItem Icon="@Icons.Material.Filled.Visibility"
-                                         OnClick="@(() => ViewDetails(context))">
-                                View Full Details
+                                         OnClick="@(()=> NavigateToOverview(context.ApplicationId))">
+                                Overview
                             </MudMenuItem>
                             <MudMenuItem Icon="@Icons.Material.Filled.Description"
                                          OnClick="@(() => ViewResume(context.ApplicationId))">
                                 View Resume
                             </MudMenuItem>
-                            <MudMenuItem Icon="@Icons.Material.Filled.Print"
-                                         OnClick="@(() => ExportRecord(context))">
-                                Export Record
-                            </MudMenuItem>
+
                             <MudDivider />
                             <MudMenuItem Icon="@Icons.Material.Filled.Person"
-                                         OnClick="@(() => ViewCandidateHistory(context.ApplicationId))">
-                                Candidate History
+                                         OnClick="@(() => ViewApplicationHistory(context.ApplicationId))">
+                                Application History
                             </MudMenuItem>
                         </MudMenu>
                     </MudTd>
@@ -212,6 +210,10 @@
 
         StateHasChanged();
     }
+    private void NavigateToOverview(int applicationId)
+    {
+        Navigation.NavigateTo($"/reviewapplicant/reviewapplicant/{applicationId}");
+    }
 
     private Color GetActionColor(string action)
     {
@@ -234,7 +236,7 @@
         };
 
         var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true };
-        await DialogService.ShowAsync<AuditLogDetailsDialog>("Audit Log Details", parameters, options);
+        await DialogService.ShowAsync<ApplicantViewDialog>("Audit Log Details", parameters, options);
     }
 
     private async Task ViewResume(int applicationId)
@@ -243,13 +245,8 @@
         Snackbar.Add("Opening resume...", Severity.Info);
     }
 
-    private async Task ExportRecord(AuditLogDtos auditLog)
-    {
-        // Implement export logic
-        Snackbar.Add("Exporting record...", Severity.Info);
-    }
 
-    private async Task ViewCandidateHistory(int applicationId)
+    private async Task ViewApplicationHistory(int applicationId)
     {
         // Implement candidate history viewing
         var parameters = new DialogParameters

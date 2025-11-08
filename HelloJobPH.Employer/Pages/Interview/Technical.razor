@@ -61,7 +61,7 @@
                     </MudTd>
                     <MudTd DataLabel="Status">
                         <MudChip T="string" Size="Size.Small" Variant="Variant.Filled" Color="Color.Info">
-                            @context.Status
+                            @(context.MarkAsCompleted == 1 ? "Completed" : context.Status)
                         </MudChip>
                     </MudTd>
                     <MudTd DataLabel="Resume">
@@ -103,6 +103,10 @@
                             <MudMenuItem Icon="@Icons.Material.Filled.Visibility"
                                          OnClick="@(()=> NavigateToOverview(context.ApplicationId))">
                                 Overview
+                            </MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.MarkChatRead"
+                                         OnClick="@(() => MarkAsCompleted(context.ApplicationId))">
+                                Mark As Completed
                             </MudMenuItem>
                         </MudMenu>
                     </MudTd>
@@ -225,6 +229,31 @@
             if (response > 0)
             {
                 Snackbar.Add("Candidate marked as 'Delete'.", Severity.Success);
+                await JS.InvokeVoidAsync("location.reload");
+            }
+            else
+            {
+                Snackbar.Add("Failed to update candidate status.", Severity.Error);
+            }
+        }
+    }
+    private async Task MarkAsCompleted(int id)
+    {
+        bool? result = await DialogService.ShowMessageBox(
+            "Confirm",
+            "Are you sure you want to mark this candidate as 'Complete?'?",
+            cancelText: "Cancel",
+            yesText: "Yes"
+
+        );
+
+        if (result == true)
+        {
+            var response = await CandidateService.MarkAsCompleted(id);
+
+            if (response > 0)
+            {
+                Snackbar.Add("Candidate marked as 'Complete'.", Severity.Success);
                 await JS.InvokeVoidAsync("location.reload");
             }
             else

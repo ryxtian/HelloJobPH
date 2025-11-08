@@ -26,9 +26,9 @@ namespace HelloJobPH.Shared.Model
         public int? EmployerId { get; set; }
         public List<Application>? Application { get; set; }
         public HumanResources? HumanResource { get; set; }
-        public List<AuditLog>? AuditLogs { get; set; }
         public Employer? Employer { get; set; }
         public DateTime PostedDate { get; set; }
+        public List<AuditLog>? AuditLogs { get; set; }
 
     }
 }
