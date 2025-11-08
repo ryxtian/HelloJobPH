@@ -66,7 +66,7 @@ namespace HelloJobPH.Server.Migrations
                     b.HasIndex("UserAccountId")
                         .IsUnique();
 
-                    b.ToTable("Applicant", (string)null);
+                    b.ToTable("Applicant");
                 });
 
             modelBuilder.Entity("HelloJobPH.Shared.Model.Application", b =>
@@ -78,6 +78,9 @@ namespace HelloJobPH.Server.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ApplicationId"));
 
                     b.Property<int>("ApplicantId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ApplicationId1")
                         .HasColumnType("int");
 
                     b.Property<int>("ApplicationStatus")
@@ -112,13 +115,15 @@ namespace HelloJobPH.Server.Migrations
 
                     b.HasIndex("ApplicantId");
 
+                    b.HasIndex("ApplicationId1");
+
                     b.HasIndex("EmployerId");
 
                     b.HasIndex("HumanResourcesId");
 
                     b.HasIndex("JobPostingId");
 
-                    b.ToTable("Application", (string)null);
+                    b.ToTable("Application");
                 });
 
             modelBuilder.Entity("HelloJobPH.Shared.Model.AuditLog", b =>
@@ -167,7 +172,7 @@ namespace HelloJobPH.Server.Migrations
 
                     b.HasIndex("JobPostingId");
 
-                    b.ToTable("AuditLog", (string)null);
+                    b.ToTable("AuditLog");
                 });
 
             modelBuilder.Entity("HelloJobPH.Shared.Model.ChatMessage", b =>
@@ -198,7 +203,7 @@ namespace HelloJobPH.Server.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ChatMessages", (string)null);
+                    b.ToTable("ChatMessages");
                 });
 
             modelBuilder.Entity("HelloJobPH.Shared.Model.EducationalAttainment", b =>
@@ -238,7 +243,7 @@ namespace HelloJobPH.Server.Migrations
 
                     b.HasIndex("ApplicantId");
 
-                    b.ToTable("EducationalAttainment", (string)null);
+                    b.ToTable("EducationalAttainment");
                 });
 
             modelBuilder.Entity("HelloJobPH.Shared.Model.Employer", b =>
@@ -316,7 +321,7 @@ namespace HelloJobPH.Server.Migrations
                     b.HasIndex("UserAccountId")
                         .IsUnique();
 
-                    b.ToTable("Employer", (string)null);
+                    b.ToTable("Employer");
                 });
 
             modelBuilder.Entity("HelloJobPH.Shared.Model.HumanResources", b =>
@@ -363,7 +368,7 @@ namespace HelloJobPH.Server.Migrations
                     b.HasIndex("UserAccountId")
                         .IsUnique();
 
-                    b.ToTable("HumanResource", (string)null);
+                    b.ToTable("HumanResource");
                 });
 
             modelBuilder.Entity("HelloJobPH.Shared.Model.Interview", b =>
@@ -400,7 +405,47 @@ namespace HelloJobPH.Server.Migrations
 
                     b.HasIndex("HumanResourceId");
 
-                    b.ToTable("Interview", (string)null);
+                    b.ToTable("Interview");
+                });
+
+            modelBuilder.Entity("HelloJobPH.Shared.Model.InterviewHistory", b =>
+                {
+                    b.Property<int>("InterviewHistoryId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("InterviewHistoryId"));
+
+                    b.Property<int>("ApplicationId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CandidateName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("InterviewBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ScheduledDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Stage")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("InterviewHistoryId");
+
+                    b.HasIndex("ApplicationId");
+
+                    b.ToTable("InterviewHistory");
                 });
 
             modelBuilder.Entity("HelloJobPH.Shared.Model.JobPosting", b =>
@@ -460,7 +505,7 @@ namespace HelloJobPH.Server.Migrations
 
                     b.HasIndex("HumanResourceId");
 
-                    b.ToTable("JobPosting", (string)null);
+                    b.ToTable("JobPosting");
                 });
 
             modelBuilder.Entity("HelloJobPH.Shared.Model.PendingRegistration", b =>
@@ -511,7 +556,7 @@ namespace HelloJobPH.Server.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("PendingRegistration", (string)null);
+                    b.ToTable("PendingRegistration");
                 });
 
             modelBuilder.Entity("HelloJobPH.Shared.Model.Resume", b =>
@@ -538,7 +583,7 @@ namespace HelloJobPH.Server.Migrations
 
                     b.HasIndex("ApplicantId");
 
-                    b.ToTable("Resume", (string)null);
+                    b.ToTable("Resume");
                 });
 
             modelBuilder.Entity("HelloJobPH.Shared.Model.UserAccount", b =>
@@ -566,7 +611,7 @@ namespace HelloJobPH.Server.Migrations
 
                     b.HasKey("UserAccountId");
 
-                    b.ToTable("UserAccount", (string)null);
+                    b.ToTable("UserAccount");
                 });
 
             modelBuilder.Entity("HelloJobPH.Shared.Model.WorkExperience", b =>
@@ -614,7 +659,7 @@ namespace HelloJobPH.Server.Migrations
 
                     b.HasIndex("ApplicantId");
 
-                    b.ToTable("WorkExperience", (string)null);
+                    b.ToTable("WorkExperience");
                 });
 
             modelBuilder.Entity("HelloJobPH.Shared.Model.Applicant", b =>
@@ -641,6 +686,10 @@ namespace HelloJobPH.Server.Migrations
                         .HasForeignKey("ApplicantId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("HelloJobPH.Shared.Model.Application", null)
+                        .WithMany("Applications")
+                        .HasForeignKey("ApplicationId1");
 
                     b.HasOne("HelloJobPH.Shared.Model.Employer", "Employer")
                         .WithMany("Applications")
@@ -750,6 +799,17 @@ namespace HelloJobPH.Server.Migrations
                     b.Navigation("HumanResource");
                 });
 
+            modelBuilder.Entity("HelloJobPH.Shared.Model.InterviewHistory", b =>
+                {
+                    b.HasOne("HelloJobPH.Shared.Model.Application", "Application")
+                        .WithMany()
+                        .HasForeignKey("ApplicationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Application");
+                });
+
             modelBuilder.Entity("HelloJobPH.Shared.Model.JobPosting", b =>
                 {
                     b.HasOne("HelloJobPH.Shared.Model.Employer", "Employer")
@@ -798,6 +858,8 @@ namespace HelloJobPH.Server.Migrations
 
             modelBuilder.Entity("HelloJobPH.Shared.Model.Application", b =>
                 {
+                    b.Navigation("Applications");
+
                     b.Navigation("AuditLogs");
 
                     b.Navigation("Interview");

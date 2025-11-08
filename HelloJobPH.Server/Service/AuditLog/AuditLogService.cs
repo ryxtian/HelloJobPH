@@ -45,5 +45,26 @@ namespace HelloJobPH.Server.Service.AuditLog
 
             return auditLogs;
         }
+
+        public async Task<List<InterviewHistoryDtos>> GetInterviewHistory(int applicationId)
+        {
+            var history = await _context.InterviewHistory
+                .Where(h => h.ApplicationId == applicationId)
+                .OrderByDescending(h => h.CreatedAt)
+                .Select(h => new InterviewHistoryDtos
+                {
+                    InterviewHistoryId = h.InterviewHistoryId,
+                    ApplicationId = h.ApplicationId,
+                    CandidateName = h.CandidateName,
+                    Stage = h.Stage,
+                    Status = h.Status,
+                    InterviewBy = h.InterviewBy,
+                    ScheduledDate = h.ScheduledDate,
+                    CreatedAt = h.CreatedAt
+                })
+                .ToListAsync();
+
+            return history;
+        }
     }
 }

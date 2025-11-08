@@ -11,6 +11,16 @@ namespace HelloJobPH.Employer.Services.AuditLog
         {
             _http = http;
         }
+
+        public async Task<List<InterviewHistoryDtos>> GetInterviewHistory(int applicationId)
+        {
+            var response = await _http.GetFromJsonAsync<List<InterviewHistoryDtos>>(
+                $"api/auditlog/interview-history{applicationId}"
+            );
+
+            return response ?? new List<InterviewHistoryDtos>();
+        }
+
         public async Task<List<AuditLogDtos>> RetrieveAuditLogs()
         {
             var response = await _http.GetFromJsonAsync<List<AuditLogDtos>>("api/auditlog/audit-list");

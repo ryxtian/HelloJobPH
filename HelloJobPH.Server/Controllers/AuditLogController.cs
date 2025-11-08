@@ -15,9 +15,15 @@ namespace HelloJobPH.Server.Controllers
             _auditService = auditService;
         }
         [HttpGet("audit-list")]
-        public async Task<ActionResult<List<AuditLogDtos>>> GetAuditLogs()
+        public async Task<ActionResult<List<InterviewHistoryDtos>>> GetAuditLogs()
         {
             var logs = await _auditService.GetAuditLogsAsync();
+            return Ok(logs);
+        }
+        [HttpGet("interview-history{applicationId}")]
+        public async Task<IActionResult> InterviewHistory(int applicationId)
+        {
+            var logs = await _auditService.GetInterviewHistory(applicationId);
             return Ok(logs);
         }
     }

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HelloJobPH.Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251108030025_employerJonToaudit")]
-    partial class employerJonToaudit
+    [Migration("20251108110803_initial")]
+    partial class initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -83,6 +83,9 @@ namespace HelloJobPH.Server.Migrations
                     b.Property<int>("ApplicantId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("ApplicationId1")
+                        .HasColumnType("int");
+
                     b.Property<int>("ApplicationStatus")
                         .HasColumnType("int");
 
@@ -93,6 +96,9 @@ namespace HelloJobPH.Server.Migrations
                     b.Property<DateTime>("DateApply")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("EmployerId")
+                        .HasColumnType("int");
+
                     b.Property<int?>("HumanResourcesId")
                         .HasColumnType("int");
 
@@ -102,12 +108,19 @@ namespace HelloJobPH.Server.Migrations
                     b.Property<int?>("JobPostingId")
                         .HasColumnType("int");
 
+                    b.Property<byte>("MarkAsCompleted")
+                        .HasColumnType("tinyint");
+
                     b.Property<int?>("ResumeId")
                         .HasColumnType("int");
 
                     b.HasKey("ApplicationId");
 
                     b.HasIndex("ApplicantId");
+
+                    b.HasIndex("ApplicationId1");
+
+                    b.HasIndex("EmployerId");
 
                     b.HasIndex("HumanResourcesId");
 
@@ -637,6 +650,14 @@ namespace HelloJobPH.Server.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("HelloJobPH.Shared.Model.Application", null)
+                        .WithMany("Applications")
+                        .HasForeignKey("ApplicationId1");
+
+                    b.HasOne("HelloJobPH.Shared.Model.Employer", "Employer")
+                        .WithMany("Applications")
+                        .HasForeignKey("EmployerId");
+
                     b.HasOne("HelloJobPH.Shared.Model.HumanResources", "HumanResources")
                         .WithMany("Applications")
                         .HasForeignKey("HumanResourcesId");
@@ -646,6 +667,8 @@ namespace HelloJobPH.Server.Migrations
                         .HasForeignKey("JobPostingId");
 
                     b.Navigation("Applicant");
+
+                    b.Navigation("Employer");
 
                     b.Navigation("HumanResources");
 
@@ -787,6 +810,8 @@ namespace HelloJobPH.Server.Migrations
 
             modelBuilder.Entity("HelloJobPH.Shared.Model.Application", b =>
                 {
+                    b.Navigation("Applications");
+
                     b.Navigation("AuditLogs");
 
                     b.Navigation("Interview");
@@ -794,6 +819,8 @@ namespace HelloJobPH.Server.Migrations
 
             modelBuilder.Entity("HelloJobPH.Shared.Model.Employer", b =>
                 {
+                    b.Navigation("Applications");
+
                     b.Navigation("AuditLogs");
 
                     b.Navigation("HumanResources");

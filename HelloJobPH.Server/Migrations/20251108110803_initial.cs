@@ -282,9 +282,12 @@ namespace HelloJobPH.Server.Migrations
                     ApplicationStatus = table.Column<int>(type: "int", nullable: false),
                     JobPostingId = table.Column<int>(type: "int", nullable: true),
                     IsDeleted = table.Column<byte>(type: "tinyint", nullable: false),
+                    MarkAsCompleted = table.Column<byte>(type: "tinyint", nullable: false),
                     HumanResourcesId = table.Column<int>(type: "int", nullable: true),
                     ApplicantId = table.Column<int>(type: "int", nullable: false),
-                    CoverLetter = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    EmployerId = table.Column<int>(type: "int", nullable: true),
+                    CoverLetter = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ApplicationId1 = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -296,12 +299,68 @@ namespace HelloJobPH.Server.Migrations
                         principalColumn: "ApplicantId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
+                        name: "FK_Application_Application_ApplicationId1",
+                        column: x => x.ApplicationId1,
+                        principalTable: "Application",
+                        principalColumn: "ApplicationId");
+                    table.ForeignKey(
+                        name: "FK_Application_Employer_EmployerId",
+                        column: x => x.EmployerId,
+                        principalTable: "Employer",
+                        principalColumn: "EmployerId");
+                    table.ForeignKey(
                         name: "FK_Application_HumanResource_HumanResourcesId",
                         column: x => x.HumanResourcesId,
                         principalTable: "HumanResource",
                         principalColumn: "HumanResourceId");
                     table.ForeignKey(
                         name: "FK_Application_JobPosting_JobPostingId",
+                        column: x => x.JobPostingId,
+                        principalTable: "JobPosting",
+                        principalColumn: "JobPostingId");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AuditLog",
+                columns: table => new
+                {
+                    AuditLogId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Action = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Details = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ApplicationId = table.Column<int>(type: "int", nullable: false),
+                    EmployerId = table.Column<int>(type: "int", nullable: true),
+                    ApplicantId = table.Column<int>(type: "int", nullable: true),
+                    JobPostingId = table.Column<int>(type: "int", nullable: true),
+                    HumanResourcesId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AuditLog", x => x.AuditLogId);
+                    table.ForeignKey(
+                        name: "FK_AuditLog_Applicant_ApplicantId",
+                        column: x => x.ApplicantId,
+                        principalTable: "Applicant",
+                        principalColumn: "ApplicantId");
+                    table.ForeignKey(
+                        name: "FK_AuditLog_Application_ApplicationId",
+                        column: x => x.ApplicationId,
+                        principalTable: "Application",
+                        principalColumn: "ApplicationId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_AuditLog_Employer_EmployerId",
+                        column: x => x.EmployerId,
+                        principalTable: "Employer",
+                        principalColumn: "EmployerId");
+                    table.ForeignKey(
+                        name: "FK_AuditLog_HumanResource_HumanResourcesId",
+                        column: x => x.HumanResourcesId,
+                        principalTable: "HumanResource",
+                        principalColumn: "HumanResourceId");
+                    table.ForeignKey(
+                        name: "FK_AuditLog_JobPosting_JobPostingId",
                         column: x => x.JobPostingId,
                         principalTable: "JobPosting",
                         principalColumn: "JobPostingId");
@@ -316,6 +375,7 @@ namespace HelloJobPH.Server.Migrations
                     ScheduledDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ScheduledTime = table.Column<TimeSpan>(type: "time", nullable: false),
                     Mode = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    AssignTo = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ApplicationId = table.Column<int>(type: "int", nullable: true),
                     HumanResourceId = table.Column<int>(type: "int", nullable: true)
                 },
@@ -351,6 +411,16 @@ namespace HelloJobPH.Server.Migrations
                 column: "ApplicantId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Application_ApplicationId1",
+                table: "Application",
+                column: "ApplicationId1");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Application_EmployerId",
+                table: "Application",
+                column: "EmployerId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Application_HumanResourcesId",
                 table: "Application",
                 column: "HumanResourcesId");
@@ -358,6 +428,31 @@ namespace HelloJobPH.Server.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Application_JobPostingId",
                 table: "Application",
+                column: "JobPostingId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AuditLog_ApplicantId",
+                table: "AuditLog",
+                column: "ApplicantId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AuditLog_ApplicationId",
+                table: "AuditLog",
+                column: "ApplicationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AuditLog_EmployerId",
+                table: "AuditLog",
+                column: "EmployerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AuditLog_HumanResourcesId",
+                table: "AuditLog",
+                column: "HumanResourcesId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AuditLog_JobPostingId",
+                table: "AuditLog",
                 column: "JobPostingId");
 
             migrationBuilder.CreateIndex(
@@ -418,6 +513,9 @@ namespace HelloJobPH.Server.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "AuditLog");
+
             migrationBuilder.DropTable(
                 name: "ChatMessages");
 

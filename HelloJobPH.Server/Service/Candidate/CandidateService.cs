@@ -4,6 +4,7 @@ using HelloJobPH.Server.Service.Email;
 using HelloJobPH.Server.Utility;
 using HelloJobPH.Shared.DTOs;
 using HelloJobPH.Shared.Enums;
+using HelloJobPH.Shared.Model;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
@@ -200,6 +201,15 @@ Best regards,
 [Company Name]";
 
                 var result = _emailService.SendEmailAsync(candidate.Email, subject, body);
+
+                var history = new InterviewHistory
+                {
+                    CandidateName = application.Applicant.Firstname+" "+application.Applicant.Surname,
+                    Stage = application.ApplicationStatus.ToString(),
+                    ScheduledDate = parseDate,
+                };
+                await _context.AddAsync(history);
+                await _context.SaveChangesAsync();
 
                 // Record audit log
                 var auditLog = new Shared.Model.AuditLog

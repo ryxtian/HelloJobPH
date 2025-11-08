@@ -29,5 +29,6 @@ namespace HelloJobPH.Shared.Model
         public int? EmployerId { get; set; }
         public string CoverLetter { get; set; } = string.Empty;
         public List<AuditLog>? AuditLogs { get; set; }
+        public List<Application>? Applications { get; set; }
     }
 }

@@ -228,16 +228,7 @@
         };
     }
 
-    private async Task ViewDetails(AuditLogDtos auditLog)
-    {
-        var parameters = new DialogParameters
-        {
-            ["AuditLog"] = auditLog
-        };
 
-        var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true };
-        await DialogService.ShowAsync<ApplicantViewDialog>("Audit Log Details", parameters, options);
-    }
 
     private async Task ViewResume(int applicationId)
     {

@@ -1,4 +1,6 @@
-﻿@inject IClientCandidateService CandidateService
+﻿@using HelloJobPH.Employer.Services.AuditLog
+@using HelloJobPH.Shared.DTOs
+@inject IClientAuditLogService AuditLogService
 @inject ISnackbar Snackbar
 
 <MudDialog>
@@ -11,7 +13,7 @@
                     <MudText Typo="Typo.body1">Loading history...</MudText>
                 </MudStack>
             }
-            else if (candidateHistory != null)
+            else if (interviewHistories != null && interviewHistories.Any())
             {
                 <MudStack Spacing="4">
                     <!-- Applicant Information -->
@@ -20,96 +22,98 @@
                             <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
                                 <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center">
                                     <MudAvatar Color="Color.Primary" Size="Size.Large">
-                                        @candidateHistory.FirstName?.Substring(0, 1)@candidateHistory.LastName?.Substring(0, 1)
+                                        @GetInitials(interviewHistories.First().CandidateName)
                                     </MudAvatar>
                                     <MudStack Spacing="0">
                                         <MudText Typo="Typo.h6">
-                                            @candidateHistory.FirstName @candidateHistory.LastName
+                                            @interviewHistories.First().CandidateName
                                         </MudText>
                                         <MudText Typo="Typo.body2" Color="Color.Secondary">
-                                            Application ID: #@candidateHistory.ApplicationId
+                                            Application ID: #@ApplicationId
                                         </MudText>
                                     </MudStack>
                                 </MudStack>
                                 <MudChip T="string"
-                                         Color="@GetStatusColor(candidateHistory.CurrentStatus)"
+                                         Color="@GetStatusColor(interviewHistories.First().Status)"
                                          Size="Size.Large"
                                          Variant="Variant.Filled">
-                                    @candidateHistory.CurrentStatus
+                                    @interviewHistories.First().Status
                                 </MudChip>
                             </MudStack>
                         </MudCardContent>
                     </MudCard>
 
-                    <!-- Application History Timeline -->
+                    <!-- Interview History Timeline -->
                     <MudCard Elevation="2">
                         <MudCardHeader>
                             <CardHeaderContent>
                                 <MudText Typo="Typo.h6">
                                     <MudIcon Icon="@Icons.Material.Filled.History" Class="mr-2" />
-                                    Application History
+                                    Interview History
                                 </MudText>
                             </CardHeaderContent>
                         </MudCardHeader>
                         <MudCardContent>
-                            @if (candidateHistory.Timeline != null && candidateHistory.Timeline.Any())
-                            {
-                                <MudTimeline TimelineOrientation="TimelineOrientation.Vertical" TimelinePosition="TimelinePosition.Start">
-                                    @foreach (var item in candidateHistory.Timeline.OrderByDescending(t => t.Timestamp))
-                                    {
-                                        <MudTimelineItem Color="@GetTimelineColor(item.Status)" Size="Size.Small">
-                                            <ItemOpposite>
-                                                <MudText Typo="Typo.body2" Color="Color.Secondary">
-                                                    @item.Timestamp.ToString("dd MMM yyyy")
-                                                </MudText>
-                                                <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                                    @item.Timestamp.ToString("hh:mm tt")
-                                                </MudText>
-                                            </ItemOpposite>
-                                            <ItemContent>
-                                                <MudCard Elevation="1" Class="mb-2">
-                                                    <MudCardContent>
-                                                        <MudStack Spacing="2">
-                                                            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                            <MudTimeline TimelineOrientation="TimelineOrientation.Vertical" TimelinePosition="TimelinePosition.Start">
+                                @foreach (var history in interviewHistories.OrderByDescending(h => h.CreatedAt))
+                                {
+                                    <MudTimelineItem Color="@GetTimelineColor(history.Status)" Size="Size.Small">
+                                        <ItemOpposite>
+                                            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                                @history.CreatedAt.ToString("dd MMM yyyy")
+                                            </MudText>
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                @history.CreatedAt.ToString("hh:mm tt")
+                                            </MudText>
+                                        </ItemOpposite>
+                                        <ItemContent>
+                                            <MudCard Elevation="1" Class="mb-2">
+                                                <MudCardContent>
+                                                    <MudStack Spacing="2">
+                                                        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                                                            <MudChip T="string"
+                                                                     Size="Size.Small"
+                                                                     Color="@GetTimelineColor(history.Status)"
+                                                                     Variant="Variant.Filled">
+                                                                @history.Status
+                                                            </MudChip>
+                                                            @if (!string.IsNullOrEmpty(history.InterviewBy))
+                                                            {
                                                                 <MudChip T="string"
                                                                          Size="Size.Small"
-                                                                         Color="@GetTimelineColor(item.Status)"
-                                                                         Variant="Variant.Filled">
-                                                                    @item.Status
+                                                                         Icon="@Icons.Material.Filled.Person"
+                                                                         Variant="Variant.Text">
+                                                                    @history.InterviewBy
                                                                 </MudChip>
-                                                                @if (!string.IsNullOrEmpty(item.HRAssist))
-                                                                {
-                                                                    <MudChip T="string"
-                                                                             Size="Size.Small"
-                                                                             Icon="@Icons.Material.Filled.Person"
-                                                                             Variant="Variant.Text">
-                                                                        @item.HRAssist
-                                                                    </MudChip>
-                                                                }
-                                                            </MudStack>
-                                                            @if (!string.IsNullOrEmpty(item.Remarks))
-                                                            {
-                                                                <MudText Typo="Typo.body2">@item.Remarks</MudText>
                                                             }
                                                         </MudStack>
-                                                    </MudCardContent>
-                                                </MudCard>
-                                            </ItemContent>
-                                        </MudTimelineItem>
-                                    }
-                                </MudTimeline>
-                            }
-                            else
-                            {
-                                <MudAlert Severity="Severity.Info">No history records found.</MudAlert>
-                            }
+
+                                                        <MudText Typo="Typo.body2" Color="Color.Primary">
+                                                            <MudIcon Icon="@Icons.Material.Filled.Label" Size="Size.Small" Class="mr-1" />
+                                                            <strong>Stage:</strong> @history.Stage
+                                                        </MudText>
+
+                                                        @if (history.ScheduledDate.HasValue)
+                                                        {
+                                                            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                                                <MudIcon Icon="@Icons.Material.Filled.Event" Size="Size.Small" Class="mr-1" />
+                                                                <strong>Scheduled:</strong> @history.ScheduledDate.Value.ToString("dd MMM yyyy")
+                                                            </MudText>
+                                                        }
+                                                    </MudStack>
+                                                </MudCardContent>
+                                            </MudCard>
+                                        </ItemContent>
+                                    </MudTimelineItem>
+                                }
+                            </MudTimeline>
                         </MudCardContent>
                     </MudCard>
                 </MudStack>
             }
             else
             {
-                <MudAlert Severity="Severity.Warning">Unable to load application history.</MudAlert>
+                <MudAlert Severity="Severity.Info">No interview history found for this application.</MudAlert>
             }
         </MudContainer>
     </DialogContent>
@@ -125,24 +129,20 @@
     [Parameter]
     public int ApplicationId { get; set; }
 
-    private CandidateHistoryDto? candidateHistory;
+    private List<InterviewHistoryDtos>? interviewHistories;
     private bool isLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadCandidateHistory();
+        await LoadInterviewHistory();
     }
 
-    private async Task LoadCandidateHistory()
+    private async Task LoadInterviewHistory()
     {
         isLoading = true;
         try
         {
-            // candidateHistory = await CandidateService.GetCandidateHistory(ApplicationId);
-
-            // Mock data for demonstration
-            await Task.Delay(1000);
-            candidateHistory = GetMockData();
+            interviewHistories = await AuditLogService.GetInterviewHistory(ApplicationId);
         }
         catch (Exception ex)
         {
@@ -154,14 +154,26 @@
         }
     }
 
+    private string GetInitials(string fullName)
+    {
+        if (string.IsNullOrWhiteSpace(fullName))
+            return "NA";
+
+        var parts = fullName.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length >= 2)
+            return $"{parts[0][0]}{parts[parts.Length - 1][0]}".ToUpper();
+
+        return parts[0].Substring(0, Math.Min(2, parts[0].Length)).ToUpper();
+    }
+
     private Color GetStatusColor(string status)
     {
         return status?.ToLower() switch
         {
-            "hired" or "accepted" => Color.Success,
-            "rejected" or "declined" => Color.Error,
-            "in progress" or "interviewing" => Color.Info,
-            "pending" or "under review" => Color.Warning,
+            "completed" or "passed" or "approved" => Color.Success,
+            "cancelled" or "rejected" or "failed" => Color.Error,
+            "scheduled" or "in progress" => Color.Info,
+            "pending" or "awaiting" => Color.Warning,
             _ => Color.Default
         };
     }
@@ -170,86 +182,16 @@
     {
         return status?.ToLower() switch
         {
-            var s when s.Contains("submit") || s.Contains("applied") => Color.Info,
-            var s when s.Contains("interview") || s.Contains("schedule") => Color.Primary,
-            var s when s.Contains("accept") || s.Contains("hire") || s.Contains("pass") => Color.Success,
-            var s when s.Contains("reject") || s.Contains("fail") => Color.Error,
-            var s when s.Contains("review") || s.Contains("pending") => Color.Warning,
-            _ => Color.Default
+            var s when s.Contains("complet") || s.Contains("pass") || s.Contains("approv") => Color.Success,
+            var s when s.Contains("schedul") || s.Contains("progress") => Color.Primary,
+            var s when s.Contains("reject") || s.Contains("fail") || s.Contains("cancel") => Color.Error,
+            var s when s.Contains("pend") || s.Contains("await") => Color.Warning,
+            _ => Color.Info
         };
     }
 
     private void Close()
     {
         MudDialog.Close(DialogResult.Ok(true));
-    }
-
-    // Mock data for demonstration
-    private CandidateHistoryDto GetMockData()
-    {
-        return new CandidateHistoryDto
-        {
-            ApplicationId = 12345,
-            FirstName = "John",
-            LastName = "Doe",
-            CurrentStatus = "In Progress",
-            Timeline = new List<TimelineItem>
-            {
-                new() {
-                    Timestamp = DateTime.Now.AddDays(-15),
-                    Status = "Application Submitted",
-                    HRAssist = "Sarah Johnson",
-                    Remarks = "Application received and under initial review."
-                },
-                new() {
-                    Timestamp = DateTime.Now.AddDays(-12),
-                    Status = "Under Review",
-                    HRAssist = "Sarah Johnson",
-                    Remarks = "Initial screening completed."
-                },
-                new() {
-                    Timestamp = DateTime.Now.AddDays(-10),
-                    Status = "Interview Scheduled",
-                    HRAssist = "Michael Chen",
-                    Remarks = "Phone screening scheduled for 14th March 2024 at 2:00 PM."
-                },
-                new() {
-                    Timestamp = DateTime.Now.AddDays(-7),
-                    Status = "Interview Completed",
-                    HRAssist = "Michael Chen",
-                    Remarks = "HR phone screening completed successfully."
-                },
-                new() {
-                    Timestamp = DateTime.Now.AddDays(-3),
-                    Status = "Technical Interview Scheduled",
-                    HRAssist = "Emily Rodriguez",
-                    Remarks = "Technical interview scheduled for 18th March 2024 at 10:00 AM."
-                },
-                new() {
-                    Timestamp = DateTime.Now.AddDays(-1),
-                    Status = "Technical Interview Completed",
-                    HRAssist = "Emily Rodriguez",
-                    Remarks = "Technical interview completed. Candidate performed well."
-                }
-            }
-        };
-    }
-
-    // DTOs
-    public class CandidateHistoryDto
-    {
-        public int ApplicationId { get; set; }
-        public string FirstName { get; set; } = string.Empty;
-        public string LastName { get; set; } = string.Empty;
-        public string CurrentStatus { get; set; } = string.Empty;
-        public List<TimelineItem> Timeline { get; set; } = new();
-    }
-
-    public class TimelineItem
-    {
-        public DateTime Timestamp { get; set; }
-        public string Status { get; set; } = string.Empty;
-        public string HRAssist { get; set; } = string.Empty;
-        public string Remarks { get; set; } = string.Empty;
     }
 }

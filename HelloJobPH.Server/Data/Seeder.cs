@@ -153,54 +153,53 @@ public class Seeder
 
         // 5️⃣ JOB POSTINGS
         var jobPostings = new List<JobPosting>
-{
-    new()
-    {
-        Title = "Senior Software Engineer",
-        Description = "Experienced Senior Software Engineer with .NET Core expertise. Responsible for designing, developing, and maintaining high-quality enterprise applications.",
-        JobRequirements = "• Bachelor's degree in Computer Science or related field\n• 5+ years of experience in software development using C#/.NET Core\n• Strong understanding of REST APIs, Entity Framework, and SQL Server\n• Familiarity with frontend technologies (React, Blazor, or Angular)\n• Excellent problem-solving and communication skills",
-        Location = "Pasig City",
-        EmploymentType = EmploymentType.FullTime,
-        SalaryFrom = 80000,
-        SalaryTo = 120000,
-        JobCategory = JobCategory.InformationAndCommunicationTechnology,
-        HumanResourceId = hrPersonnel[0].HumanResourceId,
-        EmployerId = employers[0].EmployerId,
-        PostedDate = DateTime.UtcNow.AddDays(-15),
-        IsActive = 1
-    },
-    new()
-    {
-        Title = "Digital Marketing Specialist",
-        Description = "Creative digital marketer responsible for planning, executing, and optimizing online marketing campaigns to increase brand visibility and conversions.",
-        JobRequirements = "• Bachelor's degree in Marketing, Communications, or related field\n• At least 2 years of experience in digital marketing\n• Proficient in SEO, SEM, Google Ads, and social media management\n• Strong analytical skills and data-driven mindset\n• Excellent writing and communication skills",
-        Location = "Taguig City",
-        EmploymentType = EmploymentType.FullTime,
-        SalaryFrom = 35000,
-        SalaryTo = 50000,
-        JobCategory = JobCategory.MarketingAndCommunications,
-        HumanResourceId = hrPersonnel[1].HumanResourceId,
-        EmployerId = employers[1].EmployerId,
-        PostedDate = DateTime.UtcNow.AddDays(-10),
-        IsActive = 1
-    },
-    new()
-    {
-        Title = "Financial Analyst",
-        Description = "Finance professional responsible for preparing financial reports, analyzing data, and supporting budgeting and forecasting activities.",
-        JobRequirements = "• Bachelor's degree in Finance, Accounting, or Business Administration\n• Minimum of 3 years of experience in financial analysis or reporting\n• Proficient in Excel and financial modeling\n• Strong analytical and problem-solving skills\n• Knowledge of financial software (QuickBooks, SAP, or similar) is a plus",
-        Location = "Makati City",
-        EmploymentType = EmploymentType.FullTime,
-        SalaryFrom = 45000,
-        SalaryTo = 65000,
-        JobCategory = JobCategory.BankingAndFinancialServices,
-        HumanResourceId = hrPersonnel[2].HumanResourceId,
-        EmployerId = employers[2].EmployerId,
-        PostedDate = DateTime.UtcNow.AddDays(-7),
-        IsActive = 1
-    }
-};
-
+        {
+            new()
+            {
+                Title = "Senior Software Engineer",
+                Description = "Experienced Senior Software Engineer with .NET Core expertise. Responsible for designing, developing, and maintaining high-quality enterprise applications.",
+                JobRequirements = "• Bachelor's degree in Computer Science or related field\n• 5+ years of experience in software development using C#/.NET Core\n• Strong understanding of REST APIs, Entity Framework, and SQL Server\n• Familiarity with frontend technologies (React, Blazor, or Angular)\n• Excellent problem-solving and communication skills",
+                Location = "Pasig City",
+                EmploymentType = EmploymentType.FullTime,
+                SalaryFrom = 80000,
+                SalaryTo = 120000,
+                JobCategory = JobCategory.InformationAndCommunicationTechnology,
+                HumanResourceId = hrPersonnel[0].HumanResourceId,
+                EmployerId = employers[0].EmployerId,
+                PostedDate = DateTime.UtcNow.AddDays(-15),
+                IsActive = 1
+            },
+            new()
+            {
+                Title = "Digital Marketing Specialist",
+                Description = "Creative digital marketer responsible for planning, executing, and optimizing online marketing campaigns to increase brand visibility and conversions.",
+                JobRequirements = "• Bachelor's degree in Marketing, Communications, or related field\n• At least 2 years of experience in digital marketing\n• Proficient in SEO, SEM, Google Ads, and social media management\n• Strong analytical skills and data-driven mindset\n• Excellent writing and communication skills",
+                Location = "Taguig City",
+                EmploymentType = EmploymentType.FullTime,
+                SalaryFrom = 35000,
+                SalaryTo = 50000,
+                JobCategory = JobCategory.MarketingAndCommunications,
+                HumanResourceId = hrPersonnel[1].HumanResourceId,
+                EmployerId = employers[1].EmployerId,
+                PostedDate = DateTime.UtcNow.AddDays(-10),
+                IsActive = 1
+            },
+            new()
+            {
+                Title = "Financial Analyst",
+                Description = "Finance professional responsible for preparing financial reports, analyzing data, and supporting budgeting and forecasting activities.",
+                JobRequirements = "• Bachelor's degree in Finance, Accounting, or Business Administration\n• Minimum of 3 years of experience in financial analysis or reporting\n• Proficient in Excel and financial modeling\n• Strong analytical and problem-solving skills\n• Knowledge of financial software (QuickBooks, SAP, or similar) is a plus",
+                Location = "Makati City",
+                EmploymentType = EmploymentType.FullTime,
+                SalaryFrom = 45000,
+                SalaryTo = 65000,
+                JobCategory = JobCategory.BankingAndFinancialServices,
+                HumanResourceId = hrPersonnel[2].HumanResourceId,
+                EmployerId = employers[2].EmployerId,
+                PostedDate = DateTime.UtcNow.AddDays(-7),
+                IsActive = 1
+            }
+        };
 
         await _context.JobPosting.AddRangeAsync(jobPostings);
         await _context.SaveChangesAsync();
@@ -216,42 +215,43 @@ public class Seeder
         await _context.Resume.AddRangeAsync(resumes);
         await _context.SaveChangesAsync();
 
+        // 7️⃣ APPLICATIONS
         var applications = new List<Application>
-{
-    new()
-    {
-        ApplicantId = applicants[0].ApplicantId,
-        JobPostingId = jobPostings[0].JobPostingId,
-        ResumeId = resumes[0].ResumeId,
-        ApplicationStatus = ApplicationStatus.Pending,
-        HumanResourcesId = hrPersonnel[0].HumanResourceId,
-        DateApply = DateTime.UtcNow.AddDays(-12),
-        CoverLetter = "I am writing to express my strong interest in the position.",
-        EmployerId = jobPostings[0].EmployerId // <- added
-    },
-    new()
-    {
-        ApplicantId = applicants[1].ApplicantId,
-        JobPostingId = jobPostings[1].JobPostingId,
-        ResumeId = resumes[1].ResumeId,
-        ApplicationStatus = ApplicationStatus.Pending,
-        HumanResourcesId = hrPersonnel[1].HumanResourceId,
-        DateApply = DateTime.UtcNow.AddDays(-8),
-        CoverLetter = "Excited to apply for the marketing position.",
-        EmployerId = jobPostings[1].EmployerId // <- added
-    },
-    new()
-    {
-        ApplicantId = applicants[2].ApplicantId,
-        JobPostingId = jobPostings[2].JobPostingId,
-        ResumeId = resumes[2].ResumeId,
-        ApplicationStatus = ApplicationStatus.Initial,
-        HumanResourcesId = hrPersonnel[2].HumanResourceId,
-        DateApply = DateTime.UtcNow.AddDays(-6),
-        CoverLetter = "With strong finance background, ready to contribute.",
-        EmployerId = jobPostings[2].EmployerId // <- added
-    }
-};
+        {
+            new()
+            {
+                ApplicantId = applicants[0].ApplicantId,
+                JobPostingId = jobPostings[0].JobPostingId,
+                ResumeId = resumes[0].ResumeId,
+                ApplicationStatus = ApplicationStatus.Pending,
+                HumanResourcesId = hrPersonnel[0].HumanResourceId,
+                DateApply = DateTime.UtcNow.AddDays(-12),
+                CoverLetter = "I am writing to express my strong interest in the position.",
+                EmployerId = jobPostings[0].EmployerId
+            },
+            new()
+            {
+                ApplicantId = applicants[1].ApplicantId,
+                JobPostingId = jobPostings[1].JobPostingId,
+                ResumeId = resumes[1].ResumeId,
+                ApplicationStatus = ApplicationStatus.Pending,
+                HumanResourcesId = hrPersonnel[1].HumanResourceId,
+                DateApply = DateTime.UtcNow.AddDays(-8),
+                CoverLetter = "Excited to apply for the marketing position.",
+                EmployerId = jobPostings[1].EmployerId
+            },
+            new()
+            {
+                ApplicantId = applicants[2].ApplicantId,
+                JobPostingId = jobPostings[2].JobPostingId,
+                ResumeId = resumes[2].ResumeId,
+                ApplicationStatus = ApplicationStatus.Initial,
+                HumanResourcesId = hrPersonnel[2].HumanResourceId,
+                DateApply = DateTime.UtcNow.AddDays(-6),
+                CoverLetter = "With strong finance background, ready to contribute.",
+                EmployerId = jobPostings[2].EmployerId
+            }
+        };
 
         await _context.Application.AddRangeAsync(applications);
         await _context.SaveChangesAsync();
@@ -266,46 +266,103 @@ public class Seeder
         await _context.Interview.AddRangeAsync(interviews);
         await _context.SaveChangesAsync();
 
+        // 9️⃣ INTERVIEW HISTORY
+        var interviewHistories = new List<InterviewHistory>
+        {
+            new()
+            {
+                ApplicationId = applications[0].ApplicationId,
+                CandidateName = "Juan Pedro Dela Cruz",
+                Stage = "Initial Screening",
+                Status = "Completed",
+                InterviewBy = "John Smith",
+                ScheduledDate = DateTime.UtcNow.AddDays(-10),
+                CreatedAt = DateTime.UtcNow.AddDays(-10)
+            },
+            new()
+            {
+                ApplicationId = applications[0].ApplicationId,
+                CandidateName = "Juan Pedro Dela Cruz",
+                Stage = "Technical Interview",
+                Status = "Scheduled",
+                InterviewBy = "John Smith",
+                ScheduledDate = DateTime.UtcNow.AddDays(2),
+                CreatedAt = DateTime.UtcNow.AddDays(-8)
+            },
+            new()
+            {
+                ApplicationId = applications[1].ApplicationId,
+                CandidateName = "Maria Clara Santos",
+                Stage = "Initial Screening",
+                Status = "Scheduled",
+                InterviewBy = "Sarah Johnson",
+                ScheduledDate = DateTime.UtcNow.AddDays(3),
+                CreatedAt = DateTime.UtcNow.AddDays(-7)
+            },
+            new()
+            {
+                ApplicationId = applications[2].ApplicationId,
+                CandidateName = "Pedro Miguel Reyes",
+                Stage = "Initial Screening",
+                Status = "Completed",
+                InterviewBy = "Michael Brown",
+                ScheduledDate = DateTime.UtcNow.AddDays(-2),
+                CreatedAt = DateTime.UtcNow.AddDays(-5)
+            },
+            new()
+            {
+                ApplicationId = applications[2].ApplicationId,
+                CandidateName = "Pedro Miguel Reyes",
+                Stage = "HR Interview",
+                Status = "Completed",
+                InterviewBy = "Michael Brown",
+                ScheduledDate = DateTime.UtcNow.AddDays(-1),
+                CreatedAt = DateTime.UtcNow.AddDays(-3)
+            }
+        };
 
-        var auditLogs = new List<AuditLog>
-{
-    new()
-    {
-        ApplicationId = applications[0].ApplicationId,
-        ApplicantId = applicants[0].ApplicantId,
-        JobPostingId = jobPostings[0].JobPostingId,
-        HumanResourcesId = hrPersonnel[0].HumanResourceId,
-        Action = "Applied",
-        Details = "Applicant Juan Dela Cruz applied for Senior Software Engineer position.",
-        Timestamp = DateTime.UtcNow.AddDays(-11),
-       EmployerId = hrPersonnel[0].EmployerId, 
-    },
-    new()
-    {
-        ApplicationId = applications[1].ApplicationId,
-        ApplicantId = applicants[1].ApplicantId,
-        JobPostingId = jobPostings[1].JobPostingId,
-        HumanResourcesId = hrPersonnel[1].HumanResourceId,
-        Action = "Interview Scheduled",
-        Details = "Interview scheduled for Maria Santos on Google Meet.",
-        Timestamp = DateTime.UtcNow.AddDays(-7),
-         EmployerId = hrPersonnel[1].EmployerId,  
-    },
-    new()
-    {
-        ApplicationId = applications[2].ApplicationId,
-        ApplicantId = applicants[2].ApplicantId,
-        JobPostingId = jobPostings[2].JobPostingId,
-        HumanResourcesId = hrPersonnel[2].HumanResourceId,
-        Action = "Application Reviewed",
-        Details = "Finance HR reviewed Pedro Reyes’ application.",
-        Timestamp = DateTime.UtcNow.AddDays(-5),
-         EmployerId = hrPersonnel[2].EmployerId,  
-    }
-};
-        await _context.AuditLog.AddRangeAsync(auditLogs);
+        await _context.InterviewHistory.AddRangeAsync(interviewHistories);
         await _context.SaveChangesAsync();
 
-    }
+        // 🔟 AUDIT LOGS
+        var auditLogs = new List<AuditLog>
+        {
+            new()
+            {
+                ApplicationId = applications[0].ApplicationId,
+                ApplicantId = applicants[0].ApplicantId,
+                JobPostingId = jobPostings[0].JobPostingId,
+                HumanResourcesId = hrPersonnel[0].HumanResourceId,
+                Action = "Applied",
+                Details = "Applicant Juan Dela Cruz applied for Senior Software Engineer position.",
+                Timestamp = DateTime.UtcNow.AddDays(-11),
+                EmployerId = hrPersonnel[0].EmployerId
+            },
+            new()
+            {
+                ApplicationId = applications[1].ApplicationId,
+                ApplicantId = applicants[1].ApplicantId,
+                JobPostingId = jobPostings[1].JobPostingId,
+                HumanResourcesId = hrPersonnel[1].HumanResourceId,
+                Action = "Interview Scheduled",
+                Details = "Interview scheduled for Maria Santos on Google Meet.",
+                Timestamp = DateTime.UtcNow.AddDays(-7),
+                EmployerId = hrPersonnel[1].EmployerId
+            },
+            new()
+            {
+                ApplicationId = applications[2].ApplicationId,
+                ApplicantId = applicants[2].ApplicantId,
+                JobPostingId = jobPostings[2].JobPostingId,
+                HumanResourcesId = hrPersonnel[2].HumanResourceId,
+                Action = "Application Reviewed",
+                Details = "Finance HR reviewed Pedro Reyes' application.",
+                Timestamp = DateTime.UtcNow.AddDays(-5),
+                EmployerId = hrPersonnel[2].EmployerId
+            }
+        };
 
+        await _context.AuditLog.AddRangeAsync(auditLogs);
+        await _context.SaveChangesAsync();
+    }
 }
