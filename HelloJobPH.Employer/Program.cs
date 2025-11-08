@@ -2,6 +2,7 @@
 using Blazored.LocalStorage;
 using HelloJobPH.Employer;
 using HelloJobPH.Employer.JwtAuthStateProviders;
+using HelloJobPH.Employer.Services.AuditLog;
 using HelloJobPH.Employer.Services.Authentication;
 using HelloJobPH.Employer.Services.Candidate;
 using HelloJobPH.Employer.Services.Chat;
@@ -43,7 +44,7 @@ builder.Services.AddScoped<IClientOverview, ClientOverview>();
 builder.Services.AddScoped<IClientDashboardService, ClientDashboardService>();
 builder.Services.AddScoped<IClientSuperAdminService, ClientSuperAdminService>();
 builder.Services.AddScoped<IClientChatService, ClientChatService>();
-
+builder.Services.AddScoped<IClientAuditLogService, ClientAuditLogService>();
 
 
 await builder.Build().RunAsync();

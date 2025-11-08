@@ -1,0 +1,435 @@
+﻿@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudContainer Style="max-height: 70vh; overflow-y: auto;">
+            @if (AuditLog != null)
+            {
+                <MudStack Spacing="4">
+                    <!-- Header Summary Card -->
+                    <MudCard Elevation="3">
+                        <MudCardContent>
+                            <MudStack Spacing="3">
+                                <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Start">
+                                    <MudText Typo="Typo.h6" Color="Color.Primary">
+                                        <MudIcon Icon="@Icons.Material.Filled.Info" Class="mr-2" />
+                                        Audit Log Details
+                                    </MudText>
+                                    <MudChip T="string" 
+                                             Color="@GetActionColor(AuditLog.Action)" 
+                                             Variant="Variant.Filled" 
+                                             Size="Size.Medium">
+                                        @AuditLog.Action
+                                    </MudChip>
+                                </MudStack>
+                                
+                                <MudDivider />
+                                
+                                <MudGrid>
+                                    <MudItem xs="12" sm="6">
+                                        <MudStack Spacing="1">
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                <MudIcon Icon="@Icons.Material.Filled.AccessTime" Size="Size.Small" /> 
+                                                Timestamp
+                                            </MudText>
+                                            <MudText Typo="Typo.body1">
+                                                <strong>@AuditLog.Timestamp.ToString("dddd, dd MMMM yyyy")</strong>
+                                            </MudText>
+                                            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                                @AuditLog.Timestamp.ToString("hh:mm:ss tt")
+                                            </MudText>
+                                        </MudStack>
+                                    </MudItem>
+                                    <MudItem xs="12" sm="6">
+                                        <MudStack Spacing="1">
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                <MudIcon Icon="@Icons.Material.Filled.Tag" Size="Size.Small" /> 
+                                                Record ID
+                                            </MudText>
+                                            <MudText Typo="Typo.body1">
+                                                <strong>#@AuditLog.AuditLogId</strong>
+                                            </MudText>
+                                        </MudStack>
+                                    </MudItem>
+                                </MudGrid>
+                            </MudStack>
+                        </MudCardContent>
+                    </MudCard>
+
+                    <!-- Candidate Information -->
+                    <MudCard Elevation="2">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.h6">
+                                    <MudIcon Icon="@Icons.Material.Filled.Person" Class="mr-2" />
+                                    Candidate Information
+                                </MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Class="mb-3">
+                                <MudAvatar Color="Color.Primary" Size="Size.Large">
+                                    @AuditLog.CandidateFirstName?.Substring(0, 1)@AuditLog.CandidateLastName?.Substring(0, 1)
+                                </MudAvatar>
+                                <MudStack Spacing="0">
+                                    <MudText Typo="Typo.h6">
+                                        @AuditLog.CandidateFirstName @AuditLog.CandidateLastName
+                                    </MudText>
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                        Application ID: #@AuditLog.ApplicationId
+                                    </MudText>
+                                </MudStack>
+                            </MudStack>
+                            
+                            <MudDivider Class="my-3" />
+                            
+                            <MudGrid>
+                                <MudItem xs="12">
+                                    <MudStack Spacing="1">
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">Position Applied</MudText>
+                                        <MudText Typo="Typo.body1">
+                                            <MudIcon Icon="@Icons.Material.Filled.Work" Size="Size.Small" Color="Color.Primary" />
+                                            <strong>@AuditLog.JobTitle</strong>
+                                        </MudText>
+                                    </MudStack>
+                                </MudItem>
+                            </MudGrid>
+                        </MudCardContent>
+                    </MudCard>
+
+                    <!-- HR Personnel Information -->
+                    <MudCard Elevation="2">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.h6">
+                                    <MudIcon Icon="@Icons.Material.Filled.Badge" Class="mr-2" />
+                                    HR Personnel Details
+                                </MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center" Class="mb-3">
+                                <MudAvatar Color="Color.Secondary" Size="Size.Large">
+                                    @AuditLog.HRPersonnelName?.Substring(0, 1)
+                                </MudAvatar>
+                                <MudStack Spacing="0">
+                                    <MudText Typo="Typo.h6">@AuditLog.HRPersonnelName</MudText>
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                        @AuditLog.HRDepartment
+                                    </MudText>
+                                </MudStack>
+                            </MudStack>
+                            
+                            <MudDivider Class="my-3" />
+                            
+                            <MudGrid>
+                                <MudItem xs="12" sm="6">
+                                    <MudStack Spacing="1">
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">Action Performed</MudText>
+                                        <MudChip T="string" 
+                                                 Icon="@GetActionIcon(AuditLog.Action)"
+                                                 Color="@GetActionColor(AuditLog.Action)" 
+                                                 Variant="Variant.Filled">
+                                            @AuditLog.Action
+                                        </MudChip>
+                                    </MudStack>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudStack Spacing="1">
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">IP Address</MudText>
+                                        <MudText Typo="Typo.body2">
+                                            <MudIcon Icon="@Icons.Material.Filled.Computer" Size="Size.Small" />
+                                            @(string.IsNullOrEmpty(AuditLog.IPAddress) ? "N/A" : AuditLog.IPAddress)
+                                        </MudText>
+                                    </MudStack>
+                                </MudItem>
+                            </MudGrid>
+                        </MudCardContent>
+                    </MudCard>
+
+                    <!-- Action Details -->
+                    <MudCard Elevation="2">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.h6">
+                                    <MudIcon Icon="@Icons.Material.Filled.Description" Class="mr-2" />
+                                    Action Details
+                                </MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudStack Spacing="3">
+                                <MudStack Spacing="1">
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">Description</MudText>
+                                    <MudPaper Elevation="0" Class="pa-3" Style="background-color: var(--mud-palette-background-grey);">
+                                        <MudText Typo="Typo.body2">@AuditLog.Details</MudText>
+                                    </MudPaper>
+                                </MudStack>
+
+                                @if (!string.IsNullOrEmpty(AuditLog.Notes))
+                                {
+                                    <MudStack Spacing="1">
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">Additional Notes</MudText>
+                                        <MudAlert Severity="Severity.Info" Dense="false">
+                                            @AuditLog.Notes
+                                        </MudAlert>
+                                    </MudStack>
+                                }
+
+                                @if (!string.IsNullOrEmpty(AuditLog.PreviousValue) || !string.IsNullOrEmpty(AuditLog.NewValue))
+                                {
+                                    <MudDivider />
+                                    <MudText Typo="Typo.subtitle2" Color="Color.Primary">
+                                        <MudIcon Icon="@Icons.Material.Filled.CompareArrows" Size="Size.Small" />
+                                        Value Changes
+                                    </MudText>
+                                    <MudGrid>
+                                        <MudItem xs="12" sm="6">
+                                            <MudStack Spacing="1">
+                                                <MudText Typo="Typo.caption" Color="Color.Secondary">Previous Value</MudText>
+                                                <MudPaper Elevation="1" Class="pa-3">
+                                                    <MudText Typo="Typo.body2">
+                                                        @(string.IsNullOrEmpty(AuditLog.PreviousValue) ? "N/A" : AuditLog.PreviousValue)
+                                                    </MudText>
+                                                </MudPaper>
+                                            </MudStack>
+                                        </MudItem>
+                                        <MudItem xs="12" sm="6">
+                                            <MudStack Spacing="1">
+                                                <MudText Typo="Typo.caption" Color="Color.Secondary">New Value</MudText>
+                                                <MudPaper Elevation="1" Class="pa-3" Style="background-color: var(--mud-palette-success-lighten);">
+                                                    <MudText Typo="Typo.body2">
+                                                        <strong>@(string.IsNullOrEmpty(AuditLog.NewValue) ? "N/A" : AuditLog.NewValue)</strong>
+                                                    </MudText>
+                                                </MudPaper>
+                                            </MudStack>
+                                        </MudItem>
+                                    </MudGrid>
+                                }
+                            </MudStack>
+                        </MudCardContent>
+                    </MudCard>
+
+                    <!-- System Information -->
+                    <MudCard Elevation="2">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.h6">
+                                    <MudIcon Icon="@Icons.Material.Filled.Settings" Class="mr-2" />
+                                    System Information
+                                </MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudGrid>
+                                <MudItem xs="12" sm="6">
+                                    <MudStack Spacing="1">
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">User Agent</MudText>
+                                        <MudText Typo="Typo.body2" Style="word-break: break-all;">
+                                            @(string.IsNullOrEmpty(AuditLog.UserAgent) ? "N/A" : AuditLog.UserAgent)
+                                        </MudText>
+                                    </MudStack>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudStack Spacing="1">
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">Session ID</MudText>
+                                        <MudText Typo="Typo.body2">
+                                            @(string.IsNullOrEmpty(AuditLog.SessionId) ? "N/A" : AuditLog.SessionId)
+                                        </MudText>
+                                    </MudStack>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudStack Spacing="1">
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">Duration</MudText>
+                                        <MudText Typo="Typo.body2">
+                                            <MudIcon Icon="@Icons.Material.Filled.Timer" Size="Size.Small" />
+                                            @(AuditLog.DurationMs.HasValue ? $"{AuditLog.DurationMs.Value} ms" : "N/A")
+                                        </MudText>
+                                    </MudStack>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudStack Spacing="1">
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">Status</MudText>
+                                        <MudChip T="string" 
+                                                 Size="Size.Small"
+                                                 Color="@(AuditLog.IsSuccessful ? Color.Success : Color.Error)"
+                                                 Icon="@(AuditLog.IsSuccessful ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.Error)">
+                                            @(AuditLog.IsSuccessful ? "Success" : "Failed")
+                                        </MudChip>
+                                    </MudStack>
+                                </MudItem>
+                            </MudGrid>
+                        </MudCardContent>
+                    </MudCard>
+
+                    <!-- Related Actions -->
+                    @if (AuditLog.RelatedActions != null && AuditLog.RelatedActions.Any())
+                    {
+                        <MudCard Elevation="2">
+                            <MudCardHeader>
+                                <CardHeaderContent>
+                                    <MudText Typo="Typo.h6">
+                                        <MudIcon Icon="@Icons.Material.Filled.Link" Class="mr-2" />
+                                        Related Actions
+                                    </MudText>
+                                </CardHeaderContent>
+                            </MudCardHeader>
+                            <MudCardContent>
+                                <MudList T="string" Dense="true">
+                                    @foreach (var related in AuditLog.RelatedActions)
+                                    {
+                                        <MudListItem>
+                                            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                                <MudStack Spacing="0">
+                                                    <MudText Typo="Typo.body2">
+                                                        <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Text">
+                                                            @related.Action
+                                                        </MudChip>
+                                                    </MudText>
+                                                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                        @related.Timestamp.ToString("dd MMM yyyy, hh:mm tt")
+                                                    </MudText>
+                                                </MudStack>
+                                                <MudIconButton Icon="@Icons.Material.Filled.OpenInNew" 
+                                                               Size="Size.Small" 
+                                                               Color="Color.Primary"
+                                                               OnClick="@(() => ViewRelatedAction(related.AuditLogId))" />
+                                            </MudStack>
+                                        </MudListItem>
+                                        <MudDivider />
+                                    }
+                                </MudList>
+                            </MudCardContent>
+                        </MudCard>
+                    }
+                </MudStack>
+            }
+            else
+            {
+                <MudAlert Severity="Severity.Error">Unable to load audit log details.</MudAlert>
+            }
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton StartIcon="@Icons.Material.Filled.Print" 
+                   Variant="Variant.Outlined" 
+                   Color="Color.Primary"
+                   OnClick="PrintAuditLog">
+            Print
+        </MudButton>
+        <MudButton StartIcon="@Icons.Material.Filled.Download" 
+                   Variant="Variant.Outlined" 
+                   Color="Color.Primary"
+                   OnClick="ExportAuditLog">
+            Export
+        </MudButton>
+        <MudButton StartIcon="@Icons.Material.Filled.Share" 
+                   Variant="Variant.Outlined" 
+                   Color="Color.Primary"
+                   OnClick="ShareAuditLog">
+            Share
+        </MudButton>
+        <MudSpacer />
+        <MudButton OnClick="Close">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] 
+    IMudDialogInstance MudDialog { get; set; } = null!;
+
+    [Parameter] 
+    public AuditLogDetailsDto? AuditLog { get; set; }
+
+    private Color GetActionColor(string action)
+    {
+        return action switch
+        {
+            "Interview Scheduled" => Color.Info,
+            "Interview Completed" => Color.Primary,
+            "Candidate Accepted" => Color.Success,
+            "Candidate Rejected" => Color.Error,
+            "Status Updated" => Color.Warning,
+            "Resume Viewed" => Color.Default,
+            "Email Sent" => Color.Info,
+            _ => Color.Default
+        };
+    }
+
+    private string GetActionIcon(string action)
+    {
+        return action switch
+        {
+            "Interview Scheduled" => Icons.Material.Filled.Event,
+            "Interview Completed" => Icons.Material.Filled.CheckCircle,
+            "Candidate Accepted" => Icons.Material.Filled.ThumbUp,
+            "Candidate Rejected" => Icons.Material.Filled.ThumbDown,
+            "Status Updated" => Icons.Material.Filled.Update,
+            "Resume Viewed" => Icons.Material.Filled.Visibility,
+            "Email Sent" => Icons.Material.Filled.Email,
+            _ => Icons.Material.Filled.Info
+        };
+    }
+
+    private void ViewRelatedAction(int auditLogId)
+    {
+        Snackbar.Add($"Opening related audit log #{auditLogId}", Severity.Info);
+        // Implement navigation to related audit log
+    }
+
+    private void PrintAuditLog()
+    {
+        Snackbar.Add("Preparing audit log for printing...", Severity.Info);
+        // Implement print logic
+    }
+
+    private void ExportAuditLog()
+    {
+        Snackbar.Add("Exporting audit log...", Severity.Info);
+        // Implement export logic (PDF, CSV, etc.)
+    }
+
+    private void ShareAuditLog()
+    {
+        Snackbar.Add("Generating shareable link...", Severity.Info);
+        // Implement share logic
+    }
+
+    private void Close()
+    {
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+
+    // Enhanced DTO
+    public class AuditLogDetailsDto
+    {
+        public int AuditLogId { get; set; }
+        public int ApplicationId { get; set; }
+        public string CandidateFirstName { get; set; } = string.Empty;
+        public string CandidateLastName { get; set; } = string.Empty;
+        public string JobTitle { get; set; } = string.Empty;
+        public string HRPersonnelName { get; set; } = string.Empty;
+        public string HRDepartment { get; set; } = string.Empty;
+        public string Action { get; set; } = string.Empty;
+        public string Details { get; set; } = string.Empty;
+        public DateTime Timestamp { get; set; }
+        public string Notes { get; set; } = string.Empty;
+        
+        // Additional fields for detailed view
+        public string? PreviousValue { get; set; }
+        public string? NewValue { get; set; }
+        public string? IPAddress { get; set; }
+        public string? UserAgent { get; set; }
+        public string? SessionId { get; set; }
+        public int? DurationMs { get; set; }
+        public bool IsSuccessful { get; set; } = true;
+        public List<RelatedAction> RelatedActions { get; set; } = new();
+    }
+
+    public class RelatedAction
+    {
+        public int AuditLogId { get; set; }
+        public string Action { get; set; } = string.Empty;
+        public DateTime Timestamp { get; set; }
+    }
+}

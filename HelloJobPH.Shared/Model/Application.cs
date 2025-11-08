@@ -23,7 +23,10 @@ namespace HelloJobPH.Shared.Model
         public JobPosting? JobPosting { get; set; }
         public Applicant? Applicant { get; set; }
         public Interview? Interview { get; set; }
+        public Employer? Employer { get; set; }
         public int ApplicantId { get; set; }
+        public int? EmployerId { get; set; }
         public string CoverLetter { get; set; } = string.Empty;
+        public List<AuditLog>? AuditLogs { get; set; }
     }
 }

@@ -1,0 +1,426 @@
+﻿@inject IClientCandidateService CandidateService
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudContainer Style="max-height: 70vh; overflow-y: auto;">
+            @if (isLoading)
+            {
+                <MudStack AlignItems="AlignItems.Center" Spacing="3" Class="pa-8">
+                    <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                    <MudText Typo="Typo.body1">Loading candidate history...</MudText>
+                </MudStack>
+            }
+            else if (candidateHistory != null)
+            {
+                <MudStack Spacing="4">
+                    <!-- Candidate Info Card -->
+                    <MudCard Elevation="3">
+                        <MudCardContent>
+                            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Start">
+                                <MudStack Row="true" Spacing="3" AlignItems="AlignItems.Center">
+                                    <MudAvatar Color="Color.Primary" Size="Size.Large">
+                                        @candidateHistory.FirstName?.Substring(0, 1)@candidateHistory.LastName?.Substring(0, 1)
+                                    </MudAvatar>
+                                    <MudStack Spacing="1">
+                                        <MudText Typo="Typo.h6">
+                                            @candidateHistory.FirstName @candidateHistory.LastName
+                                        </MudText>
+                                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                            <MudIcon Icon="@Icons.Material.Filled.Email" Size="Size.Small" /> @candidateHistory.Email
+                                        </MudText>
+                                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                            <MudIcon Icon="@Icons.Material.Filled.Phone" Size="Size.Small" /> @candidateHistory.Phone
+                                        </MudText>
+                                    </MudStack>
+                                </MudStack>
+                                <MudChip T="string" Color="@GetStatusColor(candidateHistory.CurrentStatus)" Variant="Variant.Filled">
+                                    @candidateHistory.CurrentStatus
+                                </MudChip>
+                            </MudStack>
+                        </MudCardContent>
+                    </MudCard>
+
+                    <!-- Application Details -->
+                    <MudCard Elevation="2">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.h6">
+                                    <MudIcon Icon="@Icons.Material.Filled.Work" Class="mr-2" />
+                                    Application Details
+                                </MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudGrid>
+                                <MudItem xs="6">
+                                    <MudStack Spacing="1">
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">Position Applied</MudText>
+                                        <MudText Typo="Typo.body2"><strong>@candidateHistory.JobTitle</strong></MudText>
+                                    </MudStack>
+                                </MudItem>
+                                <MudItem xs="6">
+                                    <MudStack Spacing="1">
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">Date Applied</MudText>
+                                        <MudText Typo="Typo.body2">@candidateHistory.DateApplied.ToString("dd MMMM yyyy")</MudText>
+                                    </MudStack>
+                                </MudItem>
+                                <MudItem xs="6">
+                                    <MudStack Spacing="1">
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">Application ID</MudText>
+                                        <MudText Typo="Typo.body2">#@candidateHistory.ApplicationId</MudText>
+                                    </MudStack>
+                                </MudItem>
+                                <MudItem xs="6">
+                                    <MudStack Spacing="1">
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">Source</MudText>
+                                        <MudText Typo="Typo.body2">@candidateHistory.ApplicationSource</MudText>
+                                    </MudStack>
+                                </MudItem>
+                            </MudGrid>
+                        </MudCardContent>
+                    </MudCard>
+
+                    <!-- Timeline -->
+                    <MudCard Elevation="2">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.h6">
+                                    <MudIcon Icon="@Icons.Material.Filled.Timeline" Class="mr-2" />
+                                    Activity Timeline
+                                </MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            @if (candidateHistory.Timeline != null && candidateHistory.Timeline.Any())
+                            {
+                                <MudTimeline TimelineOrientation="TimelineOrientation.Vertical" TimelinePosition="TimelinePosition.Start">
+                                    @foreach (var item in candidateHistory.Timeline.OrderByDescending(t => t.Timestamp))
+                                    {
+                                        <MudTimelineItem Color="@GetTimelineColor(item.Action)" Size="Size.Small">
+                                            <ItemOpposite>
+                                                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                                    @item.Timestamp.ToString("dd MMM yyyy")
+                                                </MudText>
+                                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                    @item.Timestamp.ToString("hh:mm tt")
+                                                </MudText>
+                                            </ItemOpposite>
+                                            <ItemContent>
+                                                <MudCard Elevation="1" Class="mb-2">
+                                                    <MudCardContent>
+                                                        <MudStack Spacing="2">
+                                                            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                                                <MudChip T="string" Size="Size.Small" Color="@GetTimelineColor(item.Action)" Variant="Variant.Filled">
+                                                                    @item.Action
+                                                                </MudChip>
+                                                                @if (!string.IsNullOrEmpty(item.HRPersonnel))
+                                                                {
+                                                                    <MudChip T="string" Size="Size.Small" Icon="@Icons.Material.Filled.Person" Variant="Variant.Text">
+                                                                        @item.HRPersonnel
+                                                                    </MudChip>
+                                                                }
+                                                            </MudStack>
+                                                            <MudText Typo="Typo.body2">@item.Details</MudText>
+                                                            @if (!string.IsNullOrEmpty(item.Notes))
+                                                            {
+                                                                <MudAlert Severity="Severity.Info" Dense="true" Class="mt-2">
+                                                                    <MudText Typo="Typo.body2">
+                                                                        <strong>Notes:</strong> @item.Notes
+                                                                    </MudText>
+                                                                </MudAlert>
+                                                            }
+                                                        </MudStack>
+                                                    </MudCardContent>
+                                                </MudCard>
+                                            </ItemContent>
+                                        </MudTimelineItem>
+                                    }
+                                </MudTimeline>
+                            }
+                            else
+                            {
+                                <MudAlert Severity="Severity.Info">No timeline activities recorded yet.</MudAlert>
+                            }
+                        </MudCardContent>
+                    </MudCard>
+
+                    <!-- Interview History -->
+                    @if (candidateHistory.Interviews != null && candidateHistory.Interviews.Any())
+                    {
+                        <MudCard Elevation="2">
+                            <MudCardHeader>
+                                <CardHeaderContent>
+                                    <MudText Typo="Typo.h6">
+                                        <MudIcon Icon="@Icons.Material.Filled.Event" Class="mr-2" />
+                                        Interview History
+                                    </MudText>
+                                </CardHeaderContent>
+                            </MudCardHeader>
+                            <MudCardContent>
+                                <MudStack Spacing="2">
+                                    @foreach (var interview in candidateHistory.Interviews.OrderByDescending(i => i.InterviewDate))
+                                    {
+                                        <MudPaper Elevation="1" Class="pa-3">
+                                            <MudStack Spacing="2">
+                                                <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                                    <MudText Typo="Typo.subtitle2"><strong>@interview.InterviewType</strong></MudText>
+                                                    <MudChip T="string" Size="Size.Small" Color="@GetInterviewStatusColor(interview.Status)" Variant="Variant.Filled">
+                                                        @interview.Status
+                                                    </MudChip>
+                                                </MudStack>
+                                                <MudDivider />
+                                                <MudGrid>
+                                                    <MudItem xs="6">
+                                                        <MudText Typo="Typo.caption" Color="Color.Secondary">Date & Time</MudText>
+                                                        <MudText Typo="Typo.body2">@interview.InterviewDate.ToString("dd MMM yyyy, hh:mm tt")</MudText>
+                                                    </MudItem>
+                                                    <MudItem xs="6">
+                                                        <MudText Typo="Typo.caption" Color="Color.Secondary">Interviewer</MudText>
+                                                        <MudText Typo="Typo.body2">@interview.InterviewerName</MudText>
+                                                    </MudItem>
+                                                    @if (!string.IsNullOrEmpty(interview.Location))
+                                                    {
+                                                        <MudItem xs="12">
+                                                            <MudText Typo="Typo.caption" Color="Color.Secondary">Location</MudText>
+                                                            <MudText Typo="Typo.body2">
+                                                                <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" />
+                                                                @interview.Location
+                                                            </MudText>
+                                                        </MudItem>
+                                                    }
+                                                    @if (!string.IsNullOrEmpty(interview.Feedback))
+                                                    {
+                                                        <MudItem xs="12">
+                                                            <MudText Typo="Typo.caption" Color="Color.Secondary">Feedback</MudText>
+                                                            <MudText Typo="Typo.body2">@interview.Feedback</MudText>
+                                                        </MudItem>
+                                                    }
+                                                    @if (interview.Rating.HasValue)
+                                                    {
+                                                        <MudItem xs="12">
+                                                            <MudText Typo="Typo.caption" Color="Color.Secondary">Rating</MudText>
+                                                            <MudRating ReadOnly="true" SelectedValue="interview.Rating.Value" MaxValue="5" />
+                                                        </MudItem>
+                                                    }
+                                                </MudGrid>
+                                            </MudStack>
+                                        </MudPaper>
+                                    }
+                                </MudStack>
+                            </MudCardContent>
+                        </MudCard>
+                    }
+
+                    <!-- Documents -->
+                    @if (candidateHistory.Documents != null && candidateHistory.Documents.Any())
+                    {
+                        <MudCard Elevation="2">
+                            <MudCardHeader>
+                                <CardHeaderContent>
+                                    <MudText Typo="Typo.h6">
+                                        <MudIcon Icon="@Icons.Material.Filled.Description" Class="mr-2" />
+                                        Documents
+                                    </MudText>
+                                </CardHeaderContent>
+                            </MudCardHeader>
+                            <MudCardContent>
+                                <MudList T="string" Dense="true">
+                                    @foreach (var doc in candidateHistory.Documents)
+                                    {
+                                        <MudListItem Icon="@Icons.Material.Filled.AttachFile">
+                                            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                                <MudStack Spacing="0">
+                                                    <MudText Typo="Typo.body2">@doc.DocumentName</MudText>
+                                                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                        Uploaded: @doc.UploadDate.ToString("dd MMM yyyy")
+                                                    </MudText>
+                                                </MudStack>
+                                                <MudButton StartIcon="@Icons.Material.Filled.Download" 
+                                                           Size="Size.Small" 
+                                                           Variant="Variant.Text" 
+                                                           Color="Color.Primary"
+                                                           OnClick="@(() => DownloadDocument(doc.DocumentId))">
+                                                    Download
+                                                </MudButton>
+                                            </MudStack>
+                                        </MudListItem>
+                                        <MudDivider />
+                                    }
+                                </MudList>
+                            </MudCardContent>
+                        </MudCard>
+                    }
+                </MudStack>
+            }
+            else
+            {
+                <MudAlert Severity="Severity.Warning">Unable to load candidate history.</MudAlert>
+            }
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton StartIcon="@Icons.Material.Filled.Print" 
+                   Variant="Variant.Outlined" 
+                   Color="Color.Primary"
+                   OnClick="PrintHistory">
+            Print History
+        </MudButton>
+        <MudButton StartIcon="@Icons.Material.Filled.Download" 
+                   Variant="Variant.Outlined" 
+                   Color="Color.Primary"
+                   OnClick="ExportHistory">
+            Export
+        </MudButton>
+        <MudSpacer />
+        <MudButton OnClick="Close">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] 
+    IMudDialogInstance MudDialog { get; set; } = null!;
+
+    [Parameter] 
+    public int ApplicationId { get; set; }
+
+    private CandidateHistoryDto? candidateHistory;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCandidateHistory();
+    }
+
+    private async Task LoadCandidateHistory()
+    {
+        isLoading = true;
+        try
+        {
+           // candidateHistory = await CandidateService.GetCandidateHistory(ApplicationId);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading candidate history: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private Color GetStatusColor(string status)
+    {
+        return status?.ToLower() switch
+        {
+            "accepted" or "hired" => Color.Success,
+            "rejected" => Color.Error,
+            "in progress" or "interviewing" => Color.Info,
+            "pending" => Color.Warning,
+            _ => Color.Default
+        };
+    }
+
+    private Color GetTimelineColor(string action)
+    {
+        return action switch
+        {
+            "Application Submitted" => Color.Info,
+            "Interview Scheduled" => Color.Primary,
+            "Interview Completed" => Color.Primary,
+            "Candidate Accepted" => Color.Success,
+            "Candidate Rejected" => Color.Error,
+            "Status Updated" => Color.Warning,
+            _ => Color.Default
+        };
+    }
+
+    private Color GetInterviewStatusColor(string status)
+    {
+        return status?.ToLower() switch
+        {
+            "completed" => Color.Success,
+            "scheduled" => Color.Info,
+            "cancelled" => Color.Error,
+            "rescheduled" => Color.Warning,
+            _ => Color.Default
+        };
+    }
+
+    private async Task DownloadDocument(int documentId)
+    {
+        try
+        {
+            Snackbar.Add("Downloading document...", Severity.Info);
+            // Implement document download logic
+            // await CandidateService.DownloadDocument(documentId);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error downloading document: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private void PrintHistory()
+    {
+        Snackbar.Add("Preparing print preview...", Severity.Info);
+        // Implement print logic
+    }
+
+    private void ExportHistory()
+    {
+        Snackbar.Add("Exporting history...", Severity.Info);
+        // Implement export logic
+    }
+
+    private void Close()
+    {
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+
+    // DTOs
+    public class CandidateHistoryDto
+    {
+        public int ApplicationId { get; set; }
+        public string FirstName { get; set; } = string.Empty;
+        public string LastName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Phone { get; set; } = string.Empty;
+        public string JobTitle { get; set; } = string.Empty;
+        public string CurrentStatus { get; set; } = string.Empty;
+        public DateTime DateApplied { get; set; }
+        public string ApplicationSource { get; set; } = string.Empty;
+        public List<TimelineItem> Timeline { get; set; } = new();
+        public List<InterviewRecord> Interviews { get; set; } = new();
+        public List<DocumentRecord> Documents { get; set; } = new();
+    }
+
+    public class TimelineItem
+    {
+        public DateTime Timestamp { get; set; }
+        public string Action { get; set; } = string.Empty;
+        public string Details { get; set; } = string.Empty;
+        public string HRPersonnel { get; set; } = string.Empty;
+        public string Notes { get; set; } = string.Empty;
+    }
+
+    public class InterviewRecord
+    {
+        public int InterviewId { get; set; }
+        public string InterviewType { get; set; } = string.Empty;
+        public DateTime InterviewDate { get; set; }
+        public string InterviewerName { get; set; } = string.Empty;
+        public string Location { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
+        public string Feedback { get; set; } = string.Empty;
+        public int? Rating { get; set; }
+    }
+
+    public class DocumentRecord
+    {
+        public int DocumentId { get; set; }
+        public string DocumentName { get; set; } = string.Empty;
+        public DateTime UploadDate { get; set; }
+        public string DocumentType { get; set; } = string.Empty;
+    }
+}

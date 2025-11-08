@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HelloJobPH.Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251107093814_ByteArray")]
-    partial class ByteArray
+    [Migration("20251108022938_Details")]
+    partial class Details
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -44,10 +44,7 @@ namespace HelloJobPH.Server.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("HumanResourceId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("HumanResourcesHumanResourceId")
+                    b.Property<int?>("HumanResourcesId")
                         .HasColumnType("int");
 
                     b.Property<string>("Middlename")
@@ -67,7 +64,7 @@ namespace HelloJobPH.Server.Migrations
 
                     b.HasKey("ApplicantId");
 
-                    b.HasIndex("HumanResourcesHumanResourceId");
+                    b.HasIndex("HumanResourcesId");
 
                     b.HasIndex("UserAccountId")
                         .IsUnique();
@@ -117,6 +114,50 @@ namespace HelloJobPH.Server.Migrations
                     b.HasIndex("JobPostingId");
 
                     b.ToTable("Application");
+                });
+
+            modelBuilder.Entity("HelloJobPH.Shared.Model.AuditLog", b =>
+                {
+                    b.Property<int>("AuditLogId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AuditLogId"));
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("ApplicantId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ApplicationId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Details")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("HumanResourcesId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("JobPostingId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("AuditLogId");
+
+                    b.HasIndex("ApplicantId");
+
+                    b.HasIndex("ApplicationId");
+
+                    b.HasIndex("HumanResourcesId");
+
+                    b.HasIndex("JobPostingId");
+
+                    b.ToTable("AuditLog");
                 });
 
             modelBuilder.Entity("HelloJobPH.Shared.Model.ChatMessage", b =>
@@ -325,6 +366,9 @@ namespace HelloJobPH.Server.Migrations
 
                     b.Property<int?>("ApplicationId")
                         .HasColumnType("int");
+
+                    b.Property<string>("AssignTo")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("HumanResourceId")
                         .HasColumnType("int");
@@ -567,7 +611,7 @@ namespace HelloJobPH.Server.Migrations
                 {
                     b.HasOne("HelloJobPH.Shared.Model.HumanResources", "HumanResources")
                         .WithMany("Applicants")
-                        .HasForeignKey("HumanResourcesHumanResourceId");
+                        .HasForeignKey("HumanResourcesId");
 
                     b.HasOne("HelloJobPH.Shared.Model.UserAccount", "UserAccount")
                         .WithOne("Applicant")
@@ -597,6 +641,35 @@ namespace HelloJobPH.Server.Migrations
                         .HasForeignKey("JobPostingId");
 
                     b.Navigation("Applicant");
+
+                    b.Navigation("HumanResources");
+
+                    b.Navigation("JobPosting");
+                });
+
+            modelBuilder.Entity("HelloJobPH.Shared.Model.AuditLog", b =>
+                {
+                    b.HasOne("HelloJobPH.Shared.Model.Applicant", "Applicant")
+                        .WithMany("AuditLogs")
+                        .HasForeignKey("ApplicantId");
+
+                    b.HasOne("HelloJobPH.Shared.Model.Application", "Application")
+                        .WithMany("AuditLogs")
+                        .HasForeignKey("ApplicationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("HelloJobPH.Shared.Model.HumanResources", "HumanResources")
+                        .WithMany("AuditLogs")
+                        .HasForeignKey("HumanResourcesId");
+
+                    b.HasOne("HelloJobPH.Shared.Model.JobPosting", "JobPosting")
+                        .WithMany("AuditLogs")
+                        .HasForeignKey("JobPostingId");
+
+                    b.Navigation("Applicant");
+
+                    b.Navigation("Application");
 
                     b.Navigation("HumanResources");
 
@@ -692,6 +765,8 @@ namespace HelloJobPH.Server.Migrations
                 {
                     b.Navigation("Appications");
 
+                    b.Navigation("AuditLogs");
+
                     b.Navigation("EducationalAttainments");
 
                     b.Navigation("Resume");
@@ -701,6 +776,8 @@ namespace HelloJobPH.Server.Migrations
 
             modelBuilder.Entity("HelloJobPH.Shared.Model.Application", b =>
                 {
+                    b.Navigation("AuditLogs");
+
                     b.Navigation("Interview");
                 });
 
@@ -717,6 +794,8 @@ namespace HelloJobPH.Server.Migrations
 
                     b.Navigation("Applications");
 
+                    b.Navigation("AuditLogs");
+
                     b.Navigation("Interviews");
 
                     b.Navigation("JobPostings");
@@ -725,6 +804,8 @@ namespace HelloJobPH.Server.Migrations
             modelBuilder.Entity("HelloJobPH.Shared.Model.JobPosting", b =>
                 {
                     b.Navigation("Application");
+
+                    b.Navigation("AuditLogs");
                 });
 
             modelBuilder.Entity("HelloJobPH.Shared.Model.UserAccount", b =>

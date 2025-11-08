@@ -7,6 +7,7 @@ using HelloJobPH.Server.Data;
 using HelloJobPH.Server.Mapper;
 using HelloJobPH.Server.Middleware;
 using HelloJobPH.Server.Service.AI;
+using HelloJobPH.Server.Service.AuditLog;
 using HelloJobPH.Server.Service.Auth;
 using HelloJobPH.Server.Service.Candidate;
 using HelloJobPH.Server.Service.Chat;
@@ -110,7 +111,9 @@ builder.Services.AddScoped<IOverviewService, OverviewService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<ISuperAdminService, SuperAdminService>();
 builder.Services.AddScoped<IChatService, ChatService>();
+builder.Services.AddScoped<IAuditLogService, AuditLogService>();
 builder.Services.AddSingleton<AiOverviewService>();
+
 //builder.Services.AddScoped<IUserAccountRepository, UserAccountRepository>();
 //builder.Services.AddScoped<IApplicantRepository, ApplicantRepository>();
 

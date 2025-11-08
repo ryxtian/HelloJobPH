@@ -216,13 +216,42 @@ public class Seeder
         await _context.Resume.AddRangeAsync(resumes);
         await _context.SaveChangesAsync();
 
-        // 7️⃣ APPLICATIONS
         var applications = new List<Application>
-        {
-            new() { ApplicantId = applicants[0].ApplicantId, JobPostingId = jobPostings[0].JobPostingId, ResumeId = resumes[0].ResumeId, ApplicationStatus = ApplicationStatus.Pending, HumanResourcesId = hrPersonnel[0].HumanResourceId, DateApply = DateTime.UtcNow.AddDays(-12), CoverLetter = "I am writing to express my strong interest in the position." },
-            new() { ApplicantId = applicants[1].ApplicantId, JobPostingId = jobPostings[1].JobPostingId, ResumeId = resumes[1].ResumeId, ApplicationStatus = ApplicationStatus.Pending, HumanResourcesId = hrPersonnel[1].HumanResourceId, DateApply = DateTime.UtcNow.AddDays(-8), CoverLetter = "Excited to apply for the marketing position." },
-            new() { ApplicantId = applicants[2].ApplicantId, JobPostingId = jobPostings[2].JobPostingId, ResumeId = resumes[2].ResumeId, ApplicationStatus = ApplicationStatus.Initial, HumanResourcesId = hrPersonnel[2].HumanResourceId, DateApply = DateTime.UtcNow.AddDays(-6), CoverLetter = "With strong finance background, ready to contribute." }
-        };
+{
+    new()
+    {
+        ApplicantId = applicants[0].ApplicantId,
+        JobPostingId = jobPostings[0].JobPostingId,
+        ResumeId = resumes[0].ResumeId,
+        ApplicationStatus = ApplicationStatus.Pending,
+        HumanResourcesId = hrPersonnel[0].HumanResourceId,
+        DateApply = DateTime.UtcNow.AddDays(-12),
+        CoverLetter = "I am writing to express my strong interest in the position.",
+        EmployerId = jobPostings[0].EmployerId // <- added
+    },
+    new()
+    {
+        ApplicantId = applicants[1].ApplicantId,
+        JobPostingId = jobPostings[1].JobPostingId,
+        ResumeId = resumes[1].ResumeId,
+        ApplicationStatus = ApplicationStatus.Pending,
+        HumanResourcesId = hrPersonnel[1].HumanResourceId,
+        DateApply = DateTime.UtcNow.AddDays(-8),
+        CoverLetter = "Excited to apply for the marketing position.",
+        EmployerId = jobPostings[1].EmployerId // <- added
+    },
+    new()
+    {
+        ApplicantId = applicants[2].ApplicantId,
+        JobPostingId = jobPostings[2].JobPostingId,
+        ResumeId = resumes[2].ResumeId,
+        ApplicationStatus = ApplicationStatus.Initial,
+        HumanResourcesId = hrPersonnel[2].HumanResourceId,
+        DateApply = DateTime.UtcNow.AddDays(-6),
+        CoverLetter = "With strong finance background, ready to contribute.",
+        EmployerId = jobPostings[2].EmployerId // <- added
+    }
+};
 
         await _context.Application.AddRangeAsync(applications);
         await _context.SaveChangesAsync();
@@ -236,5 +265,47 @@ public class Seeder
 
         await _context.Interview.AddRangeAsync(interviews);
         await _context.SaveChangesAsync();
+
+
+        var auditLogs = new List<AuditLog>
+{
+    new()
+    {
+        ApplicationId = applications[0].ApplicationId,
+        ApplicantId = applicants[0].ApplicantId,
+        JobPostingId = jobPostings[0].JobPostingId,
+        HumanResourcesId = hrPersonnel[0].HumanResourceId,
+        Action = "Applied",
+        Details = "Applicant Juan Dela Cruz applied for Senior Software Engineer position.",
+        Timestamp = DateTime.UtcNow.AddDays(-11),
+       EmployerId = hrPersonnel[0].EmployerId, 
+    },
+    new()
+    {
+        ApplicationId = applications[1].ApplicationId,
+        ApplicantId = applicants[1].ApplicantId,
+        JobPostingId = jobPostings[1].JobPostingId,
+        HumanResourcesId = hrPersonnel[1].HumanResourceId,
+        Action = "Interview Scheduled",
+        Details = "Interview scheduled for Maria Santos on Google Meet.",
+        Timestamp = DateTime.UtcNow.AddDays(-7),
+         EmployerId = hrPersonnel[1].EmployerId,  
+    },
+    new()
+    {
+        ApplicationId = applications[2].ApplicationId,
+        ApplicantId = applicants[2].ApplicantId,
+        JobPostingId = jobPostings[2].JobPostingId,
+        HumanResourcesId = hrPersonnel[2].HumanResourceId,
+        Action = "Application Reviewed",
+        Details = "Finance HR reviewed Pedro Reyes’ application.",
+        Timestamp = DateTime.UtcNow.AddDays(-5),
+         EmployerId = hrPersonnel[2].EmployerId,  
     }
+};
+        await _context.AuditLog.AddRangeAsync(auditLogs);
+        await _context.SaveChangesAsync();
+
+    }
+
 }

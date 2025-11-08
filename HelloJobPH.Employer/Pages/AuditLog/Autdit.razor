@@ -1,6 +1,9 @@
 ﻿@page "/audit/auditlog"
-@inject IClientCandidateService CandidateService
+@using HelloJobPH.Employer.Services.AuditLog
+@inject IClientAuditLogService AuditLogService
 @inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
 <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-4">
     <MudPaper Elevation="2" Class="pa-6">
         <MudStack Spacing="4">
@@ -8,19 +11,53 @@
             <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
                 <MudStack Spacing="1">
                     <MudText Typo="Typo.h5" Color="Color.Primary">
-                        <MudIcon Icon="@Icons.Material.Filled.PersonSearch" Class="mr-2" />
-                        Audit
+                        <MudIcon Icon="@Icons.Material.Filled.History" Class="mr-2" />
+                        HR Interview Audit Log
                     </MudText>
                     <MudText Typo="Typo.body2" Color="Color.Secondary">
-                        Audit Log
+                        Track all interview activities and HR actions
                     </MudText>
                 </MudStack>
-                <MudChip T="string" Icon="@Icons.Material.Filled.People" Color="Color.Info" Variant="Variant.Filled">
-                    @candidates.Count Candidate@(candidates.Count != 1 ? "s" : "")
+                <MudChip T="string" Icon="@Icons.Material.Filled.Assignment" Color="Color.Info" Variant="Variant.Filled">
+                    @auditLogs.Count Record@(auditLogs.Count != 1 ? "s" : "")
                 </MudChip>
             </MudStack>
 
             <MudDivider />
+
+            <!-- Filters Section -->
+            <MudStack Row="true" Spacing="3">
+                <MudTextField @bind-Value="searchText"
+                              Placeholder="Search candidate or HR..."
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              Immediate="true"
+                              DebounceInterval="300"
+                              OnDebounceIntervalElapsed="FilterAuditLogs" />
+
+                <MudSelect @bind-Value="selectedAction"
+                           Label="Filter by Action"
+                           Variant="Variant.Outlined"
+                           Margin="Margin.Dense"
+                           T="string"
+                           Clearable="true"
+                           OnClearButtonClick="@(() => { selectedAction = null; FilterAuditLogs(); })">
+                    <MudSelectItem Value="@("Interview Scheduled")">Interview Scheduled</MudSelectItem>
+                    <MudSelectItem Value="@("Interview Completed")">Interview Completed</MudSelectItem>
+                    <MudSelectItem Value="@("Candidate Accepted")">Candidate Accepted</MudSelectItem>
+                    <MudSelectItem Value="@("Candidate Rejected")">Candidate Rejected</MudSelectItem>
+                    <MudSelectItem Value="@("Status Updated")">Status Updated</MudSelectItem>
+                </MudSelect>
+
+                <MudDateRangePicker @bind-DateRange="dateRange"
+                                    Label="Date Range"
+                                    Variant="Variant.Outlined"
+                                    Margin="Margin.Dense"
+                                    Clearable="true"
+                                    OnClearButtonClick="@(() => { dateRange = null; FilterAuditLogs(); })" />
+            </MudStack>
 
             <!-- Table Section -->
             <MudTable Dense="false"
@@ -28,72 +65,92 @@
                       Bordered="false"
                       Striped="true"
                       Breakpoint="Breakpoint.Sm"
-                      Items="@candidates"
-                      Elevation="0">
+                      Items="@filteredAuditLogs"
+                      Elevation="0"
+                      Loading="@isLoading"
+                      LoadingProgressColor="Color.Primary">
                 <HeaderContent>
+                    <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Timestamp</strong></MudText></MudTh>
                     <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Candidate</strong></MudText></MudTh>
                     <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Position</strong></MudText></MudTh>
-                    <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Status</strong></MudText></MudTh>
-                    <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Resume</strong></MudText></MudTh>
-                    <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Manage By</strong></MudText></MudTh>
-
+                    <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>HR Personnel</strong></MudText></MudTh>
+                    <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Action</strong></MudText></MudTh>
+                    <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Details</strong></MudText></MudTh>
                     <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Actions</strong></MudText></MudTh>
                 </HeaderContent>
                 <RowTemplate>
+                    <MudTd DataLabel="Timestamp">
+                        <MudStack Spacing="0">
+                            <MudText Typo="Typo.body2"><strong>@context.Timestamp.ToString("dd MMM yyyy")</strong></MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Timestamp.ToString("hh:mm tt")</MudText>
+                        </MudStack>
+                    </MudTd>
                     <MudTd DataLabel="Candidate">
                         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
                             <MudAvatar Color="Color.Primary" Size="Size.Small">
-                                @context.Firstname?.Substring(0, 1)@context.Lastname?.Substring(0, 1)
+                                @context.CandidateFirstName?.Substring(0, 1)@context.CandidateLastName?.Substring(0, 1)
                             </MudAvatar>
                             <MudText Typo="Typo.body2">
-                                <strong>@context.Firstname @context.Lastname</strong>
+                                @context.CandidateFirstName @context.CandidateLastName
                             </MudText>
                         </MudStack>
                     </MudTd>
                     <MudTd DataLabel="Position">
                         <MudText Typo="Typo.body2">@context.JobTitle</MudText>
                     </MudTd>
-                    <MudTd DataLabel="Status">
-                        <MudChip T="string" Size="Size.Small" Variant="Variant.Filled" Color="Color.Info">
-                            @context.Status
-                        </MudChip>
-                    </MudTd>
-                    <MudTd DataLabel="Resume">
-                        <MudButton StartIcon="@Icons.Material.Filled.Description"
-                                   Size="Size.Small"
-                                   Variant="Variant.Text"
-                                   Color="Color.Primary">
-                            View Resume
-                        </MudButton>
-                    </MudTd>
-                    <MudTd DataLabel="Date Applied">
-                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
-                            <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Size="Size.Small" Color="Color.Secondary" />
-                            <MudText Typo="Typo.body2">@context.DateApplied.ToString("dd MMM yyyy")</MudText>
+                    <MudTd DataLabel="HR Personnel">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                            <MudAvatar Color="Color.Secondary" Size="Size.Small">
+                                @context.HRPersonnelName?.Substring(0, 1)
+                            </MudAvatar>
+                            <MudStack Spacing="0">
+                                <MudText Typo="Typo.body2">@context.HRPersonnelName</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@context.HRDepartment</MudText>
+                            </MudStack>
                         </MudStack>
                     </MudTd>
-
+                    <MudTd DataLabel="Action">
+                        <MudChip T="string"
+                                 Size="Size.Small"
+                                 Variant="Variant.Filled"
+                                 Color="@GetActionColor(context.Action)">
+                            @context.Action
+                        </MudChip>
+                    </MudTd>
+                    <MudTd DataLabel="Details">
+                        <MudText Typo="Typo.body2">@context.Details</MudText>
+                    </MudTd>
                     <MudTd DataLabel="Actions">
                         <MudMenu Icon="@Icons.Material.Filled.MoreVert"
                                  Size="Size.Small"
                                  Dense="true"
                                  AnchorOrigin="Origin.BottomLeft">
-                            <MudMenuItem Icon="@Icons.Material.Filled.CheckCircle"
-                                         OnClick="@(() => Accept(context.ApplicationId))">
-                                Accept
+                            <MudMenuItem Icon="@Icons.Material.Filled.Visibility"
+                                         OnClick="@(() => ViewDetails(context))">
+                                View Full Details
                             </MudMenuItem>
-                            <MudMenuItem Icon="@Icons.Material.Filled.Cancel" Class="mud-error-text">
-                                Reject
+                            <MudMenuItem Icon="@Icons.Material.Filled.Description"
+                                         OnClick="@(() => ViewResume(context.ApplicationId))">
+                                View Resume
+                            </MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.Print"
+                                         OnClick="@(() => ExportRecord(context))">
+                                Export Record
+                            </MudMenuItem>
+                            <MudDivider />
+                            <MudMenuItem Icon="@Icons.Material.Filled.Person"
+                                         OnClick="@(() => ViewCandidateHistory(context.ApplicationId))">
+                                Candidate History
                             </MudMenuItem>
                         </MudMenu>
                     </MudTd>
                 </RowTemplate>
                 <NoRecordsContent>
                     <MudStack AlignItems="AlignItems.Center" Spacing="3" Class="pa-8">
-                        <MudIcon Icon="@Icons.Material.Filled.PersonOff" Size="Size.Large" Color="Color.Secondary" />
-                        <MudText Typo="Typo.h6" Color="Color.Secondary">No Candidates Found</MudText>
+                        <MudIcon Icon="@Icons.Material.Filled.HistoryToggleOff" Size="Size.Large" Color="Color.Secondary" />
+                        <MudText Typo="Typo.h6" Color="Color.Secondary">No Audit Records Found</MudText>
                         <MudText Typo="Typo.body2" Color="Color.Secondary">
-                            There are no candidate applications at this time.
+                            No interview or HR actions have been recorded yet.
                         </MudText>
                     </MudStack>
                 </NoRecordsContent>
@@ -103,26 +160,106 @@
 </MudContainer>
 
 @code {
-    private List<ApplicationListDtos> candidates = new();
+    private List<AuditLogDtos> auditLogs = new();
+    private List<AuditLogDtos> filteredAuditLogs = new();
+    private bool isLoading = true;
+    private string? searchText;
+    private string? selectedAction;
+    private DateRange? dateRange;
 
     protected override async Task OnInitializedAsync()
     {
-        candidates = await CandidateService.RetrieveAllCandidate();
+        await LoadAuditLogs();
     }
 
-    public async Task Accept(int id)
+    private async Task LoadAuditLogs()
     {
-
-        bool? confirm = await DialogService.ShowMessageBox(
-"Confirm",
-"Are you sure you want to accept this candidate?",
-yesText: "Confirm",
-cancelText: "Cancel");
-
-        if (confirm == true)
+        isLoading = true;
+        try
         {
-            await CandidateService.CandidateAcceptAsync(id);
-            candidates = await CandidateService.RetrieveAllCandidate();
+            // Replace with your actual service method
+            auditLogs = await AuditLogService.RetrieveAuditLogs();
+            filteredAuditLogs = auditLogs;
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading audit logs: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
         }
     }
+
+    private void FilterAuditLogs()
+    {
+        filteredAuditLogs = auditLogs.Where(log =>
+        {
+            bool matchesSearch = string.IsNullOrWhiteSpace(searchText) ||
+                log.CandidateFirstName?.Contains(searchText, StringComparison.OrdinalIgnoreCase) == true ||
+                log.CandidateLastName?.Contains(searchText, StringComparison.OrdinalIgnoreCase) == true ||
+                log.HRPersonnelName?.Contains(searchText, StringComparison.OrdinalIgnoreCase) == true ||
+                log.JobTitle?.Contains(searchText, StringComparison.OrdinalIgnoreCase) == true;
+
+            bool matchesAction = string.IsNullOrWhiteSpace(selectedAction) ||
+                log.Action == selectedAction;
+
+            bool matchesDateRange = dateRange == null ||
+                (log.Timestamp >= dateRange.Start && log.Timestamp <= dateRange.End);
+
+            return matchesSearch && matchesAction && matchesDateRange;
+        }).ToList();
+
+        StateHasChanged();
+    }
+
+    private Color GetActionColor(string action)
+    {
+        return action switch
+        {
+            "Interview Scheduled" => Color.Info,
+            "Interview Completed" => Color.Primary,
+            "Candidate Accepted" => Color.Success,
+            "Candidate Rejected" => Color.Error,
+            "Status Updated" => Color.Warning,
+            _ => Color.Default
+        };
+    }
+
+    private async Task ViewDetails(AuditLogDtos auditLog)
+    {
+        var parameters = new DialogParameters
+        {
+            ["AuditLog"] = auditLog
+        };
+
+        var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true };
+        await DialogService.ShowAsync<AuditLogDetailsDialog>("Audit Log Details", parameters, options);
+    }
+
+    private async Task ViewResume(int applicationId)
+    {
+        // Implement resume viewing logic
+        Snackbar.Add("Opening resume...", Severity.Info);
+    }
+
+    private async Task ExportRecord(AuditLogDtos auditLog)
+    {
+        // Implement export logic
+        Snackbar.Add("Exporting record...", Severity.Info);
+    }
+
+    private async Task ViewCandidateHistory(int applicationId)
+    {
+        // Implement candidate history viewing
+        var parameters = new DialogParameters
+        {
+            ["ApplicationId"] = applicationId
+        };
+
+        var options = new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true };
+        await DialogService.ShowAsync<CandidateHistoryDialog>("Candidate History", parameters, options);
+    }
+
+
 }

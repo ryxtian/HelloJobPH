@@ -23,33 +23,52 @@ namespace HelloJobPH.Server.Service.Candidate
         }
         public async Task<bool> CandidateAccepttAsync(int id)
         {
-
             var userId = Utilities.GetUserId();
 
             if (userId == null)
             {
                 throw new Exception("Invalid or missing user ID in claims.");
             }
-            var hr = await _context.HumanResource.FirstOrDefaultAsync
-            (u => u.UserAccountId == userId);
+
+            var hr = await _context.HumanResource
+                .FirstOrDefaultAsync(u => u.UserAccountId == userId);
 
             if (hr == null)
             {
-                throw new Exception("Invalid or missing user ID in claims.");
+                throw new Exception("Human Resource not found for the current user.");
             }
 
+            var application = await _context.Application
+                .Include(a => a.Applicant)
+                .Include(a => a.JobPosting)
+                .FirstOrDefaultAsync(i => i.ApplicationId == id);
 
-            var response = await _context.Application.FirstOrDefaultAsync(i => i.ApplicationId == id);
-                if (response == null)
-                {
-                    throw new Exception("Application not found.");
-                }
-                response.ApplicationStatus = ApplicationStatus.Accepted;
-                response.HumanResourcesId = hr.HumanResourceId;
-                _context.Update(response);
-                await _context.SaveChangesAsync();
-                return true;
-       
+            if (application == null)
+            {
+                throw new Exception("Application not found.");
+            }
+
+            application.ApplicationStatus = ApplicationStatus.Accepted;
+            application.HumanResourcesId = hr.HumanResourceId;
+            _context.Update(application);
+            await _context.SaveChangesAsync();
+
+            var auditLog = new Shared.Model.AuditLog
+            {
+                ApplicationId = application.ApplicationId,
+                ApplicantId = application.ApplicantId,
+                JobPostingId = application.JobPostingId,
+                HumanResourcesId = hr.HumanResourceId,
+                EmployerId = hr.EmployerId,
+                Action = "Application Accepted",
+                Details = $"HR {hr.Firstname} {hr.Lastname} accepted the application of {application.Applicant?.Firstname} {application.Applicant?.Surname} for {application.JobPosting?.Title}.",
+                Timestamp = DateTime.UtcNow
+            };
+
+            await _context.AuditLog.AddAsync(auditLog);
+            await _context.SaveChangesAsync();
+
+            return true;
         }
 
         public Task<bool> CandidateRejectAsync(int id)
@@ -59,10 +78,19 @@ namespace HelloJobPH.Server.Service.Candidate
 
         public async Task<List<ApplicationListDtos>> RetrieveAllCandidate()
         {
+            var userId = Utilities.GetUserId();
+            var hr = await _context.HumanResource
+                .FirstOrDefaultAsync(i => i.UserAccountId == userId);
+
+            if(hr is null)
+            {
+                throw new Exception("Human Resource not found.");
+            }
+
             try
             {
                 var result = await _context.Application
-                .Where(a => a.ApplicationStatus == ApplicationStatus.Pending)
+                .Where(a => a.ApplicationStatus == ApplicationStatus.Pending && a.EmployerId ==hr.EmployerId )
                 .Select(a => new ApplicationListDtos
                 {
                     ApplicationId = a.ApplicationId,
@@ -122,37 +150,32 @@ namespace HelloJobPH.Server.Service.Candidate
             try
             {
                 if (!TimeSpan.TryParse(date, out var parseTime))
-                {
                     return false;
-                }
 
-                bool isTaken = await _context.Interview.AnyAsync(d => d.ScheduledTime == parseTime && d.ScheduledDate.ToString() == time);
-
-                if (!isTaken)
-                {
+                if (!DateTime.TryParse(time, out var parseDate))
                     return false;
-                }
 
-                // 1️⃣ Get candidate details via navigation properties
+                // Check if interview slot is already taken
+                bool slotTaken = await _context.Interview
+                    .AnyAsync(d => d.ScheduledDate == parseDate && d.ScheduledTime == parseTime);
+
+                if (slotTaken)
+                    return false;
+
                 var application = await _context.Application
                     .Include(a => a.Applicant)
                         .ThenInclude(a => a.UserAccount)
                     .Include(a => a.JobPosting)
                     .FirstOrDefaultAsync(a => a.ApplicationId == applicationId);
 
-
-
-                
-
                 if (application == null || string.IsNullOrEmpty(application.Applicant?.UserAccount?.Email))
                     return false;
 
                 application.ApplicationStatus = ApplicationStatus.Initial;
-
                 _context.Application.Update(application);
                 await _context.SaveChangesAsync();
 
-
+                // Send email
                 var candidate = new CandidateEmailDto
                 {
                     Email = application.Applicant.UserAccount.Email,
@@ -178,14 +201,30 @@ Best regards,
 
                 var result = _emailService.SendEmailAsync(candidate.Email, subject, body);
 
+                // Record audit log
+                var auditLog = new Shared.Model.AuditLog
+                {
+                    ApplicationId = application.ApplicationId,
+                    ApplicantId = application.ApplicantId,
+                    JobPostingId = application.JobPostingId,
+                    HumanResourcesId = application.HumanResourcesId,
+                    EmployerId = application.EmployerId,
+                    Action = "Initial Interview Scheduled",
+                    Details = $"Initial interview scheduled for {application.Applicant?.Firstname} {application.Applicant?.Surname} on {date} at {time}.",
+                    Timestamp = DateTime.UtcNow
+                };
+
+                await _context.AuditLog.AddAsync(auditLog);
+                await _context.SaveChangesAsync();
+
                 return result != null;
             }
-            catch (Exception)
+            catch
             {
-
                 throw;
             }
         }
+
 
 
         public class CandidateEmailDto

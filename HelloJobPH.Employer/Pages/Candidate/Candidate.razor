@@ -123,6 +123,7 @@ cancelText: "Cancel");
 
         if (confirm == true)
         {
+            
             await CandidateService.CandidateAcceptAsync(id);
             candidates = await CandidateService.RetrieveAllCandidate();
         }

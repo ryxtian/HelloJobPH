@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace HelloJobPH.Server.Migrations
 {
     /// <inheritdoc />
-    public partial class initital : Migration
+    public partial class initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -17,11 +17,11 @@ namespace HelloJobPH.Server.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    SenderId = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ReceiverId = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CompanyName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Message = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    SentAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    SenderId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ReceiverId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CompanyName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Message = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    SentAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     IsRead = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
@@ -144,16 +144,15 @@ namespace HelloJobPH.Server.Migrations
                     Address = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Phone = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Birthday = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    HumanResourceId = table.Column<int>(type: "int", nullable: true),
-                    UserAccountId = table.Column<int>(type: "int", nullable: false),
-                    HumanResourcesHumanResourceId = table.Column<int>(type: "int", nullable: true)
+                    HumanResourcesId = table.Column<int>(type: "int", nullable: true),
+                    UserAccountId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Applicant", x => x.ApplicantId);
                     table.ForeignKey(
-                        name: "FK_Applicant_HumanResource_HumanResourcesHumanResourceId",
-                        column: x => x.HumanResourcesHumanResourceId,
+                        name: "FK_Applicant_HumanResource_HumanResourcesId",
+                        column: x => x.HumanResourcesId,
                         principalTable: "HumanResource",
                         principalColumn: "HumanResourceId");
                     table.ForeignKey(
@@ -230,7 +229,7 @@ namespace HelloJobPH.Server.Migrations
                 {
                     ResumeId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    ResumeUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ResumeFileData = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
                     ApplicantId = table.Column<int>(type: "int", nullable: true),
                     IsDeleted = table.Column<byte>(type: "tinyint", nullable: false),
                     IsActive = table.Column<byte>(type: "tinyint", nullable: false)
@@ -336,9 +335,9 @@ namespace HelloJobPH.Server.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Applicant_HumanResourcesHumanResourceId",
+                name: "IX_Applicant_HumanResourcesId",
                 table: "Applicant",
-                column: "HumanResourcesHumanResourceId");
+                column: "HumanResourcesId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Applicant_UserAccountId",

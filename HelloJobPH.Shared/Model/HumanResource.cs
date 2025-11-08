@@ -26,5 +26,6 @@ namespace HelloJobPH.Shared.Model
         public List<Interview>? Interviews { get; set; }
         public List<JobPosting>? JobPostings { get; set; }
         public List<Applicant>? Applicants { get; set; }
+        public List<AuditLog>? AuditLogs { get; set; }
     }
 }
