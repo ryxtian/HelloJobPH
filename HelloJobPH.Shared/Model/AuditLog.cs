@@ -17,7 +17,7 @@ namespace HelloJobPH.Shared.Model
 
         public DateTime Timestamp { get; set; }
         public int ApplicationId { get; set; }
-        public Application Application { get; set; } = null!;
+        public Application? Application { get; set; } = null!;
 
 
         public int? EmployerId { get; set; }

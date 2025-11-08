@@ -136,10 +136,19 @@
         {
             try
             {
-                var message = await _jobpost.AddAsync(jobpost);
-                Snackbar.Add("Successfully saved", Severity.Success);
-                Console.WriteLine("success");
-                NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+                bool? confirm = await DialogService.ShowMessageBox(
+"Confirm add",
+"Are you sure you want to add this post?",
+yesText: "add",
+cancelText: "Cancel");
+
+                if (confirm == true)
+                {
+                    var message = await _jobpost.AddAsync(jobpost);
+                    Snackbar.Add("Successfully saved", Severity.Success);
+                    Console.WriteLine("success");
+                    NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+                }
             }
             catch (Exception ex)
             {

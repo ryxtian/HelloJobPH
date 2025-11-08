@@ -1,6 +1,7 @@
 ﻿@page "/candidate/candidate"
 @inject IClientCandidateService CandidateService
 @inject IDialogService DialogService
+@inject IJSRuntime JSRuntime
 <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-4">
     <MudPaper Elevation="2" Class="pa-6">
         <MudStack Spacing="4">
@@ -84,7 +85,9 @@
                                         OnClick="@(() => Accept(context.ApplicationId))">
                                 Accept
                             </MudMenuItem>
-                            <MudMenuItem Icon="@Icons.Material.Filled.Cancel" Class="mud-error-text">
+                            <MudMenuItem Icon="@Icons.Material.Filled.Cancel" Class="mud-error-text"
+                                         OnClick="@(() => Reject(context.ApplicationId))">
+                               
                                 Reject
                             </MudMenuItem>
                         </MudMenu>
@@ -126,6 +129,25 @@ cancelText: "Cancel");
             
             await CandidateService.CandidateAcceptAsync(id);
             candidates = await CandidateService.RetrieveAllCandidate();
+            await JSRuntime.InvokeVoidAsync("location.reload");
         }
     }
+    public async Task Reject(int id)
+    {
+
+        bool? confirm = await DialogService.ShowMessageBox(
+"Confirm",
+"Are you sure you want to reject this candidate?",
+yesText: "Confirm",
+cancelText: "Cancel");
+
+        if (confirm == true)
+        {
+
+            await CandidateService.CandidateRejectAsync(id);
+            candidates = await CandidateService.RetrieveAllCandidate();
+            StateHasChanged();
+        }
+    }
+
 }

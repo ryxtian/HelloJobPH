@@ -7,6 +7,7 @@ using HelloJobPH.Shared.Enums;
 using HelloJobPH.Shared.Model;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualBasic;
 using System.Security.Claims;
 
 namespace HelloJobPH.Server.Service.Candidate
@@ -72,10 +73,59 @@ namespace HelloJobPH.Server.Service.Candidate
             return true;
         }
 
-        public Task<bool> CandidateRejectAsync(int id)
+        public async Task<bool> CandidateRejectAsync(int id)
         {
-            throw new NotImplementedException();
+            var userId = Utilities.GetUserId();
+
+            if (userId == null)
+            {
+                throw new Exception("Invalid or missing user ID in claims.");
+            }
+
+            var hr = await _context.HumanResource
+                .FirstOrDefaultAsync(u => u.UserAccountId == userId);
+
+            if (hr == null)
+            {
+                throw new Exception("Human Resource not found for the current user.");
+            }
+
+            var application = await _context.Application
+                .Include(a => a.Applicant)
+                .Include(a => a.JobPosting)
+                .FirstOrDefaultAsync(i => i.ApplicationId == id);
+
+            if (application == null)
+            {
+                throw new Exception("Application not found.");
+            }
+
+
+            application.ApplicationStatus = ApplicationStatus.Rejected;
+            application.HumanResourcesId = hr.HumanResourceId;
+
+            _context.Update(application);
+            await _context.SaveChangesAsync();
+
+      
+            var auditLog = new Shared.Model.AuditLog
+            {
+                ApplicationId = application.ApplicationId,
+                ApplicantId = application.ApplicantId,
+                JobPostingId = application.JobPostingId,
+                HumanResourcesId = hr.HumanResourceId,
+                EmployerId = hr.EmployerId,
+                Action = "Application Rejected",
+                Details = $"HR {hr.Firstname} {hr.Lastname} rejected the application of {application.Applicant?.Firstname} {application.Applicant?.Surname} for {application.JobPosting?.Title}.",
+                Timestamp = DateTime.UtcNow
+            };
+
+            await _context.AuditLog.AddAsync(auditLog);
+            await _context.SaveChangesAsync();
+
+            return true;
         }
+
 
         public async Task<List<ApplicationListDtos>> RetrieveAllCandidate()
         {
@@ -146,14 +196,14 @@ namespace HelloJobPH.Server.Service.Candidate
         }
 
 
-        public async Task<bool> SendInitialEmail(int applicationId, string date, string time, string? location)
+        public async Task<bool> SendInitialEmail(SetScheduleDto dto)
         {
             try
             {
-                if (!TimeSpan.TryParse(date, out var parseTime))
+                if (!TimeSpan.TryParse(dto.Time, out var parseTime))
                     return false;
 
-                if (!DateTime.TryParse(time, out var parseDate))
+                if (!DateTime.TryParse(dto.Date, out var parseDate))
                     return false;
 
                 // Check if interview slot is already taken
@@ -167,14 +217,10 @@ namespace HelloJobPH.Server.Service.Candidate
                     .Include(a => a.Applicant)
                         .ThenInclude(a => a.UserAccount)
                     .Include(a => a.JobPosting)
-                    .FirstOrDefaultAsync(a => a.ApplicationId == applicationId);
+                    .FirstOrDefaultAsync(a => a.ApplicationId == dto.ApplicationId);
 
                 if (application == null || string.IsNullOrEmpty(application.Applicant?.UserAccount?.Email))
                     return false;
-
-                application.ApplicationStatus = ApplicationStatus.Initial;
-                _context.Application.Update(application);
-                await _context.SaveChangesAsync();
 
                 // Send email
                 var candidate = new CandidateEmailDto
@@ -189,9 +235,9 @@ namespace HelloJobPH.Server.Service.Candidate
                 var body = $@"Dear {candidate.Firstname},
 
 Thank you for applying for the {candidate.JobTitle} position at [Company Name].
-You are invited to attend an Initial Interview on {date} at {time}.
+You are invited to attend an Initial Interview on {dto.Date} at {dto.Time}.
 
-Location/Platform: {location}
+Location/Platform: {dto.Location}
 
 Please confirm your availability by replying to this email.
 
@@ -202,16 +248,25 @@ Best regards,
 
                 var result = _emailService.SendEmailAsync(candidate.Email, subject, body);
 
+
+
+                
+                application.ApplicationStatus = ApplicationStatus.Initial;
+                _context.Application.Update(application);
+                await _context.SaveChangesAsync();
+
                 var history = new InterviewHistory
                 {
+                    InterviewBy = dto.InterviewBy,
+                    Status = "Scheduled For Initial Interview" , 
+                    ApplicationId = application.ApplicationId, 
                     CandidateName = application.Applicant.Firstname+" "+application.Applicant.Surname,
                     Stage = application.ApplicationStatus.ToString(),
                     ScheduledDate = parseDate,
                 };
-                await _context.AddAsync(history);
+                await _context.InterviewHistory.AddAsync(history);
                 await _context.SaveChangesAsync();
 
-                // Record audit log
                 var auditLog = new Shared.Model.AuditLog
                 {
                     ApplicationId = application.ApplicationId,
@@ -220,7 +275,7 @@ Best regards,
                     HumanResourcesId = application.HumanResourcesId,
                     EmployerId = application.EmployerId,
                     Action = "Initial Interview Scheduled",
-                    Details = $"Initial interview scheduled for {application.Applicant?.Firstname} {application.Applicant?.Surname} on {date} at {time}.",
+                    Details = $"Initial interview scheduled for {application.Applicant?.Firstname} {application.Applicant?.Surname} on {dto.Date} at {dto.Time}.",
                     Timestamp = DateTime.UtcNow
                 };
 

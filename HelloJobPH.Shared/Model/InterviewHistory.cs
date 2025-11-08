@@ -11,7 +11,7 @@ namespace HelloJobPH.Shared.Model
     {
         [Key]
         public int InterviewHistoryId { get; set; }                
-        public int ApplicationId { get; set; }
+        public int? ApplicationId { get; set; }
         public Application? Application { get; set; }
         public string CandidateName { get; set; } = string.Empty;
         public string Stage { get; set; } = string.Empty;   

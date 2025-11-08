@@ -107,6 +107,15 @@
     protected override async Task OnInitializedAsync()
     {
         candidates = await CandidateService.RetrieveAllAcceptedCandidate();
+
+        if (candidates != null && candidates.Any())
+        {
+            Console.WriteLine($"Retrieved {candidates.Count} accepted candidate(s).");
+        }
+        else
+        {
+            Console.WriteLine("No accepted candidates found.");
+        }
     }
 
     private async Task OpenSendEmailDialog(ApplicationListDtos candidate)

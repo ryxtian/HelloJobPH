@@ -1,5 +1,6 @@
 ﻿using HelloJobPH.Employer.Pages.JobPost;
 using HelloJobPH.Server.Service.Candidate;
+using HelloJobPH.Shared.DTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -28,7 +29,7 @@ namespace HelloJobPH.Server.Controllers
                 return BadRequest(ex.Message);
             }
         }
-        [HttpGet("AcceptedList")]
+        [HttpGet("Accepted-List")]
         public async Task<IActionResult> AcceptedList()
         {
             try
@@ -42,7 +43,7 @@ namespace HelloJobPH.Server.Controllers
                 return BadRequest(ex.Message);
             }
         }
-        [HttpGet("{id}")]
+        [HttpPut("Accept/{id}")]
         public async Task<IActionResult> AcceptCandidate(int id)
         {
             try
@@ -59,17 +60,36 @@ namespace HelloJobPH.Server.Controllers
 
                 throw;
             }
-         
         }
-        [HttpGet("SendEmail{id}")]
-        public async Task<IActionResult> SendEmail(int id, string date, string time, string? location)
+
+        [HttpPut("reject/{id}")]
+        public async Task<IActionResult> RejectCandidate(int id)
         {
             try
             {
-                var request = await _candidateService.SendInitialEmail(id, date, time, location);
-                if (!request)
+                var request = await _candidateService.CandidateRejectAsync(id);
+                if (request == false)
                 {
                     return NotFound($"Application with ID {id} not found.");
+                }
+                return Ok(request);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+
+        }
+        [HttpPost("SendEmail")]
+        public async Task<IActionResult> SendEmail([FromBody] SetScheduleDto dto)
+        {
+            try
+            {
+                var request = await _candidateService.SendInitialEmail(dto);
+                if (!request)
+                {
+                    return NotFound($"Application with ID {dto.ApplicationId} not found.");
                 }
                 return Ok(request);
             }
@@ -78,6 +98,7 @@ namespace HelloJobPH.Server.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
 
     }
 }

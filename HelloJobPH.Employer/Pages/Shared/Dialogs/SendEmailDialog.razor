@@ -3,52 +3,67 @@
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 @inject IClientCandidateService Service
+@inject NavigationManager NavigationManager
 <MudDialog>
     <DialogContent>
-
-        <MudForm @ref="_form" Model="@emailModel">
-            <!-- Interview Date -->
+        <MudForm @ref="_form" Model="@_emailModel">
             <MudDatePicker Label="Interview Date"
-                           @bind-Date="emailModel.InterviewDate"
+                           @bind-Date="_emailModel.InterviewDate"
                            Required="true"
                            RequiredError="Interview date is required"
                            Class="mb-2"
                            PickerVariant="PickerVariant.Dialog" />
 
-            <!-- Interview Time -->
             <MudTimePicker Label="Interview Time"
-                           @bind-Time="emailModel.InterviewTime"
+                           @bind-Time="_emailModel.InterviewTime"
                            Required="true"
                            RequiredError="Interview time is required"
                            Class="mb-2"
                            PickerVariant="PickerVariant.Dialog" />
 
-            <MudTextField Label="Assign to" @bind-Value="emailModel.Location" Lines="3" Required="true" />
+            <MudTextField Label="Assign to"
+                          @bind-Value="_emailModel.AssignTo"
+                          Lines="3"
+                          Required="true"
+                          Class="mb-2" />
 
+            <MudTextField Label="Location"
+                          @bind-Value="_emailModel.Location"
+                          Lines="3"
+                          Variant="Variant.Outlined"
+                          Required="true"
+                          Class="mb-3" />
 
-            <MudTextField Label="Location" @bind-Value="emailModel.Location" Lines="3" TextArea="true" Required="true" />
-
-            <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SendEmail">Send</MudButton>
-                <MudButton Color="Color.Secondary" Variant="Variant.Text" OnClick="Cancel">Cancel</MudButton>
-
-           
+            <MudStack Row="true" Spacing="2">
+                <MudButton Color="Color.Primary"
+                           Variant="Variant.Filled"
+                           OnClick="SendEmail">
+                    Send
+                </MudButton>
+                <MudButton Color="Color.Secondary"
+                           Variant="Variant.Text"
+                           OnClick="Cancel">
+                    Cancel
+                </MudButton>
+            </MudStack>
         </MudForm>
     </DialogContent>
 </MudDialog>
 
 @code {
-    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
-    [Parameter] public ApplicationListDtos Candidate { get; set; } = default!;
+    [CascadingParameter] 
+    private IMudDialogInstance MudDialog { get; set; } = default!;
 
-    private MudForm _form;
-    private EmailModel emailModel = new();
+    [Parameter] 
+    public ApplicationListDtos Candidate { get; set; } = default!;
+
+    private MudForm _form = default!;
+    private EmailModel _emailModel = new();
 
     protected override void OnInitialized()
     {
-
-        emailModel.InterviewDate = DateTime.Now.AddDays(1); // Default to tomorrow
-        emailModel.InterviewTime = TimeSpan.FromHours(9);   // Default to 9:00 AM
-
+        _emailModel.InterviewDate = DateTime.Now.AddDays(1);
+        _emailModel.InterviewTime = TimeSpan.FromHours(9);
     }
 
     private void Cancel() => MudDialog.Cancel();
@@ -56,44 +71,61 @@
     private async Task SendEmail()
     {
         await _form.Validate();
+
         if (!_form.IsValid)
         {
             Snackbar.Add("Please fill all required fields.", Severity.Error);
             return;
         }
-        bool? confirm = await DialogService.ShowMessageBox(
-"Confirm for initial",
-"Are you sure you want to proceed this interview to initial?",
-yesText: "Confirm",
-cancelText: "Cancel");
 
-        if (confirm == true)
+        var confirmed = await ShowConfirmationDialog();
+        if (!confirmed) return;
+
+        await ProcessInterview();
+    }
+
+    private async Task<bool> ShowConfirmationDialog()
+    {
+        var result = await DialogService.ShowMessageBox(
+            "Confirm for initial",
+            "Are you sure you want to proceed this interview to initial?",
+            yesText: "Confirm",
+            cancelText: "Cancel");
+
+        return result == true;
+    }
+
+    private async Task ProcessInterview()
+    {
+        var dto = new SetScheduleDto
         {
+            ApplicationId = Candidate.ApplicationId,
+            Date = _emailModel.InterviewDate!.Value.ToString("yyyy-MM-dd"),
+            Time = _emailModel.InterviewTime!.Value.ToString(@"hh\:mm"),
+            Location = _emailModel.Location,
+            InterviewBy = _emailModel.AssignTo ?? string.Empty
+        };
 
-            bool success = await Service.ForInitial(
-             Candidate.ApplicationId,
-             emailModel.InterviewDate!.Value.ToString("yyyy-MM-dd"),
-             emailModel.InterviewTime!.Value.ToString(@"hh\:mm"),
-             emailModel.Location
-         );
+        var success = await Service.ForInitial(dto);
 
-            if (success)
-            {
-                Snackbar.Add("Email sent successfully.", Severity.Success);
-                MudDialog.Close(DialogResult.Ok(true));
-            }
-            else
-            {
-                Snackbar.Add("Failed to send email. Candidate not found.", Severity.Error);
-            }
+        if (success)
+        {
+            Snackbar.Add("Email sent successfully.", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(true));
+            NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+            StateHasChanged();
+        }
+        else
+        {
+            Snackbar.Add("Failed to send email. Candidate not found.", Severity.Error);
         }
     }
 
-    public class EmailModel
+    private class EmailModel
     {
         public DateTime? InterviewDate { get; set; }
         public TimeSpan? InterviewTime { get; set; }
+        public string? AssignTo { get; set; }
         public string? Location { get; set; }
-      
     }
 }

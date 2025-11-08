@@ -286,8 +286,7 @@ namespace HelloJobPH.Server.Migrations
                     HumanResourcesId = table.Column<int>(type: "int", nullable: true),
                     ApplicantId = table.Column<int>(type: "int", nullable: false),
                     EmployerId = table.Column<int>(type: "int", nullable: true),
-                    CoverLetter = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ApplicationId1 = table.Column<int>(type: "int", nullable: true)
+                    CoverLetter = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -298,11 +297,6 @@ namespace HelloJobPH.Server.Migrations
                         principalTable: "Applicant",
                         principalColumn: "ApplicantId",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Application_Application_ApplicationId1",
-                        column: x => x.ApplicationId1,
-                        principalTable: "Application",
-                        principalColumn: "ApplicationId");
                     table.ForeignKey(
                         name: "FK_Application_Employer_EmployerId",
                         column: x => x.EmployerId,
@@ -394,6 +388,30 @@ namespace HelloJobPH.Server.Migrations
                         principalColumn: "HumanResourceId");
                 });
 
+            migrationBuilder.CreateTable(
+                name: "InterviewHistory",
+                columns: table => new
+                {
+                    InterviewHistoryId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ApplicationId = table.Column<int>(type: "int", nullable: true),
+                    CandidateName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Stage = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    InterviewBy = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ScheduledDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_InterviewHistory", x => x.InterviewHistoryId);
+                    table.ForeignKey(
+                        name: "FK_InterviewHistory_Application_ApplicationId",
+                        column: x => x.ApplicationId,
+                        principalTable: "Application",
+                        principalColumn: "ApplicationId");
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_Applicant_HumanResourcesId",
                 table: "Applicant",
@@ -409,11 +427,6 @@ namespace HelloJobPH.Server.Migrations
                 name: "IX_Application_ApplicantId",
                 table: "Application",
                 column: "ApplicantId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Application_ApplicationId1",
-                table: "Application",
-                column: "ApplicationId1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Application_EmployerId",
@@ -490,6 +503,11 @@ namespace HelloJobPH.Server.Migrations
                 column: "HumanResourceId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_InterviewHistory_ApplicationId",
+                table: "InterviewHistory",
+                column: "ApplicationId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_JobPosting_EmployerId",
                 table: "JobPosting",
                 column: "EmployerId");
@@ -524,6 +542,9 @@ namespace HelloJobPH.Server.Migrations
 
             migrationBuilder.DropTable(
                 name: "Interview");
+
+            migrationBuilder.DropTable(
+                name: "InterviewHistory");
 
             migrationBuilder.DropTable(
                 name: "PendingRegistration");

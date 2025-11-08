@@ -80,9 +80,6 @@ namespace HelloJobPH.Server.Migrations
                     b.Property<int>("ApplicantId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("ApplicationId1")
-                        .HasColumnType("int");
-
                     b.Property<int>("ApplicationStatus")
                         .HasColumnType("int");
 
@@ -114,8 +111,6 @@ namespace HelloJobPH.Server.Migrations
                     b.HasKey("ApplicationId");
 
                     b.HasIndex("ApplicantId");
-
-                    b.HasIndex("ApplicationId1");
 
                     b.HasIndex("EmployerId");
 
@@ -416,7 +411,7 @@ namespace HelloJobPH.Server.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("InterviewHistoryId"));
 
-                    b.Property<int>("ApplicationId")
+                    b.Property<int?>("ApplicationId")
                         .HasColumnType("int");
 
                     b.Property<string>("CandidateName")
@@ -687,10 +682,6 @@ namespace HelloJobPH.Server.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("HelloJobPH.Shared.Model.Application", null)
-                        .WithMany("Applications")
-                        .HasForeignKey("ApplicationId1");
-
                     b.HasOne("HelloJobPH.Shared.Model.Employer", "Employer")
                         .WithMany("Applications")
                         .HasForeignKey("EmployerId");
@@ -802,10 +793,8 @@ namespace HelloJobPH.Server.Migrations
             modelBuilder.Entity("HelloJobPH.Shared.Model.InterviewHistory", b =>
                 {
                     b.HasOne("HelloJobPH.Shared.Model.Application", "Application")
-                        .WithMany()
-                        .HasForeignKey("ApplicationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .WithMany("InterviewHistorys")
+                        .HasForeignKey("ApplicationId");
 
                     b.Navigation("Application");
                 });
@@ -858,11 +847,11 @@ namespace HelloJobPH.Server.Migrations
 
             modelBuilder.Entity("HelloJobPH.Shared.Model.Application", b =>
                 {
-                    b.Navigation("Applications");
-
                     b.Navigation("AuditLogs");
 
                     b.Navigation("Interview");
+
+                    b.Navigation("InterviewHistorys");
                 });
 
             modelBuilder.Entity("HelloJobPH.Shared.Model.Employer", b =>

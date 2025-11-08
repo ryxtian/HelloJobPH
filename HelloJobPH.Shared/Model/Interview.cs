@@ -20,5 +20,6 @@ namespace HelloJobPH.Shared.Model
         public int? HumanResourceId { get; set; }
         public Application? Application { get; set; }
         public HumanResources? HumanResource { get; set; }
+       
     }
 }

@@ -25,7 +25,7 @@ namespace HelloJobPH.Server.Service.HumanResource
             {
                 Email = humanResourceDto.Email,
                 Password = passwordHash,
-                Role = "Admin"
+                Role = "HR"
             };
 
             await _context.UserAccount.AddAsync(useracc);

@@ -1,5 +1,6 @@
 ﻿
 using HelloJobPH.Shared.DTOs;
+using System.Net.Http;
 using System.Net.Http.Json;
 
 namespace HelloJobPH.Employer.Services.Candidate
@@ -11,31 +12,39 @@ namespace HelloJobPH.Employer.Services.Candidate
         {
             _http = http;
         }
-        public async Task<ApplicationListDtos> CandidateAcceptAsync(int id)
+        public async Task<bool> CandidateAcceptAsync(int id)
         {
-            var response = await _http.GetAsync($"api/Candidate/{id}");
+            var response = await _http.PutAsJsonAsync($"api/candidate/Accept/{id}", new { });
+
             if (response.IsSuccessStatusCode)
             {
-                var jobPost = await response.Content.ReadFromJsonAsync<ApplicationListDtos>();
-                return jobPost;
+                return true;
             }
-            else
-            {
-                // Handle not found or error, maybe return null or throw
-                return null;
-            }
+
+            // Optionally log the error or throw for handling in UI
+            var error = await response.Content.ReadAsStringAsync();
+            throw new ApplicationException($"Failed to reject candidate. Server returned: {error}");
         }
 
-        public Task<bool> CandidateRejectAsync(int id)
+        public async Task<bool> CandidateRejectAsync(int id)
         {
-            throw new NotImplementedException();
+            var response = await _http.PutAsJsonAsync($"api/candidate/reject/{id}", new { });
+
+            if (response.IsSuccessStatusCode)
+            {
+                return true;
+            }
+
+            // Optionally log the error or throw for handling in UI
+            var error = await response.Content.ReadAsStringAsync();
+            throw new ApplicationException($"Failed to reject candidate. Server returned: {error}");
         }
 
         public async Task<List<ApplicationListDtos>> RetrieveAllAcceptedCandidate()
         {
             try
             {
-                var response = await _http.GetAsync("api/Candidate/AcceptedList");
+                var response = await _http.GetAsync("api/Candidate/Accepted-List");
 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -74,16 +83,10 @@ namespace HelloJobPH.Employer.Services.Candidate
             }
         }
 
-        public async Task<bool> ForInitial(int id, string time, string date,string?location)
+        public async Task<bool> ForInitial(SetScheduleDto dto)
         {
-            var url = $"api/Candidate/SendEmail{id}?date={date:yyyy-MM-dd}&time={time}&location={Uri.EscapeDataString(location ?? "")}";
-
-            var response = await _http.GetAsync(url);
-            if (response.IsSuccessStatusCode)
-            {
-                return true;
-            }
-            return false;
+            var response = await _http.PostAsJsonAsync("api/Candidate/SendEmail", dto);
+            return response.IsSuccessStatusCode;
         }
 
     }

@@ -39,7 +39,7 @@ namespace HelloJobPH.Server.Service.AuditLog
                     Action = a.Action,
                     Details = a.Details,
                     Timestamp = a.Timestamp,
-                    Notes = a.Details // or leave empty if you want a separate Notes field
+                    Notes = a.Details
                 })
                 .ToListAsync();
 
