@@ -1,9 +1,7 @@
-﻿using HelloJobPH.Server.ChatSystemHub;
-using HelloJobPH.Server.Service.Chat;
-using HelloJobPH.Shared.DTOs;
+﻿using HelloJobPH.Server.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 
 namespace HelloJobPH.Server.Controllers
 {
@@ -11,28 +9,23 @@ namespace HelloJobPH.Server.Controllers
     [ApiController]
     public class ChatController : ControllerBase
     {
-        private readonly IHubContext<Chathub> _hubContext;
-        private readonly IChatService _chatService;
-        public ChatController(IHubContext<Chathub> hubContext, IChatService chatService)
+        private readonly ApplicationDbContext _context;
+        public ChatController(ApplicationDbContext context)
         {
-            _hubContext= hubContext;
-            _chatService= chatService;
+            _context = context;
         }
-        [HttpPost("send")]
-        public async Task<ActionResult<ChatMessageDtos>> Send([FromBody] ChatMessageDtos chat)
+        [HttpGet("history/{user1}/{user2}")]
+        public async Task<IActionResult> GetHistory(string user1, string user2)
         {
-            var saved = await _chatService.SaveChatAsync(chat);
+            var messages = await _context.ChatMessages
+                .Where(m => (m.SenderId == user1 && m.ReceiverId == user2) ||
+                            (m.SenderId == user2 && m.ReceiverId == user1))
+                .OrderBy(m => m.SentAt)
+                .ToListAsync();
 
-           // await _hubContext.Clients.User(chat.ReceiverId!)
-                //.SendAsync("ReceiveMessage",);
+            return Ok(messages);
+        }
 
-            return Ok(saved);
-        }
-        [HttpGet("history")]
-        public async Task<ActionResult<List<ChatMessageDtos>>> GetHistory([FromQuery] string user1, [FromQuery] string user2)
-        {
-            var chats = await _chatService.GetChatHistoryAsync(user1, user2);
-            return Ok(chats);
-        }
+
     }
 }

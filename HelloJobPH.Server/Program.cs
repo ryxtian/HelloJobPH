@@ -1,7 +1,5 @@
-using AutoMapper;
-using GenerativeAI;
-using HelloJobPH.Employer.JwtAuthStateProviders;
-using HelloJobPH.Employer.Services.Chat;
+
+
 using HelloJobPH.Server.ChatSystemHub;
 using HelloJobPH.Server.Data;
 using HelloJobPH.Server.Mapper;
@@ -10,7 +8,7 @@ using HelloJobPH.Server.Service.AI;
 using HelloJobPH.Server.Service.AuditLog;
 using HelloJobPH.Server.Service.Auth;
 using HelloJobPH.Server.Service.Candidate;
-using HelloJobPH.Server.Service.Chat;
+
 using HelloJobPH.Server.Service.Dashboard;
 using HelloJobPH.Server.Service.Email;
 using HelloJobPH.Server.Service.HumanResource;
@@ -19,12 +17,8 @@ using HelloJobPH.Server.Service.JobPost;
 using HelloJobPH.Server.Service.Overview;
 using HelloJobPH.Server.Service.Resume;
 using HelloJobPH.Server.Service.SuperAdmin;
-using HelloJobPH.Server.Service.UserAccountRepository;
 using HelloJobPH.Server.Services;
-using HelloJobPH.Shared.Model;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -125,7 +119,7 @@ builder.Services.AddScoped<IInterviewService, InterviewService>();
 builder.Services.AddScoped<IOverviewService, OverviewService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<ISuperAdminService, SuperAdminService>();
-builder.Services.AddScoped<IChatService, ChatService>();
+//builder.Services.AddScoped<IChatService, ChatService>();
 builder.Services.AddScoped<IAuditLogService, AuditLogService>();
 builder.Services.AddScoped<IResumeService, ResumeService>();
 builder.Services.AddScoped<AiOverviewService>();

@@ -1,4 +1,4 @@
-﻿@page "/chat/chat"
+﻿@* @page "/chat/chat"
 @using HelloJobPH.Shared.Model
 @inject NavigationManager Navigation
 @inject IClientInterviewService CandidateService
@@ -247,10 +247,5 @@
         public int OffsetRight { get; set; } // controls positioning
     }
 
-    public class ChatMessage
-    {
-        public string Content { get; set; } = string.Empty;
-        public bool IsUser { get; set; }
-        public DateTime Time { get; set; }
-    }
 }
+ *@

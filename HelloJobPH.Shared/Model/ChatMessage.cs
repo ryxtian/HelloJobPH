@@ -9,11 +9,9 @@ namespace HelloJobPH.Shared.Model
     public class ChatMessage
     {
         public int Id { get; set; }
-        public string? SenderId { get; set; } = string.Empty;      // user id or employer id
-        public string? ReceiverId { get; set; } = string.Empty;    // other party
-        public string? CompanyName { get; set; } = string.Empty;
-        public string? Message { get; set; } = string.Empty;
-        public DateTime? SentAt { get; set; } = DateTime.UtcNow;
-        public bool IsRead { get; set; } = false;
+        public string SenderId { get; set; } = default!;
+        public string ReceiverId { get; set; } = default!;
+        public string Message { get; set; } = default!;
+        public DateTime SentAt { get; set; } = DateTime.UtcNow;
     }
 }

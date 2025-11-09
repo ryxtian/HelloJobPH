@@ -1,14 +1,13 @@
 ﻿@page "/Interview/initial"
-@using HelloJobPH.Employer.Services.Chat
 @using Microsoft.AspNetCore.SignalR.Client
-@inject IClientChatService ChatService
 @inject NavigationManager Navigation
 @inject IClientInterviewService CandidateService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject IJSRuntime JS
 @inject NavigationManager NavigationManger
-
+@inject HttpClient Http
+@using System.Net.Http.Json
 
 
 
@@ -214,63 +213,59 @@
     </MudPaper>
 </MudContainer>
 
+<MudContainer>
 
 
 
+    @foreach (var chat in openChats)
+    {
+        <MudPaper Elevation="10" Class="chat-container animate-fade-in" style="@($"right:{chat.OffsetRight}px")">
+            <!-- Header -->
+            <MudStack Row AlignItems="AlignItems.Center" JustifyContent="SpaceBetween" Class="chat-header">
+                <MudText Typo="Typo.subtitle2">@chat.CandidateName</MudText>
+                <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" OnClick="@(() => CloseChat(chat))" />
+            </MudStack>
 
+            <!-- Messages -->
+            <MudContainer Class="chat-body">
+                @foreach (var msg in chat.Messages)
+                {
+                    <MudStack Class="@(msg.SenderId == currentUserId ? "sent-message" : "received-message")" Style="margin-bottom:4px;">
+                        <MudText Typo="Typo.body2">@msg.Message</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                            @msg.SentAt.ToLocalTime().ToShortTimeString()
+                        </MudText>
+                    </MudStack>
+                }
+            </MudContainer>
 
+            <MudDivider />
 
-@foreach (var chat in openChats)
-{
-    <MudPaper Elevation="10" Class="chat-container animate-fade-in" style="@($"right:{chat.OffsetRight}px")">
-        <!-- Header -->
-        <MudStack Row AlignItems="AlignItems.Center" JustifyContent="SpaceBetween" Class="chat-header">
-            <MudText Typo="Typo.subtitle2">@chat.CandidateName</MudText>
-            <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" OnClick="@(() => CloseChat(chat))" />
-        </MudStack>
-
-        <!-- Messages -->
-        <MudContainer Class="chat-body">
-            @foreach (var msg in chat.Messages)
-            {
-                <MudStack Class="@(msg.SenderId == currentUserId ? "sent-message" : "received-message")" Style="margin-bottom:4px;">
-                    <MudText Typo="Typo.body2">@msg.Message</MudText>
-                    <MudText Typo="Typo.caption" Color="Color.Secondary">
-                        @msg.SentAt.ToLocalTime().ToShortTimeString()
-                    </MudText>
-                </MudStack>
-            }
-        </MudContainer>
-
-        <MudDivider />
-
-        <!-- Input -->
-        <MudStack Row AlignItems="AlignItems.Center" Spacing="1" Class="p-2">
-            <MudTextField @bind-Value="chat.NewMessage"
-                          Placeholder="Type a message..."
-                          Variant="Variant.Outlined"
-                          Class="flex-grow"
-                          OnKeyDown="@(e => HandleKeyPress(e, chat))" />
-            <MudIconButton Icon="@Icons.Material.Filled.Send"
-                           Color="Color.Primary"
-                           Disabled="@string.IsNullOrWhiteSpace(chat.NewMessage)"
-                           OnClick="@(() => SendMessage(chat))" />
-        </MudStack>
-    </MudPaper>
-}
-
-@if (!IsConnected)
-{
-    <span>Connecting...</span>
-}
+            <!-- Input -->
+            <MudStack Row AlignItems="AlignItems.Center" Spacing="1" Class="p-2">
+                <MudTextField @bind-Value="chat.NewMessage"
+                              Placeholder="Type a message..."
+                              Variant="Variant.Outlined"
+                              Class="flex-grow"
+                              OnKeyDown="@(e => HandleKeyPress(e, chat))" />
+                <MudIconButton Icon="@Icons.Material.Filled.Send"
+                               Color="Color.Primary"
+                               Disabled="@string.IsNullOrWhiteSpace(chat.NewMessage)"
+                               OnClick="@(() => SendMessage(chat))" />
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
 
 @code {
 
 
-    private HubConnection hubConnection;
+    private HubConnection? hubConnection;
     private List<ChatSession> openChats = new();
     private List<InterviewListDtos> initial = new();
-    private string currentUserId = "Employer123"; // ⚡ Replace with actual user ID
+
+    private string currentUserId = "Employer123"; // ⚡ Replace with actual logged user ID
+
 
     public class ChatSession
     {
@@ -286,36 +281,34 @@
         initial = await CandidateService.InitialList();
 
         hubConnection = new HubConnectionBuilder()
-            .WithUrl(NavigationManger.ToAbsoluteUri("/chathub"))
+            .WithUrl("https://localhost:7172/chathub") // ⚡ Your API base + hub path
+            .WithAutomaticReconnect()
             .Build();
 
-        // Receive message from SignalR
-        hubConnection.On<ChatMessageDtos>("ReceiveMessage", (message) =>
+        // ✅ Receive real-time messages
+        hubConnection.On<string, string, string, DateTime>("ReceiveMessage", (senderId, receiverId, message, sentAt) =>
         {
-            var chat = openChats.FirstOrDefault(c =>
-                c.CandidateId.ToString() == message.SenderId ||
-                c.CandidateId.ToString() == message.ReceiverId);
-
-            if (chat == null)
+            // Find the chat window (if open)
+            var chat = openChats.FirstOrDefault(c => c.CandidateId.ToString() == senderId || c.CandidateId.ToString() == receiverId);
+            if (chat != null)
             {
-                // Optional: auto-open chat window if it doesn’t exist yet
-                chat = new ChatSession
+                chat.Messages.Add(new ChatMessageDtos
                 {
-                    CandidateId = int.Parse(message.SenderId),
-                    CandidateName = "New Candidate",
-                    OffsetRight = openChats.Count * 320
-                };
-                openChats.Add(chat);
+                    SenderId = senderId,
+                    ReceiverId = receiverId,
+                    Message = message,
+                    SentAt = sentAt
+                });
+                InvokeAsync(StateHasChanged);
             }
-
-            chat.Messages.Add(message);
-            InvokeAsync(StateHasChanged);
+            else
+            {
+                // Optionally show unread notification or open chat automatically
+            }
         });
 
         await hubConnection.StartAsync();
     }
-
-    private bool IsConnected => hubConnection?.State == HubConnectionState.Connected;
 
     private void HandleKeyPress(KeyboardEventArgs e, ChatSession chat)
     {
@@ -325,35 +318,33 @@
         }
     }
 
-    private void CloseChat(ChatSession chat) => openChats.Remove(chat);
+    private void CloseChat(ChatSession chat)
+    {
+        openChats.Remove(chat);
+    }
 
     private async Task SendMessage(ChatSession chat)
     {
-        if (hubConnection == null || string.IsNullOrWhiteSpace(chat.NewMessage))
+        if (hubConnection is null || string.IsNullOrWhiteSpace(chat.NewMessage))
             return;
 
-        var chatDto = new ChatMessageDtos
+        var message = new ChatMessageDtos
         {
             SenderId = currentUserId,
             ReceiverId = chat.CandidateId.ToString(),
             Message = chat.NewMessage,
-            SentAt = DateTime.UtcNow,
-            IsRead = false
+            SentAt = DateTime.UtcNow
         };
 
-        // Add immediately to UI
-        chat.Messages.Add(chatDto);
+        // Locally add message
+        chat.Messages.Add(message);
         chat.NewMessage = string.Empty;
 
-        // Send via SignalR
-        await hubConnection.SendAsync("SendMessage", chatDto);
+        // Send to server
+        await hubConnection.SendAsync("SendMessage", message.SenderId, message.ReceiverId, message.Message);
 
-        // Persist to database
-        await ChatService.ChatMessage(chatDto);
 
-        await InvokeAsync(StateHasChanged);
     }
-
     private void OpenChat(InterviewListDtos candidate)
     {
         if (openChats.Any(c => c.CandidateId == candidate.ApplicationId))
@@ -367,6 +358,37 @@
             OffsetRight = offset
         });
     }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     private void NavigateToOverview(int applicationId)
     {
