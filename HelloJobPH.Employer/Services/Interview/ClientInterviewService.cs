@@ -1,5 +1,6 @@
 ﻿using HelloJobPH.Shared.DTOs;
 using HelloJobPH.Shared.Enums;
+using System.Net.Http;
 using System.Net.Http.Json;
 using static System.Net.WebRequestMethods;
 
@@ -29,17 +30,11 @@ namespace HelloJobPH.Employer.Services.Interview
             var result = await _http.GetFromJsonAsync<List<InterviewListDtos>>("api/Interview/technical");
             return result ?? [];
         }
-
-        public async Task<bool> Reschedule(int id, string time, string date, string? location)
+        public async Task<bool> Reschedule(SetScheduleDto dto)
         {
-            var url = $"api/Interview/Reschedule{id}?date={date:yyyy-MM-dd}&time={time}&location={Uri.EscapeDataString(location ?? "")}";
-
-            var response = await _http.GetAsync(url);
-            if (response.IsSuccessStatusCode)
-            {
-                return true;
-            }
-            return false;
+            var url = $"api/interview/Reschedule";
+            var response = await _http.PostAsJsonAsync(url, dto);
+            return response.IsSuccessStatusCode;
         }
 
         public async Task<int> NoAppearance(int id)
@@ -53,27 +48,17 @@ namespace HelloJobPH.Employer.Services.Interview
 
             return 0;
         }
-        public async Task<bool> ForTechnical(int id, string time, string date, string? location)
+        public async Task<bool> ForTechnical(SetScheduleDto dto)
         {
-            var url = $"api/Interview/ForTechnical{id}?date={date:yyyy-MM-dd}&time={time}&location={Uri.EscapeDataString(location ?? "")}";
-
-            var response = await _http.GetAsync(url);
-            if (response.IsSuccessStatusCode)
-            {
-                return true;
-            }
-            return false;
+            var url = $"api/interview/ForTechnical";
+            var response = await _http.PostAsJsonAsync(url, dto);
+            return response.IsSuccessStatusCode;
         }
-        public async Task<bool> ForFinal(int id, string time, string date, string? location)
+        public async Task<bool> ForFinal(SetScheduleDto dto)
         {
-            var url = $"api/Interview/ForFinal{id}?date={date:yyyy-MM-dd}&time={time}&location={Uri.EscapeDataString(location ?? "")}";
-
-            var response = await _http.GetAsync(url);
-            if (response.IsSuccessStatusCode)
-            {
-                return true;
-            }
-            return false;
+            var url = $"api/interview/ForFinal";
+            var response = await _http.PostAsJsonAsync(url, dto);
+            return response.IsSuccessStatusCode;
         }
         public async Task<int> Failed(int id)
         {

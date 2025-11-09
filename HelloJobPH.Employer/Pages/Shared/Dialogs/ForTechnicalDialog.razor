@@ -1,18 +1,17 @@
 ﻿@using MudBlazor
 @using MudBlazor.Components
 @inject ISnackbar Snackbar
-@inject IClientCandidateService Service
 @inject IClientInterviewService Interview
 @inject IDialogService DialogService
-@inject NavigationManager Navigation
 @inject IJSRuntime JS
+
 <MudDialog>
     <DialogContent>
+        <MudForm @ref="_form" Model="@_emailModel">
 
-        <MudForm @ref="_form" Model="@emailModel">
             <!-- Interview Date -->
             <MudDatePicker Label="Interview Date"
-                           @bind-Date="emailModel.InterviewDate"
+                           @bind-Date="_emailModel.InterviewDate"
                            Required="true"
                            RequiredError="Interview date is required"
                            Class="mb-2"
@@ -20,36 +19,77 @@
 
             <!-- Interview Time -->
             <MudTimePicker Label="Interview Time"
-                           @bind-Time="emailModel.InterviewTime"
+                           @bind-Time="_emailModel.InterviewTime"
                            Required="true"
                            RequiredError="Interview time is required"
                            Class="mb-2"
                            PickerVariant="PickerVariant.Dialog" />
 
-            <MudTextField Label="Assign to" @bind-Value="emailModel.Location" Required="true" />
-            <MudTextField Label="Location" @bind-Value="emailModel.Location" Lines="3" TextArea="true" Required="true" />
+            <!-- Mode -->
+            <MudSelect @bind-Value="_emailModel.Mode"
+                       Label="Select Interview Mode"
+                       Variant="Variant.Outlined"
+                       Required="true"
+                       Clearable
+                       Class="mb-2">
+                @foreach (var state in _modes)
+                {
+                    <MudSelectItem Value="@state">@state</MudSelectItem>
+                }
+            </MudSelect>
 
-            <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="ForTechnical">Send</MudButton>
-            <MudButton Color="Color.Secondary" Variant="Variant.Text" OnClick="Cancel">Cancel</MudButton>
+            <!-- Assign To -->
+            <MudTextField Label="Assign To"
+                          @bind-Value="_emailModel.AssignTo"
+                          Required="true"
+                          Variant="Variant.Outlined"
+                          Class="mb-2" />
 
+            <!-- Location -->
+            <MudTextField Label="Location"
+                          @bind-Value="_emailModel.Location"
+                          Lines="3"
+                          Variant="Variant.Outlined"
+                          Required="true"
+                          Class="mb-3" />
 
+            <!-- Buttons -->
+            <MudStack Row="true" Spacing="2">
+                <MudButton Color="Color.Primary"
+                           Variant="Variant.Filled"
+                           OnClick="ForTechnical">
+                    Send
+                </MudButton>
+                <MudButton Color="Color.Secondary"
+                           Variant="Variant.Text"
+                           OnClick="Cancel">
+                    Cancel
+                </MudButton>
+            </MudStack>
         </MudForm>
     </DialogContent>
 </MudDialog>
 
 @code {
-    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
-    [Parameter] public InterviewListDtos Candidate { get; set; } = default!;
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
 
-    private MudForm _form;
-    private EmailModel emailModel = new();
+    [Parameter]
+    public InterviewListDtos Candidate { get; set; } = default!;
+
+    private MudForm _form = default!;
+    private EmailModel _emailModel = new();
+
+    private readonly string[] _modes =
+    [
+        "Onsite Interview",
+        "Online Interview"
+    ];
 
     protected override void OnInitialized()
     {
-
-        emailModel.InterviewDate = DateTime.Now.AddDays(1);
-        emailModel.InterviewTime = TimeSpan.FromHours(9);
-
+        _emailModel.InterviewDate = DateTime.Now.AddDays(1);
+        _emailModel.InterviewTime = TimeSpan.FromHours(9);
     }
 
     private void Cancel() => MudDialog.Cancel();
@@ -62,41 +102,47 @@
             Snackbar.Add("Please fill all required fields.", Severity.Error);
             return;
         }
+
         bool? confirm = await DialogService.ShowMessageBox(
-"Confirm for technical",
-"Are you sure you want to proceed this interview to technical?",
-yesText: "Confirm",
-cancelText: "Cancel");
+            "Confirm Technical Interview",
+            "Are you sure you want to proceed this interview to the technical stage?",
+            yesText: "Confirm",
+            cancelText: "Cancel");
 
-        if (confirm == true)
+        if (confirm != true)
+            return;
+
+        var dto = new SetScheduleDto
         {
+            ApplicationId = Candidate.ApplicationId,
+            Date = _emailModel.InterviewDate!.Value.ToString("yyyy-MM-dd"),
+            Time = _emailModel.InterviewTime!.Value.ToString(@"hh\:mm"),
+            Location = _emailModel.Location,
+            Mode = _emailModel.Mode,
+            InterviewBy = _emailModel.AssignTo ?? string.Empty
+        };
 
-            bool success = await Interview.ForTechnical(
-             Candidate.ApplicationId,
-             emailModel.InterviewDate!.Value.ToString("yyyy-MM-dd"),
-             emailModel.InterviewTime!.Value.ToString(@"hh\:mm"),
-             emailModel.Location
-         );
+        bool success = await Interview.ForTechnical(dto);
 
-            if (success)
-            {
-                Snackbar.Add("Email sent successfully.", Severity.Success);
-                await JS.InvokeVoidAsync("location.reload");
-                MudDialog.Close(DialogResult.Ok(true));
-
-            }
-            else
-            {
-                Snackbar.Add("Failed to send email. Candidate not found.", Severity.Error);
-            }
+        if (success)
+        {
+            Snackbar.Add("Interview scheduled for technical stage successfully.", Severity.Success);
+            MudDialog.Close(DialogResult.Ok(true));
+            await JS.InvokeVoidAsync("location.reload");
+        }
+        else
+        {
+            Snackbar.Add("Failed to proceed to technical interview. Candidate not found.", Severity.Error);
         }
     }
 
-    public class EmailModel
+    private class EmailModel
     {
         public DateTime? InterviewDate { get; set; }
         public TimeSpan? InterviewTime { get; set; }
+        public string? AssignTo { get; set; }
         public string? Location { get; set; }
-
+        public string? Mode { get; set; }
     }
+
 }

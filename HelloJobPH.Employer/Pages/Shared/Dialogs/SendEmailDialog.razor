@@ -20,10 +20,15 @@
                            RequiredError="Interview time is required"
                            Class="mb-2"
                            PickerVariant="PickerVariant.Dialog" />
+            <MudSelect @bind-Value="_emailModel.Mode" Label="Select a State" Variant="Variant.Outlined" Required="true" Clearable>
+                @foreach (var state in _states)
+                {
+                    <MudSelectItem Value="@state">@state</MudSelectItem>
+                }
+            </MudSelect>
 
             <MudTextField Label="Assign to"
                           @bind-Value="_emailModel.AssignTo"
-                          Lines="3"
                           Required="true"
                           Class="mb-2" />
 
@@ -103,6 +108,7 @@
             Date = _emailModel.InterviewDate!.Value.ToString("yyyy-MM-dd"),
             Time = _emailModel.InterviewTime!.Value.ToString(@"hh\:mm"),
             Location = _emailModel.Location,
+            Mode = _emailModel.Mode,
             InterviewBy = _emailModel.AssignTo ?? string.Empty
         };
 
@@ -127,5 +133,10 @@
         public TimeSpan? InterviewTime { get; set; }
         public string? AssignTo { get; set; }
         public string? Location { get; set; }
+        public string? Mode { get; set; }
     }
+    private readonly string[] _states =
+[
+    "Onsite Interview", "Online Interview"
+];
 }

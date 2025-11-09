@@ -198,6 +198,19 @@ namespace HelloJobPH.Server.Service.Candidate
 
         public async Task<bool> SendInitialEmail(SetScheduleDto dto)
         {
+            var userId = Utilities.GetUserId();
+
+            if (userId == null)
+                {
+                return false;
+                }
+
+            var hr = await _context.HumanResource
+                .FirstOrDefaultAsync(i=>i.UserAccountId == userId);
+
+            var employer = await _context.Employer.FirstOrDefaultAsync(e => e.EmployerId == hr.EmployerId);
+
+
             try
             {
                 if (!TimeSpan.TryParse(dto.Time, out var parseTime))
@@ -208,6 +221,7 @@ namespace HelloJobPH.Server.Service.Candidate
 
                 // Check if interview slot is already taken
                 bool slotTaken = await _context.Interview
+                    .Where(i=>i.HumanResourceId == hr.HumanResourceId)
                     .AnyAsync(d => d.ScheduledDate == parseDate && d.ScheduledTime == parseTime);
 
                 if (slotTaken)
@@ -234,7 +248,7 @@ namespace HelloJobPH.Server.Service.Candidate
                 var subject = $"Initial Interview Invitation for {candidate.JobTitle}";
                 var body = $@"Dear {candidate.Firstname},
 
-Thank you for applying for the {candidate.JobTitle} position at [Company Name].
+Thank you for applying for the {candidate.JobTitle} position at {employer.CompanyName}.
 You are invited to attend an Initial Interview on {dto.Date} at {dto.Time}.
 
 Location/Platform: {dto.Location}
@@ -243,14 +257,28 @@ Please confirm your availability by replying to this email.
 
 Best regards,
 [Your Name]
-[Your Position]
-[Company Name]";
+{hr.JobTitle}
+{employer.CompanyName}";
 
                 var result = _emailService.SendEmailAsync(candidate.Email, subject, body);
 
 
 
-                
+
+                var interview = new Shared.Model.Interview
+                {
+                    ScheduledDate = parseDate,
+                    ScheduledTime = parseTime,
+                    AssignTo = dto.InterviewBy,
+                    Mode = dto.Mode,
+                    ApplicationId = dto.ApplicationId,
+                    HumanResourceId = hr.HumanResourceId,
+                };
+
+                await _context.Interview.AddAsync(interview);
+                await _context.SaveChangesAsync();
+
+
                 application.ApplicationStatus = ApplicationStatus.Initial;
                 _context.Application.Update(application);
                 await _context.SaveChangesAsync();

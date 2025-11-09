@@ -1,4 +1,5 @@
 ﻿using HelloJobPH.Server.Service.Interview;
+using HelloJobPH.Shared.DTOs;
 using HelloJobPH.Shared.Enums;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -53,15 +54,15 @@ namespace HelloJobPH.Server.Controllers
                 return BadRequest();
             }
         }
-        [HttpGet("Reschedule{id}")]
-        public async Task<IActionResult> Reschedule(int id, string date, string time, string? location)
+        [HttpPost("Reschedule")]
+        public async Task<IActionResult> Reschedule(SetScheduleDto dto)
         {
             try
             {
-                var request = await _service.Reschedule(id, date, time, location);
+                var request = await _service.Reschedule(dto);
                 if (!request)
                 {
-                    return NotFound($"Application with ID {id} not found.");
+                    return NotFound($"Application with ID {dto.ApplicationId} not found.");
                 }
                 return Ok(request);
             }
@@ -88,15 +89,15 @@ namespace HelloJobPH.Server.Controllers
                 throw;
             }
         }
-        [HttpGet("ForTechnical{id}")]
-        public async Task<IActionResult> ForTechnical(int id, string date, string time, string? location)
+        [HttpPost("ForTechnical")]
+        public async Task<IActionResult> ForTechnical(SetScheduleDto dto)
         {
             try
             {
-                var request = await _service.ForTechnical(id, date, time, location);
+                var request = await _service.ForTechnical(dto);
                 if (!request)
                 {
-                    return NotFound($"Application with ID {id} not found.");
+                    return NotFound($"Application with ID {dto.ApplicationId} not found.");
                 }
                 return Ok(request);
             }
@@ -105,15 +106,15 @@ namespace HelloJobPH.Server.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
-        [HttpGet("ForFinal{id}")]
-        public async Task<IActionResult> ForFinal(int id, string date, string time, string? location)
+        [HttpPost("ForFinal")]
+        public async Task<IActionResult> ForFinal(SetScheduleDto dto)
         {
             try
             {
-                var request = await _service.ForFinal(id, date, time, location);
+                var request = await _service.ForFinal(dto);
                 if (!request)
                 {
-                    return NotFound($"Application with ID {id} not found.");
+                    return NotFound($"Application with ID {dto.ApplicationId} not found.");
                 }
                 return Ok(request);
             }

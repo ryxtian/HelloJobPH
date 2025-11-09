@@ -148,15 +148,14 @@ namespace HelloJobPH.Server.Service.Interview
                 throw;
             }
         }
-        public async Task<bool> Reschedule(int applicationId, string time, string date, string? location)
+        public async Task<bool> Reschedule(SetScheduleDto dto)
         {
-            // 1️⃣ Get application with related entities
             var application = await _context.Application
                 .Include(a => a.Applicant)
                     .ThenInclude(a => a.UserAccount)
                 .Include(a => a.JobPosting)
                 .Include(a => a.HumanResources) // Include HR if needed for audit
-                .FirstOrDefaultAsync(a => a.ApplicationId == applicationId);
+                .FirstOrDefaultAsync(a => a.ApplicationId == dto.ApplicationId);
 
 
 
@@ -164,7 +163,6 @@ namespace HelloJobPH.Server.Service.Interview
                 return false;
 
             // 2️⃣ Update application status
-            application.ApplicationStatus = ApplicationStatus.NoAppearance;
             application.MarkAsCompleted = 0;
             _context.Application.Update(application);
            await _context.SaveChangesAsync();
@@ -173,20 +171,23 @@ namespace HelloJobPH.Server.Service.Interview
             if (hr == null)
                 return false; // Or handle the missing HR case
 
-            // 2️⃣ Parse date and time
-            if (!DateTime.TryParse(date, out var parsedDate))
+
+            var employer = await _context.Employer.FirstOrDefaultAsync(e => e.EmployerId == hr.EmployerId);
+
+            if (!DateTime.TryParse(dto.Date, out var parsedDate))
                 return false;
 
-            if (!TimeSpan.TryParse(time, out var parsedTime))
+            if (!TimeSpan.TryParse(dto.Time, out var parsedTime))
                 return false;
 
             // 3️⃣ Update interview
-            var interview = await _context.Interview.FirstOrDefaultAsync(i => i.ApplicationId == applicationId);
+            var interview = await _context.Interview.FirstOrDefaultAsync(i => i.ApplicationId == dto.ApplicationId);
             if (interview != null)
             {
                 interview.ScheduledDate = parsedDate;
                 interview.ScheduledTime = parsedTime;
-                // interview.Location = location; // Uncomment if you have a Location field
+                interview.AssignTo = dto.InterviewBy;
+                interview.Mode = dto.Mode;
 
                 _context.Interview.Update(interview);
                 await _context.SaveChangesAsync();
@@ -208,6 +209,18 @@ namespace HelloJobPH.Server.Service.Interview
             await _context.AuditLog.AddAsync(auditLog);
             await _context.SaveChangesAsync();
 
+
+            var history = new InterviewHistory
+            {
+                InterviewBy = dto.InterviewBy,
+                Status = "Reschedule Interview",
+                ApplicationId = application.ApplicationId,
+                CandidateName = application.Applicant.Firstname + " " + application.Applicant.Surname,
+                Stage = application.ApplicationStatus.ToString(),
+                ScheduledDate = parsedDate,
+            };
+            await _context.InterviewHistory.AddAsync(history);
+            await _context.SaveChangesAsync();
             // 5️⃣ Prepare email
             var candidate = application.Applicant;
             var subject = $"Rescheduled Interview for {application.JobPosting?.Title} Position";
@@ -220,16 +233,16 @@ We would like to inform you that your interview for the **{application.JobPostin
 📅 **New Interview Details**
 - **Date:** {parsedDate:yyyy-MM-dd}
 - **Time:** {parsedTime}
-- **Location/Platform:** {location}
+- **Location/Platform:** {dto.Location}
 
 We apologize for any inconvenience this change may cause and appreciate your understanding.
 
 Please confirm your availability for the new schedule by replying to this email.
 
 Best regards,  
-[Your Name]  
-[Your Position]  
-[Company Name]";
+{hr.Firstname}  
+{hr.JobTitle} 
+{employer.CompanyName}";
 
             var result = _emailService.SendEmailAsync(candidate.UserAccount.Email, subject, body);
 
@@ -280,7 +293,7 @@ Best regards,
 
 
 
-        public async Task<bool> ForTechnical(int applicationId, string time, string date, string? location)
+        public async Task<bool> ForTechnical(SetScheduleDto dto)
         {
             // 1️⃣ Get application with related entities
             var application = await _context.Application
@@ -288,12 +301,15 @@ Best regards,
                     .ThenInclude(a => a.UserAccount)
                 .Include(a => a.JobPosting)
                 .Include(a => a.HumanResources) // Include HR for audit
-                .FirstOrDefaultAsync(a => a.ApplicationId == applicationId);
+                .FirstOrDefaultAsync(a => a.ApplicationId == dto.ApplicationId);
 
             if (application == null || string.IsNullOrEmpty(application.Applicant?.UserAccount?.Email))
                 return false;
 
             var hr = application.HumanResources;
+
+            var employer = await _context.Employer
+                .FirstOrDefaultAsync(i => i.EmployerId == hr.EmployerId);
 
             var candidate = new CandidateEmailDto
             {
@@ -303,44 +319,6 @@ Best regards,
                 JobTitle = application.JobPosting.Title
             };
 
-            // 2️⃣ Update application status
-            application.ApplicationStatus = ApplicationStatus.Technical;
-            application.MarkAsCompleted = 0;
-            _context.Application.Update(application);
-            await _context.SaveChangesAsync();
-
-            // 3️⃣ Update interview schedule
-            var interview = await _context.Interview.FirstOrDefaultAsync(i => i.ApplicationId == applicationId);
-            if (interview != null)
-            {
-                if (!DateTime.TryParse(date, out var parsedDate))
-                    return false;
-
-                if (!TimeSpan.TryParse(time, out var parsedTime))
-                    return false;
-
-                interview.ScheduledDate = parsedDate;
-                interview.ScheduledTime = parsedTime;
-
-                _context.Interview.Update(interview);
-                await _context.SaveChangesAsync();
-            }
-
-            // 4️⃣ Add audit log
-            var auditLog = new Shared.Model.AuditLog
-            {
-                ApplicationId = application.ApplicationId,
-                ApplicantId = application.ApplicantId,
-                JobPostingId = application.JobPostingId,
-                HumanResourcesId = hr?.HumanResourceId,
-                EmployerId = hr?.EmployerId,
-                Action = "Technical Interview Scheduled",
-                Details = $"HR {hr?.Firstname} {hr?.Lastname} scheduled a technical interview for {application.Applicant?.Firstname} {application.Applicant?.Surname} for {application.JobPosting?.Title} on {date} at {time}.",
-                Timestamp = DateTime.UtcNow
-            };
-
-            await _context.AuditLog.AddAsync(auditLog);
-            await _context.SaveChangesAsync();
 
             // 5️⃣ Send email
             var subject = $"Invitation for Technical Interview – {candidate.JobTitle}";
@@ -351,26 +329,78 @@ Congratulations on progressing to the next stage of your application for the **{
 We are pleased to invite you to a **Technical Interview** to further assess your qualifications and technical skills.
 
 📅 **Interview Details**
-- **Date:** {date}
-- **Time:** {time}
-- **Location/Platform:** {location}
+- **Date:** {dto.Date}
+- **Time:** {dto.Time}
+- **Location/Platform:** {dto.Location}
 
 Please confirm your availability by replying to this email at your earliest convenience.
 
 We look forward to meeting you and discussing your experience in greater detail.
 
 Best regards,  
-[Your Name]  
-[Your Position]  
-[Company Name]";
+{hr.Firstname}  
+{hr.JobTitle}
+{employer.CompanyName}";
 
             var result = _emailService.SendEmailAsync(candidate.Email, subject, body);
+
+
+            // 2️⃣ Update application status
+            application.ApplicationStatus = ApplicationStatus.Technical;
+            application.MarkAsCompleted = 0;
+            _context.Application.Update(application);
+            await _context.SaveChangesAsync();
+
+            // 3️⃣ Update interview schedule
+            var interview = await _context.Interview.FirstOrDefaultAsync(i => i.ApplicationId == dto.ApplicationId);
+
+                if (!DateTime.TryParse(dto.Date, out var parsedDate))
+                    return false;
+
+                if (!TimeSpan.TryParse(dto.Time, out var parsedTime))
+                    return false;
+
+                interview.ScheduledDate = parsedDate;
+                interview.ScheduledTime = parsedTime;
+
+                _context.Interview.Update(interview);
+                await _context.SaveChangesAsync();
+            
+
+            // 4️⃣ Add audit log
+            var auditLog = new Shared.Model.AuditLog
+            {
+                ApplicationId = application.ApplicationId,
+                ApplicantId = application.ApplicantId,
+                JobPostingId = application.JobPostingId,
+                HumanResourcesId = hr?.HumanResourceId,
+                EmployerId = hr?.EmployerId,
+                Action = "Technical Interview Scheduled",
+                Details = $"HR {hr?.Firstname} {hr?.Lastname} scheduled a technical interview for {application.Applicant?.Firstname} {application.Applicant?.Surname} for {application.JobPosting?.Title} on {dto.Date} at {dto.Time}.",
+                Timestamp = DateTime.UtcNow
+            };
+
+            await _context.AuditLog.AddAsync(auditLog);
+            await _context.SaveChangesAsync();
+
+            var history = new InterviewHistory
+            {
+                InterviewBy = dto.InterviewBy,
+                Status = "Schedule for Technical interview",
+                ApplicationId = application.ApplicationId,
+                CandidateName = application.Applicant.Firstname + " " + application.Applicant.Surname,
+                Stage = application.ApplicationStatus.ToString(),
+                ScheduledDate = parsedDate,
+            };
+            await _context.InterviewHistory.AddAsync(history);
+            await _context.SaveChangesAsync();
+
 
             return result != null;
         }
 
 
-        public async Task<bool> ForFinal(int applicationId, string time, string date, string? location)
+        public async Task<bool> ForFinal(SetScheduleDto dto)
         {
             // 1️⃣ Get application with related entities
             var application = await _context.Application
@@ -378,12 +408,15 @@ Best regards,
                     .ThenInclude(a => a.UserAccount)
                 .Include(a => a.JobPosting)
                 .Include(a => a.HumanResources) // Include HR for audit logging
-                .FirstOrDefaultAsync(a => a.ApplicationId == applicationId);
+                .FirstOrDefaultAsync(a => a.ApplicationId == dto.ApplicationId);
 
             if (application == null || string.IsNullOrEmpty(application.Applicant?.UserAccount?.Email))
                 return false;
 
             var hr = application.HumanResources;
+
+            var employer = await _context.Employer
+                .FirstOrDefaultAsync(i => i.EmployerId == hr.EmployerId);
 
             var candidate = new CandidateEmailDto
             {
@@ -401,13 +434,13 @@ Best regards,
  
 
             // 3️⃣ Update interview schedule
-            var interview = await _context.Interview.FirstOrDefaultAsync(i => i.ApplicationId == applicationId);
-            if (interview != null)
-            {
-                if (!DateTime.TryParse(date, out var parsedDate))
+            var interview = await _context.Interview.FirstOrDefaultAsync(i => i.ApplicationId == dto.ApplicationId);
+
+            
+                if (!DateTime.TryParse(dto.Date, out var parsedDate))
                     return false;
 
-                if (!TimeSpan.TryParse(time, out var parsedTime))
+                if (!TimeSpan.TryParse(dto.Time, out var parsedTime))
                     return false;
 
                 interview.ScheduledDate = parsedDate;
@@ -416,23 +449,8 @@ Best regards,
                 //interview.Location = location;
                 _context.Interview.Update(interview);
                 await _context.SaveChangesAsync();
-            }
+            
 
-            // 4️⃣ Add audit log
-            var auditLog = new Shared.Model.AuditLog
-            {
-                ApplicationId = application.ApplicationId,
-                ApplicantId = application.ApplicantId,
-                JobPostingId = application.JobPostingId,
-                HumanResourcesId = hr?.HumanResourceId,
-                EmployerId = hr?.EmployerId,
-                Action = "Final Interview Scheduled",
-                Details = $"HR {hr?.Firstname} {hr?.Lastname} scheduled a final interview for {application.Applicant?.Firstname} {application.Applicant?.Surname} for {application.JobPosting?.Title} on {date} at {time}.",
-                Timestamp = DateTime.UtcNow
-            };
-
-            await _context.AuditLog.AddAsync(auditLog);
-            await _context.SaveChangesAsync();
 
             // 5️⃣ Send email
             var subject = $"Invitation for Final Interview – {candidate.JobTitle}";
@@ -443,20 +461,50 @@ Congratulations on advancing to the **Final Interview** stage for the **{candida
 We are pleased to invite you to meet with our hiring panel to discuss your potential fit and next steps within the company.
 
 📅 **Interview Details**
-- **Date:** {date}
-- **Time:** {time}
-- **Location/Platform:** {location}
+- **Date:** {dto.Date}
+- **Time:** {dto.Time}
+- **Location/Platform:** {dto.Location}
 
 Please confirm your attendance by replying to this email at your earliest convenience.
 
 We look forward to speaking with you and learning more about your professional goals.
 
 Best regards,  
-[Your Name]  
-[Your Position]  
-[Company Name]";
+{hr.Firstname} 
+{hr.JobTitle}
+{employer.CompanyName}";
 
             var result = _emailService.SendEmailAsync(candidate.Email, subject, body);
+
+
+            // 4️⃣ Add audit log
+            var auditLog = new Shared.Model.AuditLog
+            {
+                ApplicationId = application.ApplicationId,
+                ApplicantId = application.ApplicantId,
+                JobPostingId = application.JobPostingId,
+                HumanResourcesId = hr?.HumanResourceId,
+                EmployerId = hr?.EmployerId,
+                Action = "Final Interview Scheduled",
+                Details = $"HR {hr?.Firstname} {hr?.Lastname} scheduled a final interview for {application.Applicant?.Firstname} {application.Applicant?.Surname} for {application.JobPosting?.Title} on {dto.Date} at {dto.Time}.",
+                Timestamp = DateTime.UtcNow
+            };
+
+            await _context.AuditLog.AddAsync(auditLog);
+            await _context.SaveChangesAsync();
+
+            var history = new InterviewHistory
+            {
+                InterviewBy = dto.InterviewBy,
+                Status = "Schedule for Final interview",
+                ApplicationId = application.ApplicationId,
+                CandidateName = application.Applicant.Firstname + " " + application.Applicant.Surname,
+                Stage = application.ApplicationStatus.ToString(),
+                ScheduledDate = parsedDate,
+            };
+            await _context.InterviewHistory.AddAsync(history);
+            await _context.SaveChangesAsync();
+
 
             return result != null;
         }
@@ -581,22 +629,22 @@ Best regards,
             _context.Application.Update(application);
             await _context.SaveChangesAsync();
 
-            // 2️⃣ Add audit log
-            var hr = application.HumanResources;
-            var auditLog = new Shared.Model.AuditLog
-            {
-                ApplicationId = application.ApplicationId,
-                ApplicantId = application.ApplicantId,
-                JobPostingId = application.JobPostingId,
-                HumanResourcesId = hr?.HumanResourceId,
-                EmployerId = hr?.EmployerId,
-                Action = "Application Deleted",
-                Details = $"HR {hr?.Firstname} {hr?.Lastname} marked the application of {application.Applicant?.Firstname} {application.Applicant?.Surname} for {application.JobPosting?.Title} as deleted.",
-                Timestamp = DateTime.UtcNow
-            };
+            //// 2️⃣ Add audit log
+            //var hr = application.HumanResources;
+            //var auditLog = new Shared.Model.AuditLog
+            //{
+            //    ApplicationId = application.ApplicationId,
+            //    ApplicantId = application.ApplicantId,
+            //    JobPostingId = application.JobPostingId,
+            //    HumanResourcesId = hr?.HumanResourceId,
+            //    EmployerId = hr?.EmployerId,
+            //    Action = "Application Deleted",
+            //    Details = $"HR {hr?.Firstname} {hr?.Lastname} marked the application of {application.Applicant?.Firstname} {application.Applicant?.Surname} for {application.JobPosting?.Title} as deleted.",
+            //    Timestamp = DateTime.UtcNow
+            //};
 
-            await _context.AuditLog.AddAsync(auditLog);
-            await _context.SaveChangesAsync();
+            //await _context.AuditLog.AddAsync(auditLog);
+            //await _context.SaveChangesAsync();
 
             return true;
         }

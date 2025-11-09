@@ -13,6 +13,7 @@ namespace HelloJobPH.Shared.DTOs
         public string Time { get; set; } = string.Empty;       // Could also be TimeSpan
         public string? Location { get; set; }
         public string InterviewBy { get; set; } = string.Empty;
+        public string Mode { get; set; } = string.Empty;
     }
     
 }
