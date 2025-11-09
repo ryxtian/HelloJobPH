@@ -1,6 +1,8 @@
 ﻿@page "/candidate/candidate"
+@using Microsoft.AspNetCore.Http
 @inject IClientCandidateService CandidateService
 @inject IDialogService DialogService
+@inject ISnackbar Snackbar
 @inject IJSRuntime JSRuntime
 <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-4">
     <MudPaper Elevation="2" Class="pa-6">
@@ -81,6 +83,10 @@
                                  Size="Size.Small" 
                                  Dense="true"
                                  AnchorOrigin="Origin.BottomLeft">
+                            <MudMenuItem Icon="@Icons.Material.Filled.CheckCircle"
+                                         OnClick="@(() => OverViewByAI(context.ApplicationId))">
+                                AI Overview
+                            </MudMenuItem>
                             <MudMenuItem Icon="@Icons.Material.Filled.CheckCircle" 
                                         OnClick="@(() => Accept(context.ApplicationId))">
                                 Accept
@@ -150,4 +156,21 @@ cancelText: "Cancel");
         }
     }
 
+   
+
+    public async Task OverViewByAI(int id)
+    {
+      
+            // show error
+      
+
+   
+
+        var success = await CandidateService.AIOverviewAsync(id);
+
+        if (success)
+            Snackbar.Add("AI Overview generated successfully.", Severity.Success);
+        else
+            Snackbar.Add("Failed to generate AI Overview.", Severity.Error);
+    }
 }

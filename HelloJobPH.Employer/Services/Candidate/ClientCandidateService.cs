@@ -88,6 +88,11 @@ namespace HelloJobPH.Employer.Services.Candidate
             var response = await _http.PostAsJsonAsync("api/Candidate/SendEmail", dto);
             return response.IsSuccessStatusCode;
         }
+        public async Task<bool> AIOverviewAsync(int id)
+        {
+            var response = await _http.PostAsync($"api/aioverview/ai-overview/{id}", null);
+            return response.IsSuccessStatusCode;
+        }
 
     }
 }

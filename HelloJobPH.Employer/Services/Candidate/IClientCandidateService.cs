@@ -10,6 +10,8 @@ namespace HelloJobPH.Employer.Services.Candidate
         Task<List<ApplicationListDtos>> RetrieveAllAcceptedCandidate();
 
         Task<bool> ForInitial(SetScheduleDto dto);
-    
+
+        Task<bool> AIOverviewAsync(int id);
+
     }
 }

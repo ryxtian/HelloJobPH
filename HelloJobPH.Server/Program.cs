@@ -112,7 +112,7 @@ builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<ISuperAdminService, SuperAdminService>();
 builder.Services.AddScoped<IChatService, ChatService>();
 builder.Services.AddScoped<IAuditLogService, AuditLogService>();
-builder.Services.AddSingleton<AiOverviewService>();
+builder.Services.AddScoped<AiOverviewService>();
 
 //builder.Services.AddScoped<IUserAccountRepository, UserAccountRepository>();
 //builder.Services.AddScoped<IApplicantRepository, ApplicantRepository>();
