@@ -1,0 +1,89 @@
+﻿@inject ISnackbar Snackbar
+@inject IJSRuntime JS
+@inject IClientCandidateService CandidateService
+@using MudBlazor
+
+<MudDialogContent>
+    <MudPaper Class="pa-4">
+        <MudText Typo="Typo.h5" Class="mb-3">AI-Generated Overview</MudText>
+
+        @if (isLoading)
+        {
+            <div class="d-flex flex-column align-center">
+                <MudProgressCircular Indeterminate="true" Class="mb-2" />
+                <MudText Typo="Typo.subtitle2">Generating overview, please wait...</MudText>
+            </div>
+        }
+        else if (!string.IsNullOrWhiteSpace(overview))
+        {
+            <MudPaper Class="pa-3 mt-2" Elevation="2">
+                <MudText Typo="Typo.body1">@overview</MudText>
+            </MudPaper>
+
+            <div class="d-flex justify-end mt-3">
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="CopyToClipboard">
+                    <MudIcon Icon="@Icons.Material.Filled.ContentCopy" Class="mr-1" />
+                    Copy
+                </MudButton>
+            </div>
+        }
+        else
+        {
+            <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Dense="true" Class="mt-2">
+                No overview was generated.
+            </MudAlert>
+        }
+    </MudPaper>
+</MudDialogContent>
+
+<MudDialogActions>
+    <MudButton Color="Color.Secondary" OnClick="CloseDialog">Close</MudButton>
+</MudDialogActions>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+    [Parameter] public int ApplicationId { get; set; }
+
+    private string overview;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GenerateOverviewAsync();
+    }
+
+ private async Task GenerateOverviewAsync()
+{
+    try
+    {
+        var result = await CandidateService.AIOverviewAsync(ApplicationId);
+
+        if (result != null)
+        {
+            overview = result.Overview ?? "No overview available.";
+            Snackbar.Add("AI Overview generated successfully!", Severity.Success);
+        }
+        else
+        {
+            Snackbar.Add("Failed to generate overview.", Severity.Error);
+        }
+    }
+    catch (Exception ex)
+    {
+        Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+    }
+    finally
+    {
+        isLoading = false;
+    }
+}
+
+    private async Task CopyToClipboard()
+    {
+        await JS.InvokeVoidAsync("navigator.clipboard.writeText", overview);
+        Snackbar.Add("Overview copied to clipboard!", Severity.Info);
+    }
+
+    private void CloseDialog() => MudDialog.Close();
+
+}

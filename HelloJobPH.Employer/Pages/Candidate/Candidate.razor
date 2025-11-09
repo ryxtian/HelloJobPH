@@ -62,10 +62,11 @@
                         </MudChip>
                     </MudTd>
                     <MudTd DataLabel="Resume">
-                        <MudButton StartIcon="@Icons.Material.Filled.Description" 
-                                   Size="Size.Small" 
-                                   Variant="Variant.Text" 
-                                   Color="Color.Primary">
+                        <MudButton StartIcon="@Icons.Material.Filled.Description"
+                                   Size="Size.Small"
+                                   Variant="Variant.Text"
+                                   Color="Color.Primary"
+                                   OnClick="@(() => ViewResume(context.ApplicationId))">
                             View Resume
                         </MudButton>
                     </MudTd>
@@ -83,7 +84,7 @@
                                  Size="Size.Small" 
                                  Dense="true"
                                  AnchorOrigin="Origin.BottomLeft">
-                            <MudMenuItem Icon="@Icons.Material.Filled.CheckCircle"
+                            <MudMenuItem Icon="@Icons.Material.Filled.Psychology"
                                          OnClick="@(() => OverViewByAI(context.ApplicationId))">
                                 AI Overview
                             </MudMenuItem>
@@ -158,19 +159,40 @@ cancelText: "Cancel");
 
    
 
-    public async Task OverViewByAI(int id)
+    private async Task OverViewByAI(int applicationId)
     {
-      
-            // show error
-      
+        var parameters = new DialogParameters
+        {
+            ["ApplicationId"] = applicationId
+        };
 
-   
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true,
+            CloseButton = true,
+  
+        };
 
-        var success = await CandidateService.AIOverviewAsync(id);
+        await DialogService.ShowAsync<AIOverviewDialog>("AI Overview", parameters, options);
+    }
+    private async Task ViewResume(int applicationId)
+    {
+        var parameters = new DialogParameters
+        {
+            ["ApplicationId"] = applicationId
+        };
 
-        if (success)
-            Snackbar.Add("AI Overview generated successfully.", Severity.Success);
-        else
-            Snackbar.Add("Failed to generate AI Overview.", Severity.Error);
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Large,
+            FullWidth = true,
+            FullScreen = true,
+            CloseButton = true,
+            CloseOnEscapeKey = true
+        };
+
+        var dialog = DialogService.Show<ResumeDialog>("Resume Viewer", parameters, options);
+        var result = await dialog.Result;
     }
 }

@@ -64,7 +64,8 @@
                         <MudButton StartIcon="@Icons.Material.Filled.Description"
                                    Size="Size.Small"
                                    Variant="Variant.Text"
-                                   Color="Color.Primary">
+                                   Color="Color.Primary"
+                                   OnClick="@(() => ViewResume(context.ApplicationId))">
                             View Resume
                         </MudButton>
                     </MudTd>
@@ -128,5 +129,24 @@
         var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Medium, FullWidth = true };
 
         await DialogService.ShowAsync<SendEmailDialog>("Send Interview Invitation", parameters, options);
+    }
+    private async Task ViewResume(int applicationId)
+    {
+        var parameters = new DialogParameters
+        {
+            ["ApplicationId"] = applicationId
+        };
+
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Large,
+            FullWidth = true,
+            FullScreen = true,
+            CloseButton = true,
+            CloseOnEscapeKey = true
+        };
+
+        var dialog = DialogService.Show<ResumeDialog>("Resume Viewer", parameters, options);
+        var result = await dialog.Result;
     }
 }

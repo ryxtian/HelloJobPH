@@ -1,0 +1,52 @@
+﻿@inject IClientResumeService _service
+
+<MudDialog>
+    <DialogContent>
+        @if (isLoading)
+        {
+            <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+        }
+        else if (!string.IsNullOrEmpty(pdfUrl))
+        {
+            <iframe src="@pdfUrl" width="100%" height="600px" style="border:none;"></iframe>
+        }
+        else
+        {
+            <p>No resume available.</p>
+        }
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton OnClick="Close">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public int ApplicationId { get; set; }
+
+    private bool isLoading = true;
+    private string? pdfUrl;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var stream = await _service.GetResumeAsync(ApplicationId);
+
+            if (stream != null)
+            {
+                using var ms = new MemoryStream();
+                await stream.CopyToAsync(ms);
+                var base64 = Convert.ToBase64String(ms.ToArray());
+                pdfUrl = $"data:application/pdf;base64,{base64}";
+            }
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    void Close() => MudDialog.Close();
+}

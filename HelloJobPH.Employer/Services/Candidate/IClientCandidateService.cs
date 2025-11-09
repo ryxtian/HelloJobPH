@@ -1,4 +1,5 @@
 ﻿using HelloJobPH.Shared.DTOs;
+using static HelloJobPH.Employer.Services.Candidate.ClientCandidateService;
 
 namespace HelloJobPH.Employer.Services.Candidate
 {
@@ -11,7 +12,7 @@ namespace HelloJobPH.Employer.Services.Candidate
 
         Task<bool> ForInitial(SetScheduleDto dto);
 
-        Task<bool> AIOverviewAsync(int id);
+        Task<OverviewResponse?> AIOverviewAsync(int id);
 
     }
 }

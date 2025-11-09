@@ -11,6 +11,7 @@ using HelloJobPH.Employer.Services.HumanResource;
 using HelloJobPH.Employer.Services.Interview;
 using HelloJobPH.Employer.Services.JobPosting;
 using HelloJobPH.Employer.Services.Overview;
+using HelloJobPH.Employer.Services.Resume;
 using HelloJobPH.Employer.Services.SuperAdmin;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
@@ -45,6 +46,7 @@ builder.Services.AddScoped<IClientDashboardService, ClientDashboardService>();
 builder.Services.AddScoped<IClientSuperAdminService, ClientSuperAdminService>();
 builder.Services.AddScoped<IClientChatService, ClientChatService>();
 builder.Services.AddScoped<IClientAuditLogService, ClientAuditLogService>();
+builder.Services.AddScoped<IClientResumeService, ClientResumeService>();
 
 
 await builder.Build().RunAsync();

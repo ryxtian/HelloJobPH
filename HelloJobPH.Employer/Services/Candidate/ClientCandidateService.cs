@@ -2,6 +2,8 @@
 using HelloJobPH.Shared.DTOs;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Text.Json;
+using static HelloJobPH.Employer.Pages.Shared.Dialogs.AIOverviewDialog;
 
 namespace HelloJobPH.Employer.Services.Candidate
 {
@@ -88,11 +90,28 @@ namespace HelloJobPH.Employer.Services.Candidate
             var response = await _http.PostAsJsonAsync("api/Candidate/SendEmail", dto);
             return response.IsSuccessStatusCode;
         }
-        public async Task<bool> AIOverviewAsync(int id)
+        public class OverviewResponse
+        {
+            public string Overview { get; set; }
+        }
+        public async Task<OverviewResponse?> AIOverviewAsync(int id)
         {
             var response = await _http.PostAsync($"api/aioverview/ai-overview/{id}", null);
-            return response.IsSuccessStatusCode;
+
+            if (response.IsSuccessStatusCode)
+            {
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                };
+
+                var result = await response.Content.ReadFromJsonAsync<OverviewResponse>(options);
+                return result;
+            }
+
+            return null;
         }
+
 
     }
 }

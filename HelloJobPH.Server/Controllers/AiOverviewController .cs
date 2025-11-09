@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using HelloJobPH.Server.Service.AI;
+﻿using HelloJobPH.Server.Service.AI;
+using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
+using static HelloJobPH.Employer.Services.Candidate.ClientCandidateService;
 
 namespace HelloJobPH.Server.Controllers
 {
@@ -18,12 +19,10 @@ namespace HelloJobPH.Server.Controllers
         [HttpPost("ai-overview/{id}")]
         public async Task<IActionResult> Generate(int id)
         {
-
             var result = await _aiService.GenerateOverviewAsync(id);
-            return Ok(new { overview = result });
-        }
 
-     
+            return Ok(new OverviewResponse { Overview = result });
+        }
     }
 
     public class OverviewRequest
