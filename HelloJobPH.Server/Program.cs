@@ -39,6 +39,20 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy => policy
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials()
+        .WithOrigins(
+            "https://localhost:7172", // HQ.Blazor //  api 7172   // blazor 7115
+            "https://localhost:7132"  // Sys.Blazor//  api 7132   // blazor 7220
+        ));
+});
+
 //var jwtKey = builder.Configuration["Jwt:Key"];
 //var jwtIssuer = builder.Configuration["Jwt:Issuer"];
 //var jwtAudience = builder.Configuration["Jwt:Audience"];
@@ -158,6 +172,10 @@ app.MapControllers();
 app.MapFallbackToFile("index.html");
 var httpContextAccessor = app.Services.GetRequiredService<IHttpContextAccessor>();
 HelloJobPH.Server.Utility.Utilities.Configure(httpContextAccessor);
+
+
+
+app.UseCors("AllowAll");
 app.MapHub<Chathub>("/chathub");
 
 app.Run();

@@ -8,14 +8,14 @@ namespace HelloJobPH.Server.ChatSystemHub
 {
     public class Chathub : Hub
     {
-        private readonly ApplicationDbContext _context;
-        public Chathub(ApplicationDbContext context)
+ 
+        //public async Task SendMessage(ChatMessageDtos message)
+        //{
+        //   await Clients.All.SendAsync("ReceiveMessage",message);
+        //}
+        public async Task SendMessage(string sender, string message)
         {
-            _context = context;
-        }
-        public async Task SendMessage(ChatMessageDtos message)
-        {
-           await Clients.All.SendAsync("ReceiveMessage",message);
+            await Clients.All.SendAsync("ReceiveMessage", sender, message);
         }
     }
 }

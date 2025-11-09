@@ -1,0 +1,45 @@
+﻿@page "/chat"
+@using HelloJobPH.Employer.Services.ChatService
+@inject ChatService ChatService
+
+<MudPaper Class="pa-4" Elevation="3">
+    <MudText Typo="Typo.h5">HQ ⇄ Sys Chat</MudText>
+
+    <MudTextField @bind-Value="user" Label="Name" />
+    <MudTextField @bind-Value="message" Label="Message" />
+    <MudButton OnClick="SendMessage" Color="Color.Primary" Variant="Variant.Filled">Send</MudButton>
+
+    <MudDivider Class="my-4" />
+
+    <MudList T="string">
+        @foreach (var m in messages)
+        {
+            <MudListItem><b>@m.User:</b> @m.Text</MudListItem>
+        }
+    </MudList>
+</MudPaper>
+
+@code {
+    private string user = "";
+    private string message = "";
+    private List<(string User, string Text)> messages = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ChatService.InitializeAsync();
+        ChatService.OnMessageReceived += (user, msg) =>
+        {
+            messages.Add((user, msg));
+            InvokeAsync(StateHasChanged);
+        };
+    }
+
+    private async Task SendMessage()
+    {
+        if (!string.IsNullOrWhiteSpace(message))
+        {
+            await ChatService.SendMessage(user, message);
+            message = "";
+        }
+    }
+}
