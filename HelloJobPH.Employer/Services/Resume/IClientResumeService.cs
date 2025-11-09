@@ -2,6 +2,6 @@
 {
     public interface IClientResumeService
     {
-        Task<Stream?> GetResumeAsync(int applicationId);
+        Task<Stream?> GetResumeAsync(int applicationId);//
     }
 }
