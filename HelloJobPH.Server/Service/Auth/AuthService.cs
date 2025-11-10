@@ -117,7 +117,7 @@ namespace HelloJobPH.Server.Services
                         new Claim(ClaimTypes.Name, Employer.CompanyName),
        
                         new Claim(ClaimTypes.Role, user.Role),
-                        new Claim(ClaimTypes.NameIdentifier, Employer.EmployerId.ToString())
+                         new Claim(ClaimTypes.NameIdentifier, user.UserAccountId.ToString())
                     };
 
                     // ✅ Use the same JWT settings as Program.cs

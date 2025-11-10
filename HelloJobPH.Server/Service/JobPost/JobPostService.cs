@@ -32,15 +32,18 @@ namespace HelloJobPH.Server.Service.JobPost
             var hr = await _context.HumanResource
                 .FirstOrDefaultAsync(i => i.UserAccountId == userId);
 
-            if (hr is null)
-            {
-                throw new Exception("Human resource not found.");
-            }
+            var employer = await _context.Employer
+                .FirstOrDefaultAsync(i => i.UserAccountId == userId);
 
             try
             {
+                var employerId = hr?.EmployerId ?? employer?.EmployerId;
+
+                if (employerId == null)
+                    throw new Exception("No associated employer found for this user.");
+
                 var response = await _context.JobPosting
-                    .Where(j => j.IsDeleted == 0 && j.EmployerId == hr.EmployerId) // ✅ filter by employer ID
+                    .Where(j => j.IsDeleted == 0 && j.EmployerId == employerId)
                     .Select(j => new JobPostingDtos
                     {
                         JobPostingId = j.JobPostingId,
@@ -66,6 +69,7 @@ namespace HelloJobPH.Server.Service.JobPost
                 throw;
             }
         }
+
 
 
         public async Task<JobPostingDtos> GetByIdAsync(int id)
