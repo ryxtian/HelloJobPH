@@ -141,7 +141,7 @@ namespace HelloJobPH.Server.Service.Candidate
             try
             {
                 var result = await _context.Application
-                .Where(a => a.ApplicationStatus == ApplicationStatus.Pending && a.EmployerId ==hr.EmployerId )
+                .Where(a => a.ApplicationStatus == ApplicationStatus.Pending || a.ApplicationStatus == ApplicationStatus.Viewed && a.EmployerId ==hr.EmployerId )
                 .Select(a => new ApplicationListDtos
                 {
                     ApplicationId = a.ApplicationId,
@@ -318,7 +318,23 @@ Best regards,
             }
         }
 
+        public async Task<bool> ViewResumeUpdate(int id)
+        {
+            var application = await _context.Application
+                .FirstOrDefaultAsync(i=>i.ApplicantId == id);
 
+            if (application is null)
+                return false;
+
+            application.ApplicationStatus = ApplicationStatus.Viewed;
+
+
+            _context.Update(application);
+            await _context.SaveChangesAsync();
+
+            return true;
+
+        }
 
         public class CandidateEmailDto
         {

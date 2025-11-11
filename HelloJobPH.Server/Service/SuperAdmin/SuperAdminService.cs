@@ -2,6 +2,8 @@
 using HelloJobPH.Server.Data;
 using HelloJobPH.Server.Service.Email;
 using HelloJobPH.Shared.DTOs;
+using HelloJobPH.Shared.Enums;
+using HelloJobPH.Shared.Model;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using static HelloJobPH.Employer.Pages.SuperAdmin.AdminDashboard;
@@ -33,7 +35,8 @@ namespace HelloJobPH.Server.Service.SuperAdmin
                     Status = e.Status,
                     Province = e.Province,
                     ContactEmail = e.ContactEmail,
-                    ContactNumber = e.ContactNumber
+                    ContactNumber = e.ContactNumber,
+                    JobPostsCount =e.JobPost.Count
                 })
                 .ToListAsync();
 
@@ -183,15 +186,14 @@ HelloJobPH Team";
                     JobCategory = j.JobCategory,
                     JobRequirements = j.JobRequirements,
                     PostedDate = j.PostedDate,
-
                     IsDeleted = j.IsDeleted
                 })
-.Where(j => j.ExpiredDate == null || j.ExpiredDate >= today)
-.OrderByDescending(j => j.PostedDate)
+                .OrderByDescending(j => j.PostedDate)
                 .ToListAsync();
 
             return jobPosts;
         }
+
 
 
         public async Task<List<ApplicantDtos>> ApplicantList()
@@ -321,5 +323,6 @@ HelloJobPH Team";
             await _context.SaveChangesAsync();
             return true;
         }
+
     }
 }

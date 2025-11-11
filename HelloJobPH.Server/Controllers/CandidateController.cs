@@ -98,7 +98,12 @@ namespace HelloJobPH.Server.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
-
+        [HttpPut("Viewresume/{id}")]
+        public async Task<IActionResult>ViewResumeUpdate(int id)
+        {
+            var result = await _candidateService.ViewResumeUpdate(id);
+            return Ok(result);
+        }
 
     }
 }

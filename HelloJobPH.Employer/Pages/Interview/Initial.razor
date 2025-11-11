@@ -97,10 +97,19 @@
                 </MudStack>
 
                 <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                    <!-- Search bar -->
+                    <MudTextField @bind-Value="_searchString"
+                                  Placeholder="Search candidate or position..."
+                                  Adornment="Adornment.Start"
+                                  AdornmentIcon="@Icons.Material.Filled.Search"
+                                  Class="me-3"
+                                  Immediate="true"
+                                  Variant="Variant.Outlined"
+                                  Size="Size.Small" />
 
                     <!-- Candidate count chip -->
                     <MudChip T="string" Icon="@Icons.Material.Filled.People" Color="Color.Info" Variant="Variant.Filled">
-                        @initial.Count Candidate@(initial.Count != 1 ? "s" : "")
+                        @filteredInitial.Count Candidate@(filteredInitial.Count != 1 ? "s" : "")
                     </MudChip>
                 </MudStack>
             </MudStack>
@@ -108,12 +117,12 @@
             <MudDivider />
 
             <!-- Table Section -->
-            <MudTable Dense="false" 
-                      Hover="true" 
-                      Bordered="false" 
+            <MudTable Dense="false"
+                      Hover="true"
+                      Bordered="false"
                       Striped="true"
-                      Breakpoint="Breakpoint.Sm" 
-                      Items="@initial"
+                      Breakpoint="Breakpoint.Sm"
+                      Items="@filteredInitial"
                       Elevation="0"
                       Class="rounded-lg">
                 <HeaderContent>
@@ -126,6 +135,7 @@
                     <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Type</strong></MudText></MudTh>
                     <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Actions</strong></MudText></MudTh>
                 </HeaderContent>
+
                 <RowTemplate>
                     <MudTd DataLabel="Candidate">
                         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
@@ -142,17 +152,22 @@
                     </MudTd>
                     <MudTd DataLabel="Status">
                         <MudChip T="string" Size="Size.Small" Variant="Variant.Filled" Color="Color.Info">
-                            @(context.MarkAsCompleted == 1 ? "Completed" : context.Status)
+                            @context.Status
                         </MudChip>
+                        @if (context.MarkAsCompleted == 1)
+                        {
+                            <span class="badge bg-success ms-2 px-2 py-1" style="font-size: 0.75rem; font-weight: 600;">
+                                <i class="bi bi-check-circle-fill me-1"></i> Completed
+                            </span>
+                        }
                     </MudTd>
                     <MudTd DataLabel="Resume">
-                        <MudButton Href=""
-                                   Target="_blank" 
-                                   StartIcon="@Icons.Material.Filled.Description" 
-                                   Size="Size.Small" 
-                                   Variant="Variant.Text" 
-                                   Color="Color.Primary">
-                            View
+                        <MudButton StartIcon="@Icons.Material.Filled.Description"
+                                   Size="Size.Small"
+                                   Variant="Variant.Text"
+                                   Color="Color.Primary"
+                                   OnClick="@(() => ViewResume(context.ApplicationId))">
+                            View Resume
                         </MudButton>
                     </MudTd>
                     <MudTd DataLabel="Interview Date">
@@ -171,8 +186,8 @@
                         <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@context.Type</MudChip>
                     </MudTd>
                     <MudTd DataLabel="Actions">
-                        <MudMenu Icon="@Icons.Material.Filled.MoreVert" 
-                                 Size="Size.Small" 
+                        <MudMenu Icon="@Icons.Material.Filled.MoreVert"
+                                 Size="Size.Small"
                                  Dense="true"
                                  AnchorOrigin="Origin.BottomLeft">
                             <MudMenuItem Icon="@Icons.Material.Filled.Schedule" OnClick="@(() => Reschedule(context))">Reschedule</MudMenuItem>
@@ -180,25 +195,16 @@
                             <MudDivider />
                             <MudMenuItem Icon="@Icons.Material.Filled.Build" OnClick="@(() => ForTechnical(context))">Technical</MudMenuItem>
                             <MudMenuItem Icon="@Icons.Material.Filled.EmojiEvents" OnClick="@(() => ForFinal(context))">Final</MudMenuItem>
-
                             <MudMenuItem Icon="@Icons.Material.Filled.Cancel" OnClick="@(() => Failed(context.ApplicationId))" Class="mud-error-text">Failed</MudMenuItem>
                             <MudDivider />
                             <MudMenuItem OnClick="@(() => Delete(context.ApplicationId))" Icon="@Icons.Material.Filled.Delete" Class="mud-error-text">Delete</MudMenuItem>
-                            <MudMenuItem Icon="@Icons.Material.Filled.Visibility" 
-                                        OnClick="@(()=> NavigateToOverview(context.ApplicationId))">
-                                Overview
-                            </MudMenuItem>
-                            <MudMenuItem Icon="@Icons.Material.Filled.ChatBubble"
-                                        OnClick="@(() => OpenChat(context))">
-                                Chat
-                            </MudMenuItem>
-                            <MudMenuItem Icon="@Icons.Material.Filled.MarkChatRead"
-                                         OnClick="@(() => MarkAsCompleted(context.ApplicationId))">
-                                Mark As Completed
-                            </MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.Visibility" OnClick="@(() => NavigateToOverview(context.ApplicationId))">Overview</MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.ChatBubble" OnClick="@(() => OpenChat(context))">Chat</MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.MarkChatRead" OnClick="@(() => MarkAsCompleted(context.ApplicationId))">Mark As Completed</MudMenuItem>
                         </MudMenu>
                     </MudTd>
                 </RowTemplate>
+
                 <NoRecordsContent>
                     <MudStack AlignItems="AlignItems.Center" Spacing="3" Class="pa-8">
                         <MudIcon Icon="@Icons.Material.Filled.EventBusy" Size="Size.Large" Color="Color.Secondary" />
@@ -212,6 +218,20 @@
         </MudStack>
     </MudPaper>
 </MudContainer>
+
+@code {
+    private string _searchString = string.Empty;
+
+    private List<InterviewListDtos> filteredInitial =>
+        string.IsNullOrWhiteSpace(_searchString)
+            ? initial
+            : initial.Where(x =>
+                (x.Firstname + " " + x.Lastname).Contains(_searchString, StringComparison.OrdinalIgnoreCase) ||
+                (x.JobTitle ?? string.Empty).Contains(_searchString, StringComparison.OrdinalIgnoreCase) ||
+                (x.Status?.ToString() ?? string.Empty).Contains(_searchString, StringComparison.OrdinalIgnoreCase)
+            ).ToList();
+}
+
 
 
 
@@ -540,4 +560,160 @@
         }
     }
 
+
+     private async Task ViewResume(int applicationId)
+    {
+
+        var parameters = new DialogParameters
+        {
+            ["ApplicationId"] = applicationId
+        };
+
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Large,
+            FullWidth = true,
+            FullScreen = true,
+            CloseButton = true,
+            CloseOnEscapeKey = true
+        };
+
+        var dialog = DialogService.Show<ResumeDialog>("Resume Viewer", parameters, options);
+        var result = await dialog.Result;
+    }
+
 }
+
+
+
+@* <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-4">
+    <MudPaper Elevation="2" Class="pa-6">
+        <MudStack Spacing="4">
+            <!-- Header Section -->
+            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                <MudStack Spacing="1">
+                    <MudText Typo="Typo.h5" Color="Color.Primary">
+                        <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" Class="mr-2" />
+                        Initial Interviews
+                    </MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        Manage and review scheduled initial interview candidates
+                    </MudText>
+                </MudStack>
+
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+
+                    <!-- Candidate count chip -->
+                    <MudChip T="string" Icon="@Icons.Material.Filled.People" Color="Color.Info" Variant="Variant.Filled">
+                        @initial.Count Candidate@(initial.Count != 1 ? "s" : "")
+                    </MudChip>
+                </MudStack>
+            </MudStack>
+
+            <MudDivider />
+
+            <!-- Table Section -->
+            <MudTable Dense="false"
+                      Hover="true"
+                      Bordered="false"
+                      Striped="true"
+                      Breakpoint="Breakpoint.Sm"
+                      Items="@initial"
+                      Elevation="0"
+                      Class="rounded-lg">
+                <HeaderContent>
+                    <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Candidate</strong></MudText></MudTh>
+                    <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Position</strong></MudText></MudTh>
+                    <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Status</strong></MudText></MudTh>
+                    <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Resume</strong></MudText></MudTh>
+                    <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Interview Date</strong></MudText></MudTh>
+                    <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Time</strong></MudText></MudTh>
+                    <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Type</strong></MudText></MudTh>
+                    <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Actions</strong></MudText></MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Candidate">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                            <MudAvatar Color="Color.Primary" Size="Size.Small">
+                                @context.Firstname?.Substring(0, 1)@context.Lastname?.Substring(0, 1)
+                            </MudAvatar>
+                            <MudText Typo="Typo.body2">
+                                <strong>@context.Firstname @context.Lastname</strong>
+                            </MudText>
+                        </MudStack>
+                    </MudTd>
+                    <MudTd DataLabel="Position">
+                        <MudText Typo="Typo.body2">@context.JobTitle</MudText>
+                    </MudTd>
+                    <MudTd DataLabel="Status">
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Filled" Color="Color.Info">
+                            @context.Status
+                        </MudChip>
+                        <span>@(context.MarkAsCompleted == 1 ? "Completed" : " ")</span>
+                    </MudTd>
+                    <MudTd DataLabel="Resume">
+                        <MudButton StartIcon="@Icons.Material.Filled.Description"
+                                   Size="Size.Small"
+                                   Variant="Variant.Text"
+                                   Color="Color.Primary"
+                                   OnClick="@(() => ViewResume(context.ApplicationId))">
+                            View Resume
+                        </MudButton>
+                    </MudTd>
+                    <MudTd DataLabel="Interview Date">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                            <MudIcon Icon="@Icons.Material.Filled.Event" Size="Size.Small" Color="Color.Secondary" />
+                            <MudText Typo="Typo.body2">@context.DateInterview?.ToString("dd MMM yyyy")</MudText>
+                        </MudStack>
+                    </MudTd>
+                    <MudTd DataLabel="Time">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                            <MudIcon Icon="@Icons.Material.Filled.AccessTime" Size="Size.Small" Color="Color.Secondary" />
+                            <MudText Typo="Typo.body2">@context.TimeInterview</MudText>
+                        </MudStack>
+                    </MudTd>
+                    <MudTd DataLabel="Type">
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@context.Type</MudChip>
+                    </MudTd>
+                    <MudTd DataLabel="Actions">
+                        <MudMenu Icon="@Icons.Material.Filled.MoreVert"
+                                 Size="Size.Small"
+                                 Dense="true"
+                                 AnchorOrigin="Origin.BottomLeft">
+                            <MudMenuItem Icon="@Icons.Material.Filled.Schedule" OnClick="@(() => Reschedule(context))">Reschedule</MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.PersonOff" OnClick="@(() => NoAppearance(context.ApplicationId))">No Appearance</MudMenuItem>
+                            <MudDivider />
+                            <MudMenuItem Icon="@Icons.Material.Filled.Build" OnClick="@(() => ForTechnical(context))">Technical</MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.EmojiEvents" OnClick="@(() => ForFinal(context))">Final</MudMenuItem>
+
+                            <MudMenuItem Icon="@Icons.Material.Filled.Cancel" OnClick="@(() => Failed(context.ApplicationId))" Class="mud-error-text">Failed</MudMenuItem>
+                            <MudDivider />
+                            <MudMenuItem OnClick="@(() => Delete(context.ApplicationId))" Icon="@Icons.Material.Filled.Delete" Class="mud-error-text">Delete</MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.Visibility"
+                                         OnClick="@(()=> NavigateToOverview(context.ApplicationId))">
+                                Overview
+                            </MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.ChatBubble"
+                                         OnClick="@(() => OpenChat(context))">
+                                Chat
+                            </MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.MarkChatRead"
+                                         OnClick="@(() => MarkAsCompleted(context.ApplicationId))">
+                                Mark As Completed
+                            </MudMenuItem>
+                        </MudMenu>
+                    </MudTd>
+                </RowTemplate>
+                <NoRecordsContent>
+                    <MudStack AlignItems="AlignItems.Center" Spacing="3" Class="pa-8">
+                        <MudIcon Icon="@Icons.Material.Filled.EventBusy" Size="Size.Large" Color="Color.Secondary" />
+                        <MudText Typo="Typo.h6" Color="Color.Secondary">No Scheduled Interviews</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                            There are no candidates scheduled for initial interviews at this time.
+                        </MudText>
+                    </MudStack>
+                </NoRecordsContent>
+            </MudTable>
+        </MudStack>
+    </MudPaper>
+</MudContainer> *@

@@ -1,4 +1,4 @@
-﻿@* --- Inline CSS --- *@
+﻿@inject AuthenticationStateProvider AuthenticationStateProvider
 <style>
     .mud-drawer {
         background-color: #1E1E2F; /* Dark navy background */
@@ -39,14 +39,30 @@
         <MudNavLink Href="/jobpost/JobPost" Icon="@Icons.Material.Filled.AddBox">Job Post</MudNavLink>
         <MudNavLink Href="/Candidate/Candidate" Icon="@Icons.Material.Filled.PersonSearch">Candidates</MudNavLink>
         <MudNavLink Href="/Candidate/AcceptedCandidates" Icon="@Icons.Material.Filled.HowToReg">Accepted Candidates</MudNavLink>
-        <MudNavGroup Title="Interview Management" Icon="@Icons.Material.Filled.EventNote" Dense="true" Expanded="false">
+        <MudNavLink Href="/interview/initial" Icon="@Icons.Material.Filled.EventNote">Interviews</MudNavLink>
+@*         <MudNavGroup Title="Interview Management" Icon="@Icons.Material.Filled.EventNote" Dense="true" Expanded="false">
             <MudNavLink Href="/interview/initial" Icon="@Icons.Material.Filled.PersonAdd">Initial Interview</MudNavLink>
             <MudNavLink Href="/interview/technical" Icon="@Icons.Material.Filled.Engineering">Technical Interview</MudNavLink>
             <MudNavLink Href="/interview/final" Icon="@Icons.Material.Filled.ThumbUp">Final Interview</MudNavLink>
-        </MudNavGroup>
+        </MudNavGroup> *@
         <MudNavLink Href="/audit/auditlog" Icon="@Icons.Material.Filled.HowToReg">Audit Log</MudNavLink>
 
+         @if (isEmployer)
+    {
         <MudNavLink Href="/HumanResource/Recruiter" Icon="@Icons.Material.Filled.People">HR Management</MudNavLink>
-
+    }
     </MudNavMenu>
 </MudDrawer>
+
+@code {
+    private bool isEmployer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        // Check if user has Employer role
+        isEmployer = user.IsInRole("Employer");
+    }
+}

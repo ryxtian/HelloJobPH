@@ -133,7 +133,7 @@ cancelText: "Cancel");
 
         if (confirm == true)
         {
-            
+
             await CandidateService.CandidateAcceptAsync(id);
             candidates = await CandidateService.RetrieveAllCandidate();
             await JSRuntime.InvokeVoidAsync("location.reload");
@@ -157,7 +157,7 @@ cancelText: "Cancel");
         }
     }
 
-   
+
 
     private async Task OverViewByAI(int applicationId)
     {
@@ -171,13 +171,15 @@ cancelText: "Cancel");
             MaxWidth = MaxWidth.Medium,
             FullWidth = true,
             CloseButton = true,
-  
+
         };
 
         await DialogService.ShowAsync<AIOverviewDialog>("AI Overview", parameters, options);
     }
     private async Task ViewResume(int applicationId)
     {
+        await CandidateService.ViewResumeStatusAsync(applicationId);
+
         var parameters = new DialogParameters
         {
             ["ApplicationId"] = applicationId

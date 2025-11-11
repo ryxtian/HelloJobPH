@@ -69,6 +69,7 @@
 
 
 
+using HelloJobPH.Employer.Pages.SuperAdmin;
 using HelloJobPH.Server.Data;
 using HelloJobPH.Server.Service.Auth;
 using HelloJobPH.Shared.Model;
@@ -111,6 +112,17 @@ namespace HelloJobPH.Server.Services
                     var Employer = await _context.Employer.FirstOrDefaultAsync(h => h.UserAccountId == user.UserAccountId);
                     if (Employer == null)
                         throw new Exception("User details not found.");
+
+
+
+
+                    if (Employer == null)
+                        throw new Exception("Associated employer not found.");
+
+                    if (Employer.IsDeleted == 1 || Employer.Status == "Disabled")
+                        throw new Exception("Your employer account is disabled. Login not allowed.");
+
+
                     // ✅ Claims for the logged-in user
                     var claims = new[]
                     {
@@ -156,7 +168,7 @@ namespace HelloJobPH.Server.Services
                         if (employer == null)
                             throw new Exception("Associated employer not found.");
 
-                        if (employer.IsDeleted == 1 || employer.Status == "Disable")
+                        if (employer.IsDeleted == 1 || employer.Status == "Disabled")
                             throw new Exception("Your employer account is disabled. Login not allowed.");
                     }
 

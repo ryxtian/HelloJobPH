@@ -83,7 +83,7 @@
                     <MudTd DataLabel="Timestamp">
                         <MudStack Spacing="0">
                             <MudText Typo="Typo.body2"><strong>@context.Timestamp.ToString("dd MMM yyyy")</strong></MudText>
-                            <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Timestamp.ToString("hh:mm tt")</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Timestamp.ToLocalTime().ToString("hh:mm tt")</MudText>
                         </MudStack>
                     </MudTd>
                     <MudTd DataLabel="Candidate">

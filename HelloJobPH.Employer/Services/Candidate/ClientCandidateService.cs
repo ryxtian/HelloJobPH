@@ -112,6 +112,16 @@ namespace HelloJobPH.Employer.Services.Candidate
             return null;
         }
 
+        public async Task<bool> ViewResumeStatusAsync(int id)
+        {
+            var response = await _http.PutAsJsonAsync($"api/candidate/Viewresume/{id}", id);
 
+            if (response.IsSuccessStatusCode)
+            {
+                return true;
+            }
+
+            return false;
+        }
     }
 }

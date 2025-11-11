@@ -23,7 +23,7 @@ namespace HelloJobPH.Server.Service.Overview
                     Lastname = a.Applicant.Surname,
                     Phone = a.Applicant.Phone,
                     Location = a.Applicant.Address,
-
+                    Email = a.Applicant.UserAccount.Email,
                     JobTitle = a.JobPosting.Title,
                     SalaryFrom = a.JobPosting.SalaryFrom,
                     SalaryTo = a.JobPosting.SalaryTo,

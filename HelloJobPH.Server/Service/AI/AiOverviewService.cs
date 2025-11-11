@@ -69,23 +69,24 @@ namespace HelloJobPH.Server.Service.AI
 
             // 5️⃣ Prepare AI prompt
             var prompt = $@"
-Analyze the following resume and job posting, then write a short, professional AI-generated overview
-(3-5 sentences) highlighting how the candidate's skills and experience align with the job.
+                Analyze the following resume and job posting, then write a short, professional AI-generated overview
+                (3-5 sentences) highlighting how the candidate's skills and experience align with the job.
 
-Resume:
-{resumeText}
+                Resume:
+                {resumeText}
 
-Job Posting:
-{jobPostText}
+                Job Posting:
+                {jobPostText}
+                
+                Instructions:
+                1. Begin the overview by explicitly stating the applicant's full name as it appears in the resume.
+                2. Use third-person, formal language suitable for LinkedIn or a professional job summary.
+                3. Highlight key skills, experience, and achievements relevant to the job posting.
+                4. Keep it concise (3-5 sentences).
+                5. Evaluate the applicant if they are 'Qualified', 'To be Considered', or 'Unqualified' enclose the evaluate in square bracker '[]'
 
-Instructions:
-1. Begin the overview by explicitly stating the applicant's full name as it appears in the resume.
-2. Use third-person, formal language suitable for LinkedIn or a professional job summary.
-3. Highlight key skills, experience, and achievements relevant to the job posting.
-4. Keep it concise (3-5 sentences).
-
-Your output should start like: 'Applicant Name: [Full Name from resume]' followed by the overview.
-";
+                Your output should start like: 'Applicant Name: [Full Name from resume]' followed by the overview.
+                ";
 
             // 6️⃣ Call AI model
             try

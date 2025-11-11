@@ -79,25 +79,35 @@ namespace HelloJobPH.Server.Service.Interview
                 }
                 try
                 {
-                    var result = await _context.Application
-                        .Where(a => a.ApplicationStatus == ApplicationStatus.Initial && a.IsDeleted == 0 && a.HumanResourcesId == hr.HumanResourceId)
-                        .Select(a => new InterviewListDtos
-                        {
-                            ApplicationId = a.ApplicationId,
-                            Firstname = a.Applicant.Firstname,
-                            Lastname = a.Applicant.Surname,
-                            Email = a.Applicant.UserAccount.Email,
-                            JobTitle = a.JobPosting.Title,
-                            Type = a.JobPosting.EmploymentType,
-                            DateApplied = a.DateApply,
-                            TimeInterview = a.Interview != null ? a.Interview.ScheduledTime : null,
-                            DateInterview = a.Interview != null ? a.Interview.ScheduledDate : null,
-                            Status = a.ApplicationStatus,
-                            MarkAsCompleted = a.MarkAsCompleted
-                        })
-                        .ToListAsync();
+                var validStatuses = new[]
+                {
+    ApplicationStatus.Initial,
+    ApplicationStatus.Technical,
+    ApplicationStatus.Final
+};
 
-                    return result;
+                var result = await _context.Application
+                    .Where(a => validStatuses.Contains(a.ApplicationStatus)
+                                && a.IsDeleted == 0
+                                && a.HumanResourcesId == hr.HumanResourceId)
+                    .Select(a => new InterviewListDtos
+                    {
+                        ApplicationId = a.ApplicationId,
+                        Firstname = a.Applicant.Firstname,
+                        Lastname = a.Applicant.Surname,
+                        Email = a.Applicant.UserAccount.Email,
+                        JobTitle = a.JobPosting.Title,
+                        Type = a.JobPosting.EmploymentType,
+                        DateApplied = a.DateApply,
+                        TimeInterview = a.Interview != null ? a.Interview.ScheduledTime : null,
+                        DateInterview = a.Interview != null ? a.Interview.ScheduledDate : null,
+                        Status = a.ApplicationStatus,
+                        MarkAsCompleted = a.MarkAsCompleted
+                    })
+                    .ToListAsync();
+
+
+                return result;
                 }
                 catch (Exception)
                 {

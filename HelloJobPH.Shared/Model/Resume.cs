@@ -11,10 +11,11 @@ namespace HelloJobPH.Shared.Model
     {
         [Key]
         public int ResumeId { get; set; }
+        public string ResumeFileName { get; set; } = string.Empty;
         public byte[]? ResumeFileData { get; set; }
         public int? ApplicantId { get; set; }
         public byte IsDeleted { get; set; } = 0;
         public Applicant? Applicant { get; set; }
-        public byte IsActive { get; set; } = 0;
+        //public byte IsActive { get; set; } = 0;
     }
 }

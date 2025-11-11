@@ -207,9 +207,9 @@ public class Seeder
         // 6️⃣ RESUMES
         var resumes = new List<Resume>
         {
-            new() { ResumeFileData = null, ApplicantId = applicants[0].ApplicantId, IsActive = 1 },
-            new() { ResumeFileData = null, ApplicantId = applicants[1].ApplicantId, IsActive = 1 },
-            new() { ResumeFileData = null, ApplicantId = applicants[2].ApplicantId, IsActive = 1 }
+            new() { ResumeFileData = null, ApplicantId = applicants[0].ApplicantId },
+            new() { ResumeFileData = null, ApplicantId = applicants[1].ApplicantId },
+            new() { ResumeFileData = null, ApplicantId = applicants[2].ApplicantId }
         };
 
         await _context.Resume.AddRangeAsync(resumes);

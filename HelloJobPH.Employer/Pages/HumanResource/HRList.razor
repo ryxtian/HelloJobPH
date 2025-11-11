@@ -5,6 +5,10 @@
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 
+@attribute [Authorize(Roles = "Employer")]
+
+<AuthorizeView Roles="Employer">
+    <Authorized>
 <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-6">
     <!-- Header Section -->
     <MudPaper Elevation="0" Class="pa-4 mb-4">
@@ -125,43 +129,14 @@
         </MudGrid>
     }
 </MudContainer>
+    </Authorized>
 
-
-@* <MudTable Items="@HumanResources" Filter="FilterFunc1" @bind-SelectedItem="selectedItem1" Hover="true" Elevation="1">
-    <ToolBarContent>
-        <MudText Typo="Typo.h6">Human Resource</MudText>
-        <MudSpacer />
-        <MudTextField @bind-Value="searchString1" Placeholder="Search" Adornment="Adornment.Start"
-                      AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0" />
-    </ToolBarContent>
-
-    <HeaderContent>
-        <MudTh>Name</MudTh>
-        <MudTh>Email</MudTh>
-        <MudTh>Phone</MudTh>
-        <MudTh>Position</MudTh>
-        <MudTh>Options</MudTh>
-    </HeaderContent>
-
-    <RowTemplate>
-        <MudTd DataLabel="Firstname">@context.Firstname @context.Lastname</MudTd>
-        <MudTd DataLabel="Email">@context.Email</MudTd>
-        <MudTd DataLabel="Phone">@context.PhoneNumber</MudTd>
-        <MudTd DataLabel="Position">@context.JobTitle</MudTd>
-        <MudTd DataLabel="Options">
-            <MudButton Color="Color.Primary" Variant="Variant.Outlined" OnClick="@(() => OnEdit(context.HumanResourceId))" Size="Size.Small">
-                Edit
-            </MudButton>
-            <MudButton Color="Color.Error" Variant="Variant.Outlined" Size="Size.Small" Disabled="@isDeleting" OnClick="@(() => OnDelete(context.HumanResourceId))" Class="ml-2">
-                Delete
-            </MudButton>
-        </MudTd>
-    </RowTemplate>
-
-    <PagerContent>
-        <MudTablePager />
-    </PagerContent>
-</MudTable> *@
+        <NotAuthorized>
+            <MudText Typo="Typo.h6" Color="Color.Error">
+                You are not authorized to view this page.
+            </MudText>
+        </NotAuthorized>
+</AuthorizeView>
 
 @code{
     private string searchString1 = string.Empty;

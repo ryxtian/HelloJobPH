@@ -9,5 +9,6 @@ namespace HelloJobPH.Server.Service.Candidate
         Task<bool> SendInitialEmail(SetScheduleDto dto);
         Task<List<ApplicationListDtos>> RetrieveAllCandidate();
         Task<List<ApplicationListDtos>> RetrieveAllAcceptedCandidate();
+        Task<bool> ViewResumeUpdate(int id);
     }
 }
