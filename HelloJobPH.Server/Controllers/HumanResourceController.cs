@@ -1,4 +1,5 @@
 ﻿
+using HelloJobPH.Server.GeneralReponse;
 using HelloJobPH.Server.Service.HumanResource;
 using HelloJobPH.Shared.DTOs;
 using HelloJobPH.Shared.Model;
@@ -31,15 +32,10 @@ namespace HelloJobPH.Server.Controllers
             }
         }
         [HttpPut("soft-delete/{id}")]
-        public async Task<IActionResult> SoftDelete(int id)
+        public async Task<ActionResult<GeneralResponse<bool>>> SoftDelete(int id)
         {
             var deleted = await _humanService.DeleteAsync(id);
-            if (!deleted)
-            {
-                return NotFound($"Job post with ID {id} not found.");
-            }
-
-            return NoContent();
+                return GeneralResponse<bool>.Ok("successfully deleted");
         }
         [HttpPost("create")]
         public async Task<ActionResult<bool>> Create(HumanResourceDtos hr)

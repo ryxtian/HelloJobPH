@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using HelloJobPH.Server.Data;
+using HelloJobPH.Server.GeneralReponse;
 using HelloJobPH.Server.Utility;
 using HelloJobPH.Shared.DTOs;
 using HelloJobPH.Shared.Model;
@@ -51,20 +52,20 @@ namespace HelloJobPH.Server.Service.HumanResource
         }
 
 
-        public async Task<bool> DeleteAsync(int id)
+        public async Task<GeneralResponse<bool>> DeleteAsync(int id)
         {
             var existing = await _context.HumanResource
                 .FirstOrDefaultAsync(i => i.HumanResourceId == id);
 
             if (existing == null)
-                return false;
+                return GeneralResponse<bool>.Fail("human resource not existing");
 
             existing.IsDeleted = 1;
 
             _context.HumanResource.Update(existing);
             await _context.SaveChangesAsync();
 
-            return true;
+            return GeneralResponse<bool>.Ok("successfully deleted");
         }
 
         public async Task<HumanResourceDtos> GetByIdAsync(int id)

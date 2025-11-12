@@ -1,4 +1,5 @@
-﻿using HelloJobPH.Shared.DTOs;
+﻿using HelloJobPH.Server.GeneralReponse;
+using HelloJobPH.Shared.DTOs;
 
 namespace HelloJobPH.Server.Service.HumanResource
 {
@@ -8,6 +9,6 @@ namespace HelloJobPH.Server.Service.HumanResource
         Task<HumanResourceDtos> GetByIdAsync(int id);
         Task<bool> AddAsync(HumanResourceDtos jobPostingDto);
         Task<bool> UpdateAsync(HumanResourceDtos jobPostingDto);
-        Task<bool> DeleteAsync(int id);
+        Task<GeneralResponse<bool>> DeleteAsync(int id);
     }
 }
