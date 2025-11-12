@@ -1,0 +1,228 @@
+﻿@page "/jobpost/audit"
+@using HelloJobPH.Employer.Services.AuditLog
+@using HelloJobPH.Shared.Model
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+@inject IClientAuditLogService AuditLogService
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-4">
+    <MudPaper Elevation="2" Class="pa-6">
+        <MudStack Spacing="4">
+            <!-- Header Section -->
+            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                <MudStack Spacing="1">
+                    <MudText Typo="Typo.h5" Color="Color.Primary">
+                        <MudIcon Icon="@Icons.Material.Filled.History" Class="mr-2" />
+                        Job Post Audit Log
+                    </MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        Track all changes and actions on job postings
+                    </MudText>
+                </MudStack>
+                <MudChip T="string" Icon="@Icons.Material.Filled.Assignment" Color="Color.Info" Variant="Variant.Filled">
+                    @auditLogs.Count Record@(auditLogs.Count != 1 ? "s" : "")
+                </MudChip>
+            </MudStack>
+
+            <MudDivider />
+
+            <!-- Filters Section -->
+            <MudStack Row="true" Spacing="3">
+                <MudTextField @bind-Value="searchText"
+                              Placeholder="Search job title..."
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              Immediate="true"
+                              DebounceInterval="300"
+                              OnDebounceIntervalElapsed="FilterAuditLogs"
+                              Style="flex: 2;" />
+
+
+
+                <MudTooltip Text="Refresh">
+                    <MudIconButton Icon="@Icons.Material.Filled.Refresh"
+                                   Color="Color.Primary"
+                                   OnClick="LoadAuditLogs"
+                                   Disabled="@isLoading" />
+                </MudTooltip>
+            </MudStack>
+
+            
+
+            <!-- Table Section -->
+            <MudTable Dense="false"
+                      Hover="true"
+                      Bordered="false"
+                      Striped="true"
+                      Breakpoint="Breakpoint.Sm"
+                      Items="@filteredAuditLogs"
+                      Elevation="0"
+                      Loading="@isLoading"
+                      LoadingProgressColor="Color.Primary">
+                <HeaderContent>
+                    <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Timestamp</strong></MudText></MudTh>
+                    <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Job Post ID</strong></MudText></MudTh>
+                    <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Job Title</strong></MudText></MudTh>
+                    <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Action</strong></MudText></MudTh>
+                    <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Changed By</strong></MudText></MudTh>
+
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Timestamp" Class="text-sm md:text-base whitespace-nowrap">
+                        <MudStack Spacing="0">
+                            <MudText Typo="Typo.body2"><strong>@context.ChangedAt.ToString("dd MMM yyyy")</strong></MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                @context.ChangedAt.ToLocalTime().ToString("hh:mm tt")
+                            </MudText>
+                        </MudStack>
+                    </MudTd>
+
+                    <MudTd DataLabel="Job Post ID" Class="whitespace-nowrap">
+                        <MudChip T="string"
+                                 Size="Size.Small"
+                                 Variant="Variant.Outlined"
+                                 Color="Color.Default"
+                                 Class="px-2 py-1 text-xs md:text-sm">
+                            #@context.JobpostId
+                        </MudChip>
+                    </MudTd>
+
+                    <MudTd DataLabel="Job Title" Class="truncate max-w-[120px] sm:max-w-[200px] md:max-w-[300px]">
+                        <MudText Typo="Typo.body2" Class="text-sm md:text-base">
+                            @context.Title
+                        </MudText>
+                    </MudTd>
+
+                    <MudTd DataLabel="Action" Class="whitespace-normal break-words max-w-[250px] md:max-w-none">
+                        <MudChip T="string"
+                                 Size="Size.Small"
+
+                                 Variant="Variant.Filled"
+          
+                                 Class="text-xs md:text-sm px-2 py-1">
+                            @context.Action
+                        </MudChip>
+                    </MudTd>
+
+                    <MudTd DataLabel="Changed By" Class="min-w-[150px] md:min-w-[200px]">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                            <MudAvatar Color="Color.Secondary" Size="Size.Small">
+                                @GetInitials(context.ChangedBy)
+                            </MudAvatar>
+                            <MudStack Spacing="0" Class="truncate">
+                                <MudText Typo="Typo.body2" Class="text-sm md:text-base">@GetDisplayName(context.ChangedBy)</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">@context.ChangedBy</MudText>
+                            </MudStack>
+                        </MudStack>
+                    </MudTd>
+                </RowTemplate>
+                <NoRecordsContent>
+                    <MudStack AlignItems="AlignItems.Center" Spacing="3" Class="pa-8">
+                        <MudIcon Icon="@Icons.Material.Filled.HistoryToggleOff" Size="Size.Large" Color="Color.Secondary" />
+                        <MudText Typo="Typo.h6" Color="Color.Secondary">No Audit Records Found</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                            @if (string.IsNullOrWhiteSpace(searchText) && selectedAction == null && dateRange == null)
+                            {
+                                <text>No job post actions have been recorded yet.</text>
+                            }
+                            else
+                            {
+                                <text>No records match your current filters. Try adjusting your search criteria.</text>
+                            }
+                        </MudText>
+                    </MudStack>
+                </NoRecordsContent>
+            </MudTable>
+        </MudStack>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private List<JobpostAuditDtos> auditLogs = new();
+    private List<JobpostAuditDtos> filteredAuditLogs = new();
+    private bool isLoading = true;
+    private string? searchText;
+    private string? selectedAction;
+    private DateRange? dateRange;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAuditLogs();
+    }
+
+    private async Task LoadAuditLogs()
+    {
+        isLoading = true;
+        try
+        {
+            // Replace with your actual service method
+            auditLogs = await AuditLogService.RetrieveJobAuditLogs();
+            filteredAuditLogs = auditLogs;
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading audit logs: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void FilterAuditLogs()
+    {
+        filteredAuditLogs = auditLogs.Where(log =>
+        {
+            bool matchesSearch = string.IsNullOrWhiteSpace(searchText) ||
+                log.Title?.Contains(searchText, StringComparison.OrdinalIgnoreCase) == true ||
+                log.ChangedBy?.Contains(searchText, StringComparison.OrdinalIgnoreCase) == true ||
+              
+                log.JobpostId.ToString().Contains(searchText);
+
+            bool matchesAction = string.IsNullOrWhiteSpace(selectedAction) ||
+                log.Action == selectedAction;
+
+           
+
+            return matchesSearch && matchesAction;
+        }).OrderByDescending(x => x.ChangedAt).ToList();
+
+        StateHasChanged();
+    }
+
+
+    private string GetInitials(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+            return "??";
+
+        var parts = email.Split('@')[0].Split('.');
+        if (parts.Length >= 2)
+            return $"{parts[0][0]}{parts[1][0]}".ToUpper();
+
+        return email.Length >= 2 ? email.Substring(0, 2).ToUpper() : email.ToUpper();
+    }
+
+    private string GetDisplayName(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+            return "Unknown User";
+
+        var username = email.Split('@')[0];
+        var parts = username.Split('.');
+
+        if (parts.Length >= 2)
+        {
+            return string.Join(" ", parts.Select(p =>
+                char.ToUpper(p[0]) + p.Substring(1).ToLower()));
+        }
+
+        return char.ToUpper(username[0]) + username.Substring(1).ToLower();
+    }
+
+    // DTO class to extend the base model with display properties
+
+}

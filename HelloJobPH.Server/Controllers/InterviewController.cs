@@ -1,4 +1,5 @@
-﻿using HelloJobPH.Server.Service.Interview;
+﻿using HelloJobPH.Server.GeneralReponse;
+using HelloJobPH.Server.Service.Interview;
 using HelloJobPH.Shared.DTOs;
 using HelloJobPH.Shared.Enums;
 using Microsoft.AspNetCore.Http;
@@ -18,161 +19,63 @@ namespace HelloJobPH.Server.Controllers
         [HttpGet("initial")]
         public async Task<IActionResult> InitialList()
         {
-            try
-            {
-                var request = await _service.InitialList();
-                return Ok(request);
-            }
-            catch (Exception)
-            {
-                return BadRequest();
-            }
+            var request = await _service.InitialList();
+            return Ok(request);
         }
         [HttpGet("technical")]
         public async Task<IActionResult> TechnicalList()
         {
-            try
-            {
-                var request = await _service.TechnicalList();
-                return Ok(request);
-            }
-            catch (Exception)
-            {
-                return BadRequest();
-            }
+            var request = await _service.TechnicalList();
+            return Ok(request);
         }
         [HttpGet("final")]
         public async Task<IActionResult> FinalList()
         {
-            try
-            {
-                var request = await _service.FinalList();
-                return Ok(request);
-            }
-            catch (Exception)
-            {
-                return BadRequest();
-            }
+            var request = await _service.FinalList();
+            return Ok(request);
         }
         [HttpPost("Reschedule")]
-        public async Task<IActionResult> Reschedule(SetScheduleDto dto)
+        public async Task<ActionResult<GeneralResponse<bool>>> Reschedule(SetScheduleDto dto)
         {
-            try
-            {
-                var request = await _service.Reschedule(dto);
-                if (!request)
-                {
-                    return NotFound($"Application with ID {dto.ApplicationId} not found.");
-                }
-                return Ok(request);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
+            var request = await _service.Reschedule(dto);
+            return Ok(GeneralResponse<bool>.Ok("Application rescheduled successfully.", true));
         }
         [HttpGet("NoAppearance{id}")]
-        public async Task<IActionResult>NoAppearance(int id)
+        public async Task<ActionResult<GeneralResponse<int>>> NoAppearance(int id)
         {
-            try
-            {
-                var request = await _service.NoAppearance(id);
-                if (request == 0)
-                {
-                    return NotFound($"Application with ID {id} not found.");
-                }
-                return Ok(request);
-            }
-            catch (Exception)
-            {
-
-                throw;
-            }
+            var result = await _service.NoAppearance(id);
+            return Ok(GeneralResponse<int>.Ok("No appearance count retrieved successfully."+ result));
         }
+
         [HttpPost("ForTechnical")]
-        public async Task<IActionResult> ForTechnical(SetScheduleDto dto)
+        public async Task<ActionResult<GeneralResponse<bool>>> ForTechnical(SetScheduleDto dto)
         {
-            try
-            {
-                var request = await _service.ForTechnical(dto);
-                if (!request)
-                {
-                    return NotFound($"Application with ID {dto.ApplicationId} not found.");
-                }
-                return Ok(request);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
+            var request = await _service.ForTechnical(dto);
+            return Ok(GeneralResponse<bool>.Ok("Marked for technical successfully.", true));
         }
         [HttpPost("ForFinal")]
-        public async Task<IActionResult> ForFinal(SetScheduleDto dto)
+        public async Task<ActionResult<GeneralResponse<bool>>> ForFinal(SetScheduleDto dto)
         {
-            try
-            {
-                var request = await _service.ForFinal(dto);
-                if (!request)
-                {
-                    return NotFound($"Application with ID {dto.ApplicationId} not found.");
-                }
-                return Ok(request);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
+            var request = await _service.ForFinal(dto);
+            return Ok(GeneralResponse<bool>.Ok("Marked for final successfully.", true));
         }
-        [HttpGet("Failed{id}")]
-        public async Task<IActionResult> Failed(int id)
+        [HttpGet("Failed/{id}")]
+        public async Task<ActionResult<GeneralResponse<bool>>> Failed(int id)
         {
-            try
-            {
-                var request = await _service.Failed(id);
-                if (!request)
-                {
-                    return NotFound($"Application with ID {id} not found.");
-                }
-                return Ok(request);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
+            var request = await _service.Failed(id);
+            return Ok(GeneralResponse<bool>.Ok("Application marked as failed.", true));
         }
-        [HttpGet("Delete{id}")]
-        public async Task<IActionResult> Delete(int id)
+        [HttpGet("Delete/{id}")]
+        public async Task<ActionResult<GeneralResponse<bool>>> Delete(int id)
         {
-            try
-            {
-                var request = await _service.DeleteApplication(id);
-                if (!request)
-                {
-                    return NotFound($"Application with ID {id} not found.");
-                }
-                return Ok(request);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
+            var request = await _service.DeleteApplication(id);
+            return Ok(GeneralResponse<bool>.Ok("Application deleted successfully.", true));
         }
-        [HttpGet("MarkAsCompleted{id}")]
-        public async Task<IActionResult> MarkAsCompleted(int id)
+        [HttpGet("MarkAsCompleted/{id}")]
+        public async Task<ActionResult<GeneralResponse<bool>>> MarkAsCompleted(int id)
         {
-            try
-            {
-                var request = await _service.MarkAsCompleted(id);
-                if (!request)
-                {
-                    return NotFound($"Application with ID {id} not found.");
-                }
-                return Ok(request);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
+            var request = await _service.MarkAsCompleted(id);
+            return Ok(GeneralResponse<bool>.Ok("Application marked as completed.", true));
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿using HelloJobPH.Server.Service.Overview;
+﻿using HelloJobPH.Server.GeneralReponse;
+using HelloJobPH.Server.Service.Overview;
+using HelloJobPH.Shared.DTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,18 +16,10 @@ namespace HelloJobPH.Server.Controllers
             _service = service;
         }
         [HttpGet("{id}")]
-        public async Task<IActionResult>ListOverview(int id)
+        public async Task<ActionResult<GeneralResponse<OverviewDtos>>>ListOverview(int id)
         {
-            try
-            {
-                var result = await _service.ListOverview(id);
-                return Ok(result);
-            }
-            catch (Exception)
-            {
-
-                throw;
-            }
+            var result = await _service.ListOverview(id);
+            return GeneralResponse<OverviewDtos>.Ok("Overview success");
         }
     }
 }

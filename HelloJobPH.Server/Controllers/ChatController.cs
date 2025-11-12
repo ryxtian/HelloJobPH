@@ -1,4 +1,6 @@
 ﻿using HelloJobPH.Server.Data;
+using HelloJobPH.Shared.DTOs;
+using HelloJobPH.Shared.Model;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -26,6 +28,37 @@ namespace HelloJobPH.Server.Controllers
             return Ok(messages);
         }
 
+        [HttpPost("send")]
+        public async Task<IActionResult> SendMessage([FromBody] ChatMessageDtos dto)
+        {
+            var userId = Utility.Utilities.GetUserId();
+
+            var hrId = await _context.HumanResource
+                .FirstOrDefaultAsync(i=>i.UserAccountId == userId);
+
+
+            if (string.IsNullOrWhiteSpace(dto.Message))
+                return BadRequest("Message body cannot be empty.");
+
+            // Validate sender and receiver IDs
+            if (dto.SenderId == null || dto.ReceiverId == null)
+                return BadRequest("Invalid sender or receiver ID.");
+
+            // Map DTO to Entity
+            var message = new ChatMessage
+            {
+                SenderId = hrId.HumanResourceId.ToString(),
+                ReceiverId = dto.ReceiverId,
+                Message = dto.Message,
+                SentAt = DateTime.UtcNow
+            };
+
+            //_context.ChatMessages.Add(message);
+            //await _context.SaveChangesAsync();
+
+            return Ok(new { Message = "Message sent successfully!", MessageId = message.Id });
+        }
 
     }
+
 }

@@ -1,14 +1,15 @@
-﻿using HelloJobPH.Shared.DTOs;
+﻿using HelloJobPH.Server.GeneralReponse;
+using HelloJobPH.Shared.DTOs;
 
 namespace HelloJobPH.Server.Service.Candidate
 {
     public interface ICandidateService
     {
-        Task<bool> CandidateAccepttAsync(int id);
-        Task<bool> CandidateRejectAsync(int id);
-        Task<bool> SendInitialEmail(SetScheduleDto dto);
+        Task<GeneralResponse<bool>> CandidateAccepttAsync(int id);
+        Task<GeneralResponse<bool>> CandidateRejectAsync(int id);
+        Task<GeneralResponse<bool>> SendInitialEmail(SetScheduleDto dto);
         Task<List<ApplicationListDtos>> RetrieveAllCandidate();
         Task<List<ApplicationListDtos>> RetrieveAllAcceptedCandidate();
-        Task<bool> ViewResumeUpdate(int id);
+        Task<GeneralResponse<bool>> ViewResumeUpdate(int id);
     }
 }

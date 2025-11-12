@@ -1,5 +1,6 @@
 ﻿
 using HelloJobPH.Server.Data;
+using HelloJobPH.Server.GeneralReponse;
 using HelloJobPH.Server.Service.Email;
 using HelloJobPH.Server.Utility;
 using HelloJobPH.Shared.DTOs;
@@ -23,13 +24,13 @@ namespace HelloJobPH.Server.Service.Candidate
             _emailService = emailService;
             _httpContextAccessor = httpContextAccessor;
         }
-        public async Task<bool> CandidateAccepttAsync(int id)
+        public async Task<GeneralResponse<bool>> CandidateAccepttAsync(int id)
         {
             var userId = Utilities.GetUserId();
 
             if (userId == null)
             {
-                throw new Exception("Invalid or missing user ID in claims.");
+                return GeneralResponse<bool>.Fail("Invalid or missing user ID in claims.");
             }
 
             var hr = await _context.HumanResource
@@ -37,7 +38,7 @@ namespace HelloJobPH.Server.Service.Candidate
 
             if (hr == null)
             {
-                throw new Exception("Human Resource not found for the current user.");
+                return GeneralResponse<bool>.Fail("Human Resource not found for the current user.");
             }
 
             var application = await _context.Application
@@ -47,7 +48,7 @@ namespace HelloJobPH.Server.Service.Candidate
 
             if (application == null)
             {
-                throw new Exception("Application not found.");
+                return GeneralResponse<bool>.Fail("Application not found.");
             }
 
             application.ApplicationStatus = ApplicationStatus.Accepted;
@@ -70,16 +71,16 @@ namespace HelloJobPH.Server.Service.Candidate
             await _context.AuditLog.AddAsync(auditLog);
             await _context.SaveChangesAsync();
 
-            return true;
+         return GeneralResponse<bool>.Ok("Candidate accepted successfully.");
         }
 
-        public async Task<bool> CandidateRejectAsync(int id)
+        public async Task<GeneralResponse<bool>> CandidateRejectAsync(int id)
         {
             var userId = Utilities.GetUserId();
 
             if (userId == null)
             {
-                throw new Exception("Invalid or missing user ID in claims.");
+                return GeneralResponse<bool>.Fail("Invalid or missing user ID in claims.");
             }
 
             var hr = await _context.HumanResource
@@ -87,7 +88,7 @@ namespace HelloJobPH.Server.Service.Candidate
 
             if (hr == null)
             {
-                throw new Exception("Human Resource not found for the current user.");
+                return GeneralResponse<bool>.Fail("Human Resource not found for the current user.");
             }
 
             var application = await _context.Application
@@ -97,7 +98,7 @@ namespace HelloJobPH.Server.Service.Candidate
 
             if (application == null)
             {
-                throw new Exception("Application not found.");
+                return GeneralResponse<bool>.Fail("Application not found.");
             }
 
 
@@ -123,7 +124,7 @@ namespace HelloJobPH.Server.Service.Candidate
             await _context.AuditLog.AddAsync(auditLog);
             await _context.SaveChangesAsync();
 
-            return true;
+            return GeneralResponse<bool>.Ok("Candidate rejected successfully.");
         }
 
 
@@ -196,14 +197,14 @@ namespace HelloJobPH.Server.Service.Candidate
         }
 
 
-        public async Task<bool> SendInitialEmail(SetScheduleDto dto)
+        public async Task<GeneralResponse<bool>> SendInitialEmail(SetScheduleDto dto)
         {
             var userId = Utilities.GetUserId();
 
             if (userId == null)
                 {
-                return false;
-                }
+                return GeneralResponse<bool>.Fail("Invalid or missing user ID in claims.");
+            }
 
             var hr = await _context.HumanResource
                 .FirstOrDefaultAsync(i=>i.UserAccountId == userId);
@@ -214,10 +215,10 @@ namespace HelloJobPH.Server.Service.Candidate
             try
             {
                 if (!TimeSpan.TryParse(dto.Time, out var parseTime))
-                    return false;
+                    return GeneralResponse<bool>.Fail("Invalid time format.");
 
                 if (!DateTime.TryParse(dto.Date, out var parseDate))
-                    return false;
+                    return GeneralResponse<bool>.Fail("Invalid time format.");
 
                 // Check if interview slot is already taken
                 bool slotTaken = await _context.Interview
@@ -225,7 +226,7 @@ namespace HelloJobPH.Server.Service.Candidate
                     .AnyAsync(d => d.ScheduledDate == parseDate && d.ScheduledTime == parseTime);
 
                 if (slotTaken)
-                    return false;
+                   return GeneralResponse<bool>.Fail("The selected interview slot is already taken.");
 
                 var application = await _context.Application
                     .Include(a => a.Applicant)
@@ -234,7 +235,7 @@ namespace HelloJobPH.Server.Service.Candidate
                     .FirstOrDefaultAsync(a => a.ApplicationId == dto.ApplicationId);
 
                 if (application == null || string.IsNullOrEmpty(application.Applicant?.UserAccount?.Email))
-                    return false;
+                    return GeneralResponse<bool>.Fail("Application or applicant email not found.");
 
                 // Send email
                 var candidate = new CandidateEmailDto
@@ -310,21 +311,22 @@ Best regards,
                 await _context.AuditLog.AddAsync(auditLog);
                 await _context.SaveChangesAsync();
 
-                return result != null;
+                return GeneralResponse<bool>.Ok("Email sent successfully and interview scheduled.", true);
             }
-            catch
+            catch(Exception ex)
             {
-                throw;
+                return GeneralResponse<bool>.Fail("Email sent successfully and interview scheduled."+ ex.Message);
+
             }
         }
 
-        public async Task<bool> ViewResumeUpdate(int id)
+        public async Task<GeneralResponse<bool>> ViewResumeUpdate(int id)
         {
             var application = await _context.Application
                 .FirstOrDefaultAsync(i=>i.ApplicantId == id);
 
             if (application is null)
-                return false;
+               return GeneralResponse<bool>.Fail("Application not found.");
 
             application.ApplicationStatus = ApplicationStatus.Viewed;
 
@@ -332,7 +334,7 @@ Best regards,
             _context.Update(application);
             await _context.SaveChangesAsync();
 
-            return true;
+            return GeneralResponse<bool>.Ok("Resume status updated to Viewed.");
 
         }
 

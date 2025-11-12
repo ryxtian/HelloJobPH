@@ -26,5 +26,11 @@ namespace HelloJobPH.Employer.Services.AuditLog
             var response = await _http.GetFromJsonAsync<List<AuditLogDtos>>("api/auditlog/audit-list");
             return response ?? new List<AuditLogDtos>();
         }
+
+        public async Task<List<JobpostAuditDtos>> RetrieveJobAuditLogs()
+        {
+            var response = await _http.GetFromJsonAsync<List<JobpostAuditDtos>>("api/auditlog/jobaudit-list");
+            return response ?? new List<JobpostAuditDtos>();
+        }
     }
 }

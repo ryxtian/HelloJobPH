@@ -40,6 +40,7 @@ namespace HelloJobPH.Shared.Model
         public List<JobPosting>? JobPost { get; set; }
         public List<HumanResources>? HumanResources { get; set; }
         public List<AuditLog>? AuditLogs { get; set; }
+        public List<JobPostAudit>? JobPostAudits { get; set; }
         public List<Application>? Applications { get; set; }
         public UserAccount? UserAccount { get; set; }
         public DateTime DateRegistered { get; set; } = DateTime.UtcNow;

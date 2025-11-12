@@ -1,4 +1,5 @@
 ﻿using HelloJobPH.Server.Service.JobPost;
+using HelloJobPH.Server.GeneralReponse;
 using HelloJobPH.Shared.DTOs;
 using Microsoft.AspNetCore.Mvc;
 
@@ -6,7 +7,6 @@ namespace HelloJobPH.Server.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-
     public class JobPostingController : ControllerBase
     {
         private readonly IJobPostService _jobPostService;
@@ -16,93 +16,70 @@ namespace HelloJobPH.Server.Controllers
             _jobPostService = jobPostService;
         }
 
-        // GET: api/JobPosting
         [HttpGet("list")]
-        public async Task<ActionResult<List<JobPostingDtos>>> GetAll()
-        
+        public async Task<ActionResult<GeneralResponse<List<JobPostingDtos>>>> GetAll()
         {
             var jobPosts = await _jobPostService.RetrieveAllAsync();
             return Ok(jobPosts);
         }
 
-        // GET: api/JobPosting/{id}
         [HttpGet("{id}")]
-        public async Task<ActionResult<JobPostingDtos>> GetById(int id)
+        public async Task<ActionResult<GeneralResponse<JobPostingDtos>>> GetById(int id)
         {
             var jobPost = await _jobPostService.GetByIdAsync(id);
-            if (jobPost == null)
-            {
-                return NotFound($"Job post with ID {id} not found.");
-            }
-            return Ok(jobPost);
+   
+            return Ok(GeneralResponse<JobPostingDtos>.Ok("Job post retrieved successfully."+ jobPost));
         }
-
 
         [HttpPost]
-        public async Task<ActionResult<bool>> Create(JobPostingDtos jobPostDto)
-         {
+        public async Task<ActionResult<GeneralResponse<JobPostingDtos>>> Create(JobPostingDtos jobPostDto)
+        {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                return BadRequest(GeneralResponse<JobPostingDtos>.Fail("Invalid job post data."));
             }
 
-                          var createdJobPost = await _jobPostService.AddAsync(jobPostDto);
-            return true;
-            //return CreatedAtAction(nameof(GetById), new { id = createdJobPost.JobPostingId }, createdJobPost);
+            var createdJobPost = await _jobPostService.AddAsync(jobPostDto);
+            return Ok(GeneralResponse<JobPostingDtos>.Ok("Job post created successfully."));
         }
 
-        // PUT: api/JobPosting/{id}
         [HttpPut("{id}")]
-        public async Task<ActionResult<JobPostingDtos>> Update(int id, JobPostingDtos jobPostDto)
+        public async Task<ActionResult<GeneralResponse<JobPostingDtos>>> Update(int id, JobPostingDtos jobPostDto)
         {
             if (id != jobPostDto.JobPostingId)
             {
-                return BadRequest("ID mismatch.");
+                return BadRequest(GeneralResponse<JobPostingDtos>.Fail("ID mismatch."));
             }
 
             var existing = await _jobPostService.GetByIdAsync(id);
             if (existing == null)
             {
-                return NotFound($"Job post with ID {id} not found.");
+                return NotFound(GeneralResponse<JobPostingDtos>.Fail($"Job post with ID {id} not found."));
             }
 
             var updatedJobPost = await _jobPostService.UpdateAsync(jobPostDto);
-            return Ok(updatedJobPost);
+            return Ok(GeneralResponse<JobPostingDtos>.Ok("Job post updated successfully."));
         }
 
-        // DELETE: api/JobPosting/{id}
         [HttpPut("soft-delete/{id}")]
-        public async Task<IActionResult> SoftDelete(int id)
+        public async Task<ActionResult<GeneralResponse<bool>>> SoftDelete(int id)
         {
             var deleted = await _jobPostService.DeleteAsync(id);
-            if (!deleted)
-            {
-                return NotFound($"Job post with ID {id} not found.");
-            }
-
-            return NoContent();
+            return Ok(GeneralResponse<bool>.Ok("Job post soft-deleted successfully.", true));
         }
+
         [HttpPut("Activate/{id}")]
-        public async Task<IActionResult> Activate(int id)
+        public async Task<ActionResult<GeneralResponse<bool>>> Activate(int id)
         {
-            var deleted = await _jobPostService.Activate(id);
-            if (!deleted)
-            {
-                return NotFound($"Job post with ID {id} not found.");
-            }
-
-            return NoContent();
+            var activated = await _jobPostService.Activate(id);
+            return Ok(GeneralResponse<bool>.Ok("Job post activated successfully.", true));
         }
-        [HttpPut("Deactivate/{id}")]
-        public async Task<IActionResult> Deactivate(int id)
-        {
-            var deleted = await _jobPostService.Deactivate(id);
-            if (!deleted)
-            {
-                return NotFound($"Job post with ID {id} not found.");
-            }
 
-            return NoContent();
+        [HttpPut("Deactivate/{id}")]
+        public async Task<ActionResult<GeneralResponse<bool>>> Deactivate(int id)
+        {
+            var deactivated = await _jobPostService.Deactivate(id);
+            return Ok(GeneralResponse<bool>.Ok("Job post deactivated successfully.", true));
         }
     }
 }

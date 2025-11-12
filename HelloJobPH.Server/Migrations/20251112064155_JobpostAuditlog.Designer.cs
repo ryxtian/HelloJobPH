@@ -4,6 +4,7 @@ using HelloJobPH.Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HelloJobPH.Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251112064155_JobpostAuditlog")]
+    partial class JobpostAuditlog
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -457,13 +460,17 @@ namespace HelloJobPH.Server.Migrations
                     b.Property<DateTime>("ChangedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("ChangedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int?>("EmployerId")
                         .HasColumnType("int");
 
                     b.Property<int?>("HumanResourceId")
                         .HasColumnType("int");
 
-                    b.Property<int>("JobPostingId")
+                    b.Property<int?>("JobPostingId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -852,9 +859,7 @@ namespace HelloJobPH.Server.Migrations
 
                     b.HasOne("HelloJobPH.Shared.Model.JobPosting", "JobPosting")
                         .WithMany("JobPostAudits")
-                        .HasForeignKey("JobPostingId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("JobPostingId");
 
                     b.Navigation("Employer");
 

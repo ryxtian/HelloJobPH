@@ -1,4 +1,5 @@
 ﻿using HelloJobPH.Server.Data;
+using HelloJobPH.Server.GeneralReponse;
 using HelloJobPH.Server.Service.Email;
 using HelloJobPH.Server.Utility;
 using HelloJobPH.Shared.DTOs;
@@ -64,20 +65,17 @@ namespace HelloJobPH.Server.Service.Interview
         }
         public async Task<List<InterviewListDtos>> InitialList()
             {
-                var userId = Utilities.GetUserId();
+            var userId = Utilities.GetUserId();
 
-                if (userId == null)
-                {
-                    throw new Exception("Invalid or missing user ID in claims.");
-                }
-                var hr = await _context.HumanResource.FirstOrDefaultAsync
-                (u => u.UserAccountId == userId);
+            // Try to find HR or Employer linked to this user
+            var hr = await _context.HumanResource.FirstOrDefaultAsync(i => i.UserAccountId == userId);
+            var employer = await _context.Employer.FirstOrDefaultAsync(i => i.UserAccountId == userId);
 
-                if (hr == null)
-                {
-                    throw new Exception("Invalid or missing user ID in claims.");
-                }
-                try
+            var employerId = hr?.EmployerId ?? employer?.EmployerId;
+
+            if (employerId == null)
+                throw new Exception("No associated employer found for this user.");
+            try
                 {
                 var validStatuses = new[]
                 {
@@ -89,7 +87,7 @@ namespace HelloJobPH.Server.Service.Interview
                 var result = await _context.Application
                     .Where(a => validStatuses.Contains(a.ApplicationStatus)
                                 && a.IsDeleted == 0
-                                && a.HumanResourcesId == hr.HumanResourceId)
+                                && a.HumanResourcesId == employerId)
                     .Select(a => new InterviewListDtos
                     {
                         ApplicationId = a.ApplicationId,
@@ -158,7 +156,7 @@ namespace HelloJobPH.Server.Service.Interview
                 throw;
             }
         }
-        public async Task<bool> Reschedule(SetScheduleDto dto)
+        public async Task<GeneralResponse<bool>> Reschedule(SetScheduleDto dto)
         {
             var application = await _context.Application
                 .Include(a => a.Applicant)
@@ -170,7 +168,7 @@ namespace HelloJobPH.Server.Service.Interview
 
 
             if (application == null || string.IsNullOrEmpty(application.Applicant?.UserAccount?.Email))
-                return false;
+                return GeneralResponse<bool>.Fail("Application not found or missing candidate email.");
 
             // 2️⃣ Update application status
             application.MarkAsCompleted = 0;
@@ -179,16 +177,16 @@ namespace HelloJobPH.Server.Service.Interview
 
             var hr = application.HumanResources;
             if (hr == null)
-                return false; // Or handle the missing HR case
+                return GeneralResponse<bool>.Fail("Not Found HR"); // Or handle the missing HR case
 
 
             var employer = await _context.Employer.FirstOrDefaultAsync(e => e.EmployerId == hr.EmployerId);
 
             if (!DateTime.TryParse(dto.Date, out var parsedDate))
-                return false;
+                return GeneralResponse<bool>.Fail("Invalid format");
 
             if (!TimeSpan.TryParse(dto.Time, out var parsedTime))
-                return false;
+                return GeneralResponse<bool>.Fail("Invalid format");
 
             // 3️⃣ Update interview
             var interview = await _context.Interview.FirstOrDefaultAsync(i => i.ApplicationId == dto.ApplicationId);
@@ -256,13 +254,13 @@ Best regards,
 
             var result = _emailService.SendEmailAsync(candidate.UserAccount.Email, subject, body);
 
-         
 
-               return result != null; // true if email sent successfully
+
+            return GeneralResponse<bool>.Ok("Successfully rechedule");
         }
 
 
-        public async Task<int> NoAppearance(int applicationId)
+        public async Task<GeneralResponse<int>> NoAppearance(int applicationId)
         {
             // 1️⃣ Get application with related entities
             var application = await _context.Application
@@ -272,7 +270,7 @@ Best regards,
                 .FirstOrDefaultAsync(a => a.ApplicationId == applicationId);
 
             if (application == null)
-                return 0;
+                return GeneralResponse<int>.Fail("No application found");
 
             // 2️⃣ Update application status
             application.ApplicationStatus = ApplicationStatus.NoAppearance;
@@ -298,12 +296,12 @@ Best regards,
             await _context.AuditLog.AddAsync(auditLog);
             await _context.SaveChangesAsync();
 
-            return result;
+            return GeneralResponse<int>.Ok("Mark as No appearance");
         }
 
 
 
-        public async Task<bool> ForTechnical(SetScheduleDto dto)
+        public async Task<GeneralResponse<bool>> ForTechnical(SetScheduleDto dto)
         {
             // 1️⃣ Get application with related entities
             var application = await _context.Application
@@ -314,7 +312,7 @@ Best regards,
                 .FirstOrDefaultAsync(a => a.ApplicationId == dto.ApplicationId);
 
             if (application == null || string.IsNullOrEmpty(application.Applicant?.UserAccount?.Email))
-                return false;
+                return GeneralResponse<bool>.Fail("no application found");
 
             var hr = application.HumanResources;
 
@@ -365,12 +363,12 @@ Best regards,
             var interview = await _context.Interview.FirstOrDefaultAsync(i => i.ApplicationId == dto.ApplicationId);
 
                 if (!DateTime.TryParse(dto.Date, out var parsedDate))
-                    return false;
+                return GeneralResponse<bool>.Fail("Invalid format");
 
-                if (!TimeSpan.TryParse(dto.Time, out var parsedTime))
-                    return false;
+            if (!TimeSpan.TryParse(dto.Time, out var parsedTime))
+                return GeneralResponse<bool>.Fail("Invalid format");
 
-                interview.ScheduledDate = parsedDate;
+            interview.ScheduledDate = parsedDate;
                 interview.ScheduledTime = parsedTime;
 
                 _context.Interview.Update(interview);
@@ -406,11 +404,11 @@ Best regards,
             await _context.SaveChangesAsync();
 
 
-            return result != null;
+            return GeneralResponse<bool>.Ok("successfully scheduled for techincal interview");
         }
 
 
-        public async Task<bool> ForFinal(SetScheduleDto dto)
+        public async Task<GeneralResponse<bool>> ForFinal(SetScheduleDto dto)
         {
             // 1️⃣ Get application with related entities
             var application = await _context.Application
@@ -421,7 +419,7 @@ Best regards,
                 .FirstOrDefaultAsync(a => a.ApplicationId == dto.ApplicationId);
 
             if (application == null || string.IsNullOrEmpty(application.Applicant?.UserAccount?.Email))
-                return false;
+                return GeneralResponse<bool>.Fail("applicaiton not found");
 
             var hr = application.HumanResources;
 
@@ -448,12 +446,12 @@ Best regards,
 
             
                 if (!DateTime.TryParse(dto.Date, out var parsedDate))
-                    return false;
+                    return GeneralResponse<bool>.Fail("Invalid format");
 
                 if (!TimeSpan.TryParse(dto.Time, out var parsedTime))
-                    return false;
+                    return GeneralResponse<bool>.Fail("Invalid format");
 
-                interview.ScheduledDate = parsedDate;
+            interview.ScheduledDate = parsedDate;
                 interview.ScheduledTime = parsedTime;
 
                 //interview.Location = location;
@@ -516,11 +514,11 @@ Best regards,
             await _context.SaveChangesAsync();
 
 
-            return result != null;
+            return GeneralResponse<bool>.Ok("successfully scheduled for final interview");
         }
 
 
-        public async Task<bool> Failed(int applicationId)
+        public async Task<GeneralResponse<bool>> Failed(int applicationId)
         {
             // 1️⃣ Retrieve candidate and related data
             var application = await _context.Application
@@ -531,7 +529,7 @@ Best regards,
                 .FirstOrDefaultAsync(a => a.ApplicationId == applicationId);
 
             if (application == null || string.IsNullOrEmpty(application.Applicant?.UserAccount?.Email))
-                return false;
+                return GeneralResponse<bool>.Fail("applicaiton not found");
 
             var hr = application.HumanResources;
 
@@ -584,10 +582,11 @@ Best regards,
 
             var result = _emailService.SendEmailAsync(candidate.Email, subject, body);
 
-            return result != null;
+            return GeneralResponse<bool>.Ok("successfully mark as failed");
+
         }
 
-        public async Task<bool> DeleteApplication(int id)
+        public async Task<GeneralResponse<bool>> DeleteApplication(int id)
         {
             var application = await _context.Application
                 .Include(a => a.Applicant)
@@ -596,7 +595,7 @@ Best regards,
                 .FirstOrDefaultAsync(a => a.ApplicationId == id);
 
             if (application == null)
-                return false;
+                return GeneralResponse<bool>.Fail("Applicaiton not found");
 
             // 1️⃣ Mark as deleted
             application.IsDeleted = 1;
@@ -620,10 +619,10 @@ Best regards,
             await _context.AuditLog.AddAsync(auditLog);
             await _context.SaveChangesAsync();
 
-            return true;
+            return GeneralResponse<bool>.Ok("Successfully deleted");
         }
 
-        public async Task<bool> MarkAsCompleted(int id)
+        public async Task<GeneralResponse<bool>> MarkAsCompleted(int id)
         {
             var application = await _context.Application
                 .Include(a => a.Applicant)
@@ -632,7 +631,7 @@ Best regards,
                 .FirstOrDefaultAsync(a => a.ApplicationId == id);
 
             if (application == null)
-                return false;
+                return GeneralResponse<bool>.Fail("Applicaiton not found");
 
             // 1️⃣ Mark as deleted
             application.MarkAsCompleted = 1;
@@ -656,7 +655,7 @@ Best regards,
             //await _context.AuditLog.AddAsync(auditLog);
             //await _context.SaveChangesAsync();
 
-            return true;
+            return GeneralResponse<bool>.Ok("Successfully mark as completed");
         }
 
 

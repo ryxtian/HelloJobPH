@@ -6,5 +6,7 @@ namespace HelloJobPH.Employer.Services.AuditLog
     {
         Task<List<AuditLogDtos>> RetrieveAuditLogs();
         Task<List<InterviewHistoryDtos>> GetInterviewHistory(int id);
+
+        Task<List<JobpostAuditDtos>> RetrieveJobAuditLogs();
     }
 }

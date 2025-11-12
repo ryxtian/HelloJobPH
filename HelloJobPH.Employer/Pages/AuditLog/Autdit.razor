@@ -38,26 +38,6 @@
                               DebounceInterval="300"
                               OnDebounceIntervalElapsed="FilterAuditLogs" />
 
-                <MudSelect @bind-Value="selectedAction"
-                           Label="Filter by Action"
-                           Variant="Variant.Outlined"
-                           Margin="Margin.Dense"
-                           T="string"
-                           Clearable="true"
-                           OnClearButtonClick="@(() => { selectedAction = null; FilterAuditLogs(); })">
-                    <MudSelectItem Value="@("Interview Scheduled")">Interview Scheduled</MudSelectItem>
-                    <MudSelectItem Value="@("Interview Completed")">Interview Completed</MudSelectItem>
-                    <MudSelectItem Value="@("Candidate Accepted")">Candidate Accepted</MudSelectItem>
-                    <MudSelectItem Value="@("Candidate Rejected")">Candidate Rejected</MudSelectItem>
-                    <MudSelectItem Value="@("Status Updated")">Status Updated</MudSelectItem>
-                </MudSelect>
-
-                <MudDateRangePicker @bind-DateRange="dateRange"
-                                    Label="Date Range"
-                                    Variant="Variant.Outlined"
-                                    Margin="Margin.Dense"
-                                    Clearable="true"
-                                    OnClearButtonClick="@(() => { dateRange = null; FilterAuditLogs(); })" />
             </MudStack>
 
             <!-- Table Section -->

@@ -5,7 +5,6 @@
 <MudPaper Class="pa-4" Elevation="3">
     <MudText Typo="Typo.h5">HQ ⇄ Sys Chat</MudText>
 
-    <MudTextField @bind-Value="user" Label="Name" />
     <MudTextField @bind-Value="message" Label="Message" />
     <MudButton OnClick="SendMessage" Color="Color.Primary" Variant="Variant.Filled">Send</MudButton>
 
@@ -20,7 +19,7 @@
 </MudPaper>
 
 @code {
-    private string user = "";
+    private string receiverId = "1";
     private string message = "";
     private List<(string User, string Text)> messages = new();
 
@@ -38,7 +37,7 @@
     {
         if (!string.IsNullOrWhiteSpace(message))
         {
-            await ChatService.SendMessage(user, message);
+            await ChatService.SendMessage(receiverId, message);
             message = "";
         }
     }

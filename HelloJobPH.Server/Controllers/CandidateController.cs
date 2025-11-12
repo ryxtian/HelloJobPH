@@ -1,4 +1,5 @@
 ﻿using HelloJobPH.Employer.Pages.JobPost;
+using HelloJobPH.Server.GeneralReponse;
 using HelloJobPH.Server.Service.Candidate;
 using HelloJobPH.Shared.DTOs;
 using Microsoft.AspNetCore.Http;
@@ -18,92 +19,40 @@ namespace HelloJobPH.Server.Controllers
         [HttpGet]
         public async Task<IActionResult> List()
         {
-            try
-            {
-                var request = await _candidateService.RetrieveAllCandidate();
-                return Ok(request);
-            }
-            catch (Exception ex)
-            {
-
-                return BadRequest(ex.Message);
-            }
+            var request = await _candidateService.RetrieveAllCandidate();
+            return Ok(request);
         }
         [HttpGet("Accepted-List")]
         public async Task<IActionResult> AcceptedList()
         {
-            try
-            {
-                var request = await _candidateService.RetrieveAllAcceptedCandidate();
-                return Ok(request);
-            }
-            catch (Exception ex)
-            {
-
-                return BadRequest(ex.Message);
-            }
+            var request = await _candidateService.RetrieveAllAcceptedCandidate();
+            return Ok(request);
         }
         [HttpPut("Accept/{id}")]
-        public async Task<IActionResult> AcceptCandidate(int id)
+        public async Task<ActionResult<GeneralResponse<bool>>> AcceptCandidate(int id)
         {
-            try
-            {
-                var request = await _candidateService.CandidateAccepttAsync(id);
-                if (request == false)
-                {
-                    return NotFound($"Application with ID {id} not found.");
-                }
-                return Ok(request);
-            }
-            catch (Exception)
-            {
-
-                throw;
-            }
+            var success = await _candidateService.CandidateAccepttAsync(id);
+            return Ok(GeneralResponse<bool>.Ok("Candidate accepted successfully.", true));
         }
 
         [HttpPut("reject/{id}")]
-        public async Task<IActionResult> RejectCandidate(int id)
+        public async Task<ActionResult<GeneralResponse<bool>>> RejectCandidate(int id)
         {
-            try
-            {
-                var request = await _candidateService.CandidateRejectAsync(id);
-                if (request == false)
-                {
-                    return NotFound($"Application with ID {id} not found.");
-                }
-                return Ok(request);
-            }
-            catch (Exception)
-            {
-
-                throw;
-            }
-
+            var success = await _candidateService.CandidateRejectAsync(id);
+            return Ok(GeneralResponse<bool>.Ok("Candidate rejected successfully.", true));
         }
         [HttpPost("SendEmail")]
-        public async Task<IActionResult> SendEmail([FromBody] SetScheduleDto dto)
+        public async Task<ActionResult<GeneralResponse<bool>>> SendEmail([FromBody] SetScheduleDto dto)
         {
-            try
-            {
-                var request = await _candidateService.SendInitialEmail(dto);
-                if (!request)
-                {
-                    return NotFound($"Application with ID {dto.ApplicationId} not found.");
-                }
-                return Ok(request);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
-        }
-        [HttpPut("Viewresume/{id}")]
-        public async Task<IActionResult>ViewResumeUpdate(int id)
-        {
-            var result = await _candidateService.ViewResumeUpdate(id);
-            return Ok(result);
+            var success = await _candidateService.SendInitialEmail(dto);
+            return Ok(GeneralResponse<bool>.Ok("Email sent successfully.", true));
         }
 
+        [HttpPut("Viewresume/{id}")]
+        public async Task<ActionResult<GeneralResponse<bool>>> ViewResumeUpdate(int id)
+        {
+            var success = await _candidateService.ViewResumeUpdate(id);
+            return Ok(GeneralResponse<bool>.Ok("Resume viewed successfully."+ success));
+        }
     }
 }

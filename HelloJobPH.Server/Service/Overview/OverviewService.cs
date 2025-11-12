@@ -1,4 +1,5 @@
 ﻿using HelloJobPH.Server.Data;
+using HelloJobPH.Server.GeneralReponse;
 using HelloJobPH.Shared.DTOs;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,7 +12,7 @@ namespace HelloJobPH.Server.Service.Overview
         {
             _context = context;
         }
-        public async Task<OverviewDtos?> ListOverview(int id)
+        public async Task<GeneralResponse<OverviewDtos?>> ListOverview(int id)
         {
             var result = await _context.Application
 
@@ -60,11 +61,7 @@ namespace HelloJobPH.Server.Service.Overview
                 .AsNoTracking()
                 .FirstOrDefaultAsync();
 
-            return result;
+            return GeneralResponse<OverviewDtos?>.Ok("Overview success");
         }
-
-
-
-
     }
 }

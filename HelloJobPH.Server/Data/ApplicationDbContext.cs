@@ -20,6 +20,7 @@ namespace HelloJobPH.Server.Data
         public DbSet<Shared.Model.Employer> Employer { get; set; }
          public DbSet<ChatMessage> ChatMessages { get; set; }
         public DbSet<AuditLog> AuditLog { get; set; }
+        public DbSet<JobPostAudit> JobPostAudit { get; set; }     
         public DbSet<InterviewHistory> InterviewHistory { get; set; }
         //protected override void OnModelCreating(ModelBuilder modelBuilder)
         //{

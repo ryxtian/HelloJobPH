@@ -4,6 +4,7 @@ using HelloJobPH.Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HelloJobPH.Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251112052428_JobpostAudit")]
+    partial class JobpostAudit
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -457,22 +460,14 @@ namespace HelloJobPH.Server.Migrations
                     b.Property<DateTime>("ChangedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("EmployerId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("HumanResourceId")
-                        .HasColumnType("int");
+                    b.Property<string>("ChangedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("JobPostingId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("EmployerId");
-
-                    b.HasIndex("HumanResourceId");
-
-                    b.HasIndex("JobPostingId");
 
                     b.ToTable("JobPostAudit");
                 });
@@ -840,29 +835,6 @@ namespace HelloJobPH.Server.Migrations
                     b.Navigation("Application");
                 });
 
-            modelBuilder.Entity("HelloJobPH.Shared.Model.JobPostAudit", b =>
-                {
-                    b.HasOne("HelloJobPH.Shared.Model.Employer", "Employer")
-                        .WithMany("JobPostAudits")
-                        .HasForeignKey("EmployerId");
-
-                    b.HasOne("HelloJobPH.Shared.Model.HumanResources", "HumanResource")
-                        .WithMany("JobPostAudits")
-                        .HasForeignKey("HumanResourceId");
-
-                    b.HasOne("HelloJobPH.Shared.Model.JobPosting", "JobPosting")
-                        .WithMany("JobPostAudits")
-                        .HasForeignKey("JobPostingId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Employer");
-
-                    b.Navigation("HumanResource");
-
-                    b.Navigation("JobPosting");
-                });
-
             modelBuilder.Entity("HelloJobPH.Shared.Model.JobPosting", b =>
                 {
                     b.HasOne("HelloJobPH.Shared.Model.Employer", "Employer")
@@ -927,8 +899,6 @@ namespace HelloJobPH.Server.Migrations
                     b.Navigation("HumanResources");
 
                     b.Navigation("JobPost");
-
-                    b.Navigation("JobPostAudits");
                 });
 
             modelBuilder.Entity("HelloJobPH.Shared.Model.HumanResources", b =>
@@ -941,8 +911,6 @@ namespace HelloJobPH.Server.Migrations
 
                     b.Navigation("Interviews");
 
-                    b.Navigation("JobPostAudits");
-
                     b.Navigation("JobPostings");
                 });
 
@@ -951,8 +919,6 @@ namespace HelloJobPH.Server.Migrations
                     b.Navigation("Application");
 
                     b.Navigation("AuditLogs");
-
-                    b.Navigation("JobPostAudits");
                 });
 
             modelBuilder.Entity("HelloJobPH.Shared.Model.UserAccount", b =>

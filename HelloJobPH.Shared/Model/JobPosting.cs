@@ -29,6 +29,7 @@ namespace HelloJobPH.Shared.Model
         public Employer? Employer { get; set; }
         public DateTime PostedDate { get; set; }
         public List<AuditLog>? AuditLogs { get; set; }
+        public List<JobPostAudit>? JobPostAudits { get; set; }
 
     }
 }
