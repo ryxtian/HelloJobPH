@@ -26,5 +26,6 @@ namespace HelloJobPH.Shared.Model
         public List<EducationalAttainment>? EducationalAttainments { get; set; }
         public List<WorkExperience>? WorkExperiences { get; set; }
         public List<AuditLog>? AuditLogs { get; set; }
+        public List<ChatMessage>? ChatMessages { get; set; }
     }
 }

@@ -8,9 +8,12 @@ namespace HelloJobPH.Shared.DTOs
 {
     public class ChatDtos
     {
-        public string SenderId { get; set; }
-        public string ReceiverId { get; set; }
+        public int Id { get; set; }
+        public string SenderId { get; set; } = default!;
+        public string ReceiverId { get; set; } = default!;
+        public string Message { get; set; } = default!;
+        public DateTime SentAt { get; set; } = DateTime.UtcNow;
+            
         public string? CompanyName { get; set; }
-        public string Message { get; set; }
     }
 }
