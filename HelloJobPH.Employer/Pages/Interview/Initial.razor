@@ -1,4 +1,5 @@
 ﻿@page "/Interview/initial"
+@using HelloJobPH.Employer.Services.ChatService
 @using Microsoft.AspNetCore.SignalR.Client
 @inject NavigationManager Navigation
 @inject IClientInterviewService CandidateService
@@ -8,6 +9,8 @@
 @inject NavigationManager NavigationManger
 @inject HttpClient Http
 @using System.Net.Http.Json
+@inject ChatService ChatService
+@inject AuthenticationStateProvider AuthProvider
 
 
 
@@ -190,17 +193,20 @@
                                  Size="Size.Small"
                                  Dense="true"
                                  AnchorOrigin="Origin.BottomLeft">
-                            <MudMenuItem Icon="@Icons.Material.Filled.Schedule" OnClick="@(() => Reschedule(context))">Reschedule</MudMenuItem>
-                            <MudMenuItem Icon="@Icons.Material.Filled.PersonOff" OnClick="@(() => NoAppearance(context.ApplicationId))">No Appearance</MudMenuItem>
+                            <MudMenuItem IconColor="Color.Info" Icon="@Icons.Material.Filled.Schedule" OnClick="@(() => Reschedule(context))">Reschedule</MudMenuItem>
+                            <MudMenuItem IconColor="Color.Error" Icon="@Icons.Material.Filled.PersonOff" OnClick="@(() => NoAppearance(context.ApplicationId))">No Appearance</MudMenuItem>
                             <MudDivider />
-                            <MudMenuItem Icon="@Icons.Material.Filled.Build" OnClick="@(() => ForTechnical(context))">Technical</MudMenuItem>
-                            <MudMenuItem Icon="@Icons.Material.Filled.EmojiEvents" OnClick="@(() => ForFinal(context))">Final</MudMenuItem>
-                            <MudMenuItem Icon="@Icons.Material.Filled.Cancel" OnClick="@(() => Failed(context.ApplicationId))" Class="mud-error-text">Failed</MudMenuItem>
+                            <MudMenuItem IconColor="Color.Secondary" Icon="@Icons.Material.Filled.Build" OnClick="@(() => ForTechnical(context))">Technical</MudMenuItem>
+                            <MudMenuItem IconColor="Color.Warning" Icon="@Icons.Material.Filled.EmojiEvents" OnClick="@(() => ForFinal(context))">Final</MudMenuItem>
+                            <MudMenuItem IconColor="Color.Error" Icon="@Icons.Material.Filled.Cancel" OnClick="@(() => Failed(context.ApplicationId))" >Failed</MudMenuItem>
                             <MudDivider />
-                            <MudMenuItem OnClick="@(() => Delete(context.ApplicationId))" Icon="@Icons.Material.Filled.Delete" Class="mud-error-text">Delete</MudMenuItem>
-                            <MudMenuItem Icon="@Icons.Material.Filled.Visibility" OnClick="@(() => NavigateToOverview(context.ApplicationId))">Overview</MudMenuItem>
-                            <MudMenuItem Icon="@Icons.Material.Filled.ChatBubble" OnClick="@(() => OpenChat(context))">Chat</MudMenuItem>
-                            <MudMenuItem Icon="@Icons.Material.Filled.MarkChatRead" OnClick="@(() => MarkAsCompleted(context.ApplicationId))">Mark As Completed</MudMenuItem>
+                            <MudMenuItem IconColor="Color.Error"  OnClick="@(() => Delete(context.ApplicationId))" Icon="@Icons.Material.Filled.Delete">Delete</MudMenuItem>
+                            <MudMenuItem IconColor="Color.Tertiary"Icon="@Icons.Material.Filled.Visibility" OnClick="@(() => NavigateToOverview(context.ApplicationId))">Overview</MudMenuItem>
+                            <MudMenuItem IconColor="Color.Primary" Icon="@Icons.Material.Filled.ChatBubble"
+                                         OnClick="@(() => OpenChat(context))">
+                                Chat
+                            </MudMenuItem>
+                            <MudMenuItem IconColor="Color.Success" Icon="@Icons.Material.Filled.MarkChatRead" OnClick="@(() => MarkAsCompleted(context.ApplicationId))">Mark As Completed</MudMenuItem>
                         </MudMenu>
                     </MudTd>
                 </RowTemplate>
@@ -250,30 +256,27 @@
 
             <!-- Messages -->
             <MudContainer Class="chat-body">
-                @foreach (var msg in chat.Messages)
-                {
-                    <MudStack Class="@(msg.SenderId == currentUserId ? "sent-message" : "received-message")" Style="margin-bottom:4px;">
-                        <MudText Typo="Typo.body2">@msg.Message</MudText>
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">
-                            @msg.SentAt.ToLocalTime().ToShortTimeString()
-                        </MudText>
-                    </MudStack>
-                }
+                <MudList T="string">
+                    @foreach (var msg in messages)
+                    {
+                        <MudListItem>
+                            <b>@(msg.User == senderId ? "You" : msg.User):</b> @msg.Text
+                        </MudListItem>
+                    }
+                </MudList>
             </MudContainer>
 
             <MudDivider />
 
             <!-- Input -->
             <MudStack Row AlignItems="AlignItems.Center" Spacing="1" Class="p-2">
-                <MudTextField @bind-Value="chat.NewMessage"
+                <MudTextField @bind-Value="message"
                               Placeholder="Type a message..."
                               Variant="Variant.Outlined"
                               Class="flex-grow"
                               OnKeyDown="@(e => HandleKeyPress(e, chat))" />
-                <MudIconButton Icon="@Icons.Material.Filled.Send"
-                               Color="Color.Primary"
-                               Disabled="@string.IsNullOrWhiteSpace(chat.NewMessage)"
-                               OnClick="@(() => SendMessage(chat))" />
+                <MudButton OnClick="SendMessage" Color="Color.Primary" Variant="Variant.Filled" Class="mt-2">Send</MudButton>
+
             </MudStack>
         </MudPaper>
     }
@@ -285,15 +288,18 @@
     private HubConnection? hubConnection;
     private List<ChatSession> openChats = new();
     private List<InterviewListDtos> initial = new();
+    private string senderId;
+    private string receiverId;
+    private string message = "";
+    private List<(string User, string Text)> messages = new();
 
-    private string currentUserId = "Employer123"; // ⚡ Replace with actual logged user ID
 
 
     public class ChatSession
     {
         public int CandidateId { get; set; }
         public string CandidateName { get; set; } = string.Empty;
-        public List<ChatMessageDtos> Messages { get; set; } = new();
+        //public List<ChatMessageDtos> Messages { get; set; } = new();
         public string NewMessage { get; set; } = string.Empty;
         public int OffsetRight { get; set; }
     }
@@ -302,41 +308,50 @@
     {
         initial = await CandidateService.InitialList();
 
-        hubConnection = new HubConnectionBuilder()
-            .WithUrl("https://localhost:7172/chathub") // ⚡ Your API base + hub path
-            .WithAutomaticReconnect()
-            .Build();
+        var authState = await AuthProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
 
-        // ✅ Receive real-time messages
-        hubConnection.On<string, string, string, DateTime>("ReceiveMessage", (senderId, receiverId, message, sentAt) =>
+        if (user.Identity?.IsAuthenticated == true)
         {
-            // Find the chat window (if open)
-            var chat = openChats.FirstOrDefault(c => c.CandidateId.ToString() == senderId || c.CandidateId.ToString() == receiverId);
-            if (chat != null)
-            {
-                chat.Messages.Add(new ChatMessageDtos
-                {
-                    SenderId = senderId,
-                    ReceiverId = receiverId,
-                    Message = message,
-                    SentAt = sentAt
-                });
-                InvokeAsync(StateHasChanged);
-            }
-            else
-            {
-                // Optionally show unread notification or open chat automatically
-            }
-        });
+            senderId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        }
 
-        await hubConnection.StartAsync();
+        // Initialize SignalR
+        await ChatService.InitializeAsync();
+
+        // Subscribe to incoming messages
+        ChatService.OnMessageReceived += (user, msg) =>
+        {
+            messages.Add((user, msg));
+            InvokeAsync(StateHasChanged);
+        };
+
+
+ 
+    }
+    private async Task LoadChatHistory(string senderId, string receiverId)
+    {
+        try
+        {
+            var history = await ChatService.ChatHistory(receiverId, senderId);
+
+            if (history != null)
+            {
+                // Map ChatMessageDtos to your messages list
+                messages = history.Select(m => (m.SenderId, m.Message)).ToList();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading chat history: {ex.Message}");
+        }
     }
 
     private void HandleKeyPress(KeyboardEventArgs e, ChatSession chat)
     {
         if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(chat.NewMessage))
         {
-            _ = SendMessage(chat);
+            _ = SendMessage();
         }
     }
 
@@ -345,30 +360,10 @@
         openChats.Remove(chat);
     }
 
-    private async Task SendMessage(ChatSession chat)
+
+    private async void OpenChat(InterviewListDtos candidate)
     {
-        if (hubConnection is null || string.IsNullOrWhiteSpace(chat.NewMessage))
-            return;
-
-        var message = new ChatMessageDtos
-        {
-            SenderId = currentUserId,
-            ReceiverId = chat.CandidateId.ToString(),
-            Message = chat.NewMessage,
-            SentAt = DateTime.UtcNow
-        };
-
-        // Locally add message
-        chat.Messages.Add(message);
-        chat.NewMessage = string.Empty;
-
-        // Send to server
-        await hubConnection.SendAsync("SendMessage", message.SenderId, message.ReceiverId, message.Message);
-
-
-    }
-    private void OpenChat(InterviewListDtos candidate)
-    {
+        receiverId = candidate.UserAccountId.ToString();
         if (openChats.Any(c => c.CandidateId == candidate.ApplicationId))
             return;
 
@@ -379,6 +374,18 @@
             CandidateName = $"{candidate.Firstname} {candidate.Lastname}",
             OffsetRight = offset
         });
+        await LoadChatHistory(senderId, receiverId);
+    }
+    private async Task SendMessage()
+    {
+        if (!string.IsNullOrWhiteSpace(message) && !string.IsNullOrEmpty(senderId))
+        {
+            await ChatService.SendMessage(receiverId, message, senderId);
+
+            // Add the message immediately to UI
+            messages.Add((senderId, message));
+            message = "";
+        }
     }
 
     public async ValueTask DisposeAsync()

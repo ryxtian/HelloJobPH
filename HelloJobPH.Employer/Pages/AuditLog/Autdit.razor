@@ -51,8 +51,20 @@
                       Loading="@isLoading"
                       LoadingProgressColor="Color.Primary">
                 <HeaderContent>
-                    <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Timestamp</strong></MudText></MudTh>
-                    <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Candidate</strong></MudText></MudTh>
+                    <MudTh>
+                        <MudTableSortLabel SortBy="@((AuditLogDtos x) => x.Timestamp)">
+                            <MudText Typo="Typo.subtitle2" Color="Color.Primary">
+                                <strong>Timestamp</strong>
+                            </MudText>
+                        </MudTableSortLabel>
+                    </MudTh>
+                    <MudTh>
+                        <MudTableSortLabel SortBy="@((AuditLogDtos x) => x.CandidateFirstName + " " + x.CandidateLastName)">
+                            <MudText Typo="Typo.subtitle2" Color="Color.Primary">
+                                <strong>Candidate</strong>
+                            </MudText>
+                        </MudTableSortLabel>
+                    </MudTh>
                     <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Position</strong></MudText></MudTh>
                     <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>HR Personnel</strong></MudText></MudTh>
                     <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Action</strong></MudText></MudTh>

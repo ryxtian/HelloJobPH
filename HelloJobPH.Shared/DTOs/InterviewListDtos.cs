@@ -21,5 +21,6 @@ namespace HelloJobPH.Shared.DTOs
         public string? Lastname { get; set; }
         public ApplicationStatus? Status { get; set; }
         public byte? MarkAsCompleted { get; set; }
+        public string? UserAccountId { get; set; }
     }
 }

@@ -100,7 +100,8 @@ namespace HelloJobPH.Server.Service.Interview
                         TimeInterview = a.Interview != null ? a.Interview.ScheduledTime : null,
                         DateInterview = a.Interview != null ? a.Interview.ScheduledDate : null,
                         Status = a.ApplicationStatus,
-                        MarkAsCompleted = a.MarkAsCompleted
+                        MarkAsCompleted = a.MarkAsCompleted,
+                        UserAccountId = a.Applicant.UserAccountId.ToString()
                     })
                     .ToListAsync();
 

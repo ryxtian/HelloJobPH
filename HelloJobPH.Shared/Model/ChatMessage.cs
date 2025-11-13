@@ -13,7 +13,6 @@ namespace HelloJobPH.Shared.Model
         public string ReceiverId { get; set; } = default!;
         public string Message { get; set; } = default!;
         public DateTime SentAt { get; set; } = DateTime.UtcNow;
-        // Navigation properties
-       
+
     }
 }

@@ -8,7 +8,7 @@ namespace HelloJobPH.Server.ChatSystemHub
 {
     public class Chathub : Hub
     {
- 
+
         //public async Task SendMessage(ChatMessageDtos message)
         //{
         //   await Clients.All.SendAsync("ReceiveMessage",message);
