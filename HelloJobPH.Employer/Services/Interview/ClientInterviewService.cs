@@ -84,7 +84,7 @@ namespace HelloJobPH.Employer.Services.Interview
         }
         public async Task<int> MarkAsCompleted(int id)
         {
-            var response = await _http.GetAsync($"api/Interview/MarkAsCompleted{id}");
+            var response = await _http.GetAsync($"api/Interview/MarkAsCompleted/{id}");
             if (response.IsSuccessStatusCode)
             {
                 var result = await response.Content.ReadFromJsonAsync<int>();

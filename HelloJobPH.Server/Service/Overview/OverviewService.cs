@@ -12,7 +12,7 @@ namespace HelloJobPH.Server.Service.Overview
         {
             _context = context;
         }
-        public async Task<GeneralResponse<OverviewDtos?>> ListOverview(int id)
+        public async Task<OverviewDtos?> ListOverview(int id)
         {
             var result = await _context.Application
 
@@ -61,7 +61,7 @@ namespace HelloJobPH.Server.Service.Overview
                 .AsNoTracking()
                 .FirstOrDefaultAsync();
 
-            return GeneralResponse<OverviewDtos?>.Ok("Overview success");
+            return result;
         }
     }
 }

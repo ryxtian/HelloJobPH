@@ -5,6 +5,7 @@ using HelloJobPH.Employer.JwtAuthStateProviders;
 using HelloJobPH.Employer.Services.AuditLog;
 using HelloJobPH.Employer.Services.Authentication;
 using HelloJobPH.Employer.Services.Candidate;
+using HelloJobPH.Employer.Services.ChatNotication;
 using HelloJobPH.Employer.Services.ChatService;
 using HelloJobPH.Employer.Services.Dashboard;
 using HelloJobPH.Employer.Services.HumanResource;
@@ -46,6 +47,7 @@ builder.Services.AddScoped<IClientDashboardService, ClientDashboardService>();
 builder.Services.AddScoped<IClientSuperAdminService, ClientSuperAdminService>();
 builder.Services.AddScoped<IClientAuditLogService, ClientAuditLogService>();
 builder.Services.AddScoped<IClientResumeService, ClientResumeService>();
+builder.Services.AddScoped<IClientChatNotifService, ClientChatNotifService>();
 builder.Services.AddScoped<ChatService>();
 
 

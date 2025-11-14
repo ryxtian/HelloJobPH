@@ -5,6 +5,8 @@
 @inject IClientIAuthService AuthService
 @inject ISnackbar Snackbar
 @inject NavigationManager Nav
+@inject AuthenticationStateProvider AuthProvider
+
 
 <MudContainer MaxWidth="MaxWidth.ExtraSmall" Class="mt-12">
     <MudPaper Elevation="8" Class="pa-8 rounded-lg">
@@ -64,3 +66,19 @@
         Protected admin access only
     </MudText>
 </MudContainer>
+
+@code {
+
+    private ClaimsPrincipal? user;
+
+     protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthProvider.GetAuthenticationStateAsync();
+        user = authState.User;
+
+        if (user.Identity != null && user.Identity.IsAuthenticated)
+        {
+            Nav.NavigateTo("/dashboard/dashboard", true);
+        }
+    }
+}

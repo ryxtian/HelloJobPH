@@ -1,8 +1,15 @@
 ﻿@inherits LayoutComponentBase
+@using HelloJobPH.Employer.Services.ChatNotication
+@using HelloJobPH.Employer.Services.ChatService
 @using Microsoft.AspNetCore.Components.Authorization
 @using HelloJobPH.Employer.JwtAuthStateProviders
+@using Microsoft.AspNetCore.SignalR.Client
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Components.Web
 @inject AuthenticationStateProvider AuthProvider
 @inject NavigationManager Navigation
+@inject ChatService ChatService
+@inject IClientChatNotifService _services
 
 @* Required MudBlazor Providers *@
 <MudThemeProvider Theme="_theme" />
@@ -22,20 +29,79 @@
 
         <MudSpacer />
 
-        @if (user != null && user.Identity != null && user.Identity.IsAuthenticated)
+        @if (isAuthenticated)
         {
             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
 
+                <!-- Left divider -->
                 <MudDivider Vertical="true" FlexItem="true" />
 
+                <!-- Notifications (bell) -->
+                <MudMenu Icon="@Icons.Material.Filled.Notifications"
+                         AnchorOrigin="Origin.BottomRight"
+                         TransformOrigin="Origin.TopRight"
+                         CloseOnItemClick="false">
+
+                    <ActivatorContent>
+                        <MudBadge Color="Color.Error" Content="@unreadCount" Max="9" Visible="@(unreadCount > 0)">
+                            <MudIconButton Icon="@Icons.Material.Filled.ChatBubble" Color="Color.Inherit" Size="Size.Large" />
+                        </MudBadge>
+                    </ActivatorContent>
+
+                    <ChildContent>
+                        <div class="d-flex justify-space-between align-center px-4 py-2" style="min-width: 350px;">
+                            <MudText Typo="Typo.h6">
+                                <MudIcon Icon="@Icons.Material.Filled.ChatBubble" Size="Size.Small" Class="mr-2" />
+                                Chats
+                            </MudText>
+                        </div>
+                        <MudDivider />
+
+                        @if (notifications.Any())
+                        {
+                            <div style="max-height: 400px; overflow-y: auto;">
+                                @foreach (var note in notifications)
+                                {
+                                    <MudMenuItem Class="px-4 py-3" OnClick="@(() => OpenChat(note))">
+                                        <div class="d-flex align-start">
+                                            <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-3">
+                                                <MudIcon Icon="@Icons.Material.Filled.Chat" Size="Size.Small" />
+                                            </MudAvatar>
+                                            <div class="flex-grow-1">
+                                                <MudText Typo="Typo.body2">@note.ApplicantName</MudText>
+                                                <MudText Typo="Typo.body2">@note.Message</MudText>
+                                                <MudText Typo="Typo.caption" Color="Color.Tertiary">
+                                                    @note.SentAt.ToLocalTime().ToString("g")
+                                                </MudText>
+                                            </div>
+                                        </div>
+                                    </MudMenuItem>
+                                    <MudDivider />
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="d-flex flex-column align-center justify-center pa-8">
+                                <MudIcon Icon="@Icons.Material.Filled.NotificationsNone" Size="Size.Large" />
+                                <MudText Typo="Typo.body1" Class="mt-4">No notifications</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Tertiary">You're all caught up!</MudText>
+                            </div>
+                        }
+                    </ChildContent>
+                </MudMenu>
+
+                <!-- User Avatar + Role -->
                 <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
                     <MudAvatar Color="Color.Primary" Size="Size.Medium">
                         @GetInitials(fullName)
                     </MudAvatar>
+
                     <MudStack Spacing="0" Class="mr-2">
                         <MudText Typo="Typo.body2" Class="white-text">
                             <b>@fullName</b>
                         </MudText>
+
                         @if (!string.IsNullOrEmpty(userRole))
                         {
                             <MudText Typo="Typo.caption" Class="white-text" Style="opacity: 0.8;">
@@ -45,19 +111,24 @@
                     </MudStack>
                 </MudStack>
 
+                <!-- Dropdown Menu -->
                 <MudMenu Icon="@Icons.Material.Filled.ArrowDropDown"
                          Color="Color.Inherit"
                          AnchorOrigin="Origin.BottomRight"
                          TransformOrigin="Origin.TopRight">
+
                     <MudMenuItem Icon="@Icons.Material.Filled.Person">Profile</MudMenuItem>
                     <MudMenuItem Icon="@Icons.Material.Filled.Settings">Settings</MudMenuItem>
                     <MudDivider />
+
                     <MudMenuItem Icon="@Icons.Material.Filled.Logout"
                                  IconColor="Color.Error"
                                  OnClick="Logout">
                         Logout
                     </MudMenuItem>
+
                 </MudMenu>
+
             </MudStack>
         }
     </MudAppBar>
@@ -110,13 +181,194 @@
 </MudLayout>
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- Floating Chat Boxes -->
+<MudContainer>
+    @foreach (var chat in openChats)
+    {
+        <MudPaper Elevation="10" Class="chat-container animate-fade-in" style="@($"right:{chat.OffsetRight}px")">
+
+            <!-- Header -->
+            <MudStack Row AlignItems="AlignItems.Center" JustifyContent="SpaceBetween" Class="chat-header">
+                <MudText Typo="Typo.subtitle2">@chat.ApplicantName</MudText>
+                <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" OnClick="@(() => CloseChat(chat))" />
+            </MudStack>
+
+            <!-- Messages -->
+            <MudContainer Class="chat-body">
+                @foreach (var msg in chat.Messages)
+                {
+                    <div class="message-row @(msg.User == senderId ? "sent" : "received")">
+                        <div class="message-bubble @(msg.User == senderId ? "bubble-sent" : "bubble-received")">
+                            @msg.Text
+                        </div>
+                    </div>
+                }
+            </MudContainer>
+
+            <MudDivider />
+
+            <!-- Input -->
+            <MudStack Row AlignItems="AlignItems.Center" Spacing="1" Class="p-2 bg-white">
+                <MudTextField @bind-Value="chat.NewMessage"
+                              Placeholder="Type a message..."
+                              Variant="Variant.Outlined"
+                              Class="flex-grow rounded-full"
+                              OnKeyDown="@(e => HandleKeyPress(e, chat))" />
+                <MudIconButton Icon="@Icons.Material.Filled.Send"
+                               Color="Color.Primary"
+                               Size="Size.Medium"
+                               OnClick="@(() => SendMessage(chat))" />
+            </MudStack>
+
+        </MudPaper>
+    }
+</MudContainer>
+
+<style>
+    /* Chat container */
+    .chat-container {
+        position: fixed;
+        bottom: 10px;
+        width: 320px;
+        border-radius: 16px;
+        margin: 10px;
+        background-color: white;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0px 4px 12px rgba(0,0,0,0.15);
+        animation: fadeIn 0.3s ease-in-out;
+    }
+
+    /* Header */
+    .chat-header {
+        background-color: #1976d2;
+        color: white;
+        padding: 10px;
+        font-weight: 600;
+        border-radius: 16px 16px 0 0;
+    }
+
+    /* Body */
+    .chat-body {
+        padding: 10px;
+        max-height: 350px;
+        overflow-y: auto;
+        background-color: #f5f5f5;
+        display: flex;
+        flex-direction: column;
+        height: 400px;
+    }
+
+    /* Message rows */
+    .message-row {
+        display: flex;
+        margin-bottom: 8px;
+    }
+
+        /* Sent (right side) */
+        .message-row.sent {
+            justify-content: flex-end;
+        }
+
+        /* Received (left side) */
+        .message-row.received {
+            justify-content: flex-start;
+        }
+
+    /* Message bubble */
+    .message-bubble {
+        max-width: 70%;
+        padding: 10px 14px;
+        border-radius: 18px;
+        font-size: 0.9rem;
+        line-height: 1.3;
+        word-wrap: break-word;
+    }
+
+    /* Sender bubble */
+    .bubble-sent {
+        background-color: #1976d2;
+        color: white;
+        border-bottom-right-radius: 4px;
+    }
+
+    /* Receiver bubble */
+    .bubble-received {
+        background-color: #e0e0e0;
+        color: #000;
+        border-bottom-left-radius: 4px;
+    }
+
+    /* Input field */
+    .mud-text-field {
+        border-radius: 20px;
+    }
+
+    /* Fade animation */
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .mud-badge.mud-badge-top.right {
+        FONT-WEIGHT: 500;
+        FONT-WEIGHT: 500;
+        inset: auto auto calc(50% - 4px) calc(60% - 4px) !important
+    }
+</style>
+
+
+
+
+
+
+
+
+
 @code {
+    // Notifications list from your service
+    private List<ChatMessageDtos> notifications { get; set; } = new();
+
+    // Open chat windows
+    private List<ChatSession> openChats = new();
+
     private ClaimsPrincipal? user;
     private string? fullName;
     private string? userRole;
     private bool _drawerOpen = true;
     private bool isEmployer;
+    private bool isAuthenticated;
+    private int unreadCount => notifications?.Count ?? 0;
+    private string receiverId = string.Empty;
 
+    // Current logged-in user's id (sender)
+    private string senderId = string.Empty;
+
+    // If your ChatService exposes a hub connection, it can be used; keeping nullable
+    private HubConnection? hubConnection;
+
+    // Theme
     private MudTheme _theme = new MudTheme()
     {
         PaletteLight = new PaletteLight()
@@ -130,20 +382,107 @@
         }
     };
 
+    public class ChatSession
+    {
+        public int ApplicantId { get; set; }
+        public string ApplicantName { get; set; } = string.Empty;
+        // store senderId + text; keep types explicit for readability
+        public List<(string User, string Text)> Messages { get; set; } = new();
+        public string NewMessage { get; set; } = string.Empty;
+        public int OffsetRight { get; set; }
+    }
+
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthProvider.GetAuthenticationStateAsync();
         user = authState.User;
 
-        if (user.Identity != null && user.Identity.IsAuthenticated)
+        isAuthenticated = user?.Identity?.IsAuthenticated ?? false;
+
+        if (isAuthenticated)
         {
-            var firstName = user.FindFirst(c => c.Type == ClaimTypes.Name)?.Value;
-            var lastName = user.FindFirst(c => c.Type == ClaimTypes.Surname)?.Value;
-            userRole = user.FindFirst(c => c.Type == ClaimTypes.Role)?.Value;
-            fullName = $"{firstName} {lastName}";
-            isEmployer = user.IsInRole("Employer");
+            senderId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
+            fullName = user.FindFirst("name")?.Value ?? user.Identity?.Name ?? "";
+            userRole = user.FindFirst(ClaimTypes.Role)?.Value ?? "";
+
+            // fetch notifications for the logged-in user
+            try
+            {
+                notifications = await _services.NotificationList(senderId) ?? new();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to load notifications: {ex.Message}");
+                notifications = new();
+            }
+        }
+
+        // Initialize ChatService (if required) and subscribe to messages
+        try
+        {
+            await ChatService.InitializeAsync();
+
+            // When ChatService receives a message, append to the correct open chat
+            // ChatService.OnMessageReceived += OnChatMessageReceived;
+            ChatService.OnMessageReceived += (user, msg) =>
+       {
+           var chat = openChats.FirstOrDefault(c => c.ApplicantId.ToString() == user);
+           if (chat != null)
+           {
+               chat.Messages.Add((user, msg));
+               InvokeAsync(StateHasChanged);
+           }
+       };
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"ChatService initialization failed: {ex.Message}");
         }
     }
+
+    private async void OnChatMessageReceived(string fromUserId, string message)
+    {
+        try
+        {
+            var chat = openChats.FirstOrDefault(c => c.ApplicantId.ToString() == fromUserId);
+            if (chat != null)
+            {
+                chat.Messages.Add((fromUserId, message));
+                await InvokeAsync(StateHasChanged);
+            }
+            else
+            {
+               
+                notifications.Insert(0, new ChatMessageDtos
+                {
+                    SenderId = fromUserId,
+                    ApplicantName = "Applicant",
+                    CompanyName = "Unknown",
+                    Message = message,
+                    SentAt = DateTime.UtcNow,
+                    IsRead = false
+                });
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"OnChatMessageReceived error: {ex.Message}");
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     private void ToggleDrawer()
     {
@@ -166,6 +505,102 @@
         if (AuthProvider is JwtAuthStateProvider jwtAuth)
             await jwtAuth.MarkUserAsLoggedOut();
 
+        // navigate to root and force reload
         Navigation.NavigateTo("/", true);
+    }
+
+    private async Task OpenChat(ChatMessageDtos note)
+    {
+        // note.SenderId is the applicant id (the remote), senderId is current user
+        receiverId = note.SenderId;
+        if (string.IsNullOrEmpty(receiverId))
+            return;
+
+        var existing = openChats.FirstOrDefault(c => c.ApplicantId.ToString() == receiverId);
+        if (existing == null)
+        {
+            int offset = 20 + (openChats.Count * 340);
+            var newChat = new ChatSession
+            {
+                ApplicantId = int.Parse(receiverId),
+                ApplicantName = string.IsNullOrEmpty(note.ApplicantName) ? note.HRName ?? "Applicant" : note.ApplicantName,
+                OffsetRight = offset
+            };
+            openChats.Add(newChat);
+
+            // load history into newChat
+            await LoadChatHistory(senderId, receiverId, newChat);
+        }
+
+        // mark notification as read locally (and optionally update server)
+        note.IsRead = true;
+        // optionally call server to mark as read; omitted because depends on your API
+        StateHasChanged();
+    }
+
+    private async Task LoadChatHistory(string senderId, string receiverId, ChatSession chat)
+    {
+        try
+        {
+            var history = await ChatService.ChatHistory(receiverId, senderId);
+            chat.Messages = history?.Select(m => (m.SenderId, m.Message)).ToList() ?? new();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading chat history: {ex.Message}");
+        }
+    }
+
+    private void HandleKeyPress(KeyboardEventArgs e, ChatSession chat)
+    {
+        if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(chat.NewMessage))
+        {
+            // fire and forget; method handles clearing
+            _ = SendMessage(chat);
+        }
+    }
+
+    private async Task SendMessage(ChatSession chat)
+    {
+        if (chat == null || string.IsNullOrWhiteSpace(chat.NewMessage))
+            return;
+
+        var targetId = chat.ApplicantId.ToString();
+        try
+        {
+            // Ensure ChatService.SendMessage has this signature (remoteId, message, senderId)
+            await ChatService.SendMessage(targetId, chat.NewMessage, senderId);
+
+            // append locally and clear input
+            chat.Messages.Add((senderId, chat.NewMessage));
+            chat.NewMessage = string.Empty;
+
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"SendMessage error: {ex.Message}");
+        }
+    }
+
+    private void CloseChat(ChatSession chat) => openChats.Remove(chat);
+
+    // Dispose subscriptions
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (ChatService != null)
+            {
+                ChatService.OnMessageReceived -= OnChatMessageReceived;
+            }
+
+            if (hubConnection is not null)
+                await hubConnection.DisposeAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Dispose error: {ex.Message}");
+        }
     }
 }

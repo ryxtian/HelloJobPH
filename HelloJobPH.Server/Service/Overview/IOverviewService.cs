@@ -5,6 +5,6 @@ namespace HelloJobPH.Server.Service.Overview
 {
     public interface IOverviewService
     {
-        Task<GeneralResponse<OverviewDtos?>> ListOverview(int id);
+        Task<OverviewDtos?> ListOverview(int id);
     }
 }

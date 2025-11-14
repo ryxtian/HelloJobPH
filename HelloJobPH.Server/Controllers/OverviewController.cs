@@ -16,10 +16,10 @@ namespace HelloJobPH.Server.Controllers
             _service = service;
         }
         [HttpGet("{id}")]
-        public async Task<ActionResult<GeneralResponse<OverviewDtos>>>ListOverview(int id)
+        public async Task<IActionResult>ListOverview(int id)
         {
             var result = await _service.ListOverview(id);
-            return GeneralResponse<OverviewDtos>.Ok("Overview success");
+            return Ok(result);
         }
     }
 }

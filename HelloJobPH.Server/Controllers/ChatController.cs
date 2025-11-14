@@ -33,19 +33,50 @@ namespace HelloJobPH.Server.Controllers
         public async Task<IActionResult> SendMessage([FromBody] ChatMessageDtos dto)
         {
 
+            var userId = Utility.Utilities.GetUserId();
+
+            var HR = await _context.HumanResource.FirstOrDefaultAsync(i => i.UserAccountId == userId);
+
+
+
             // Map DTO to Entity
             var message = new ChatMessage
             {
                 SenderId = dto.SenderId,
                 ReceiverId = dto.ReceiverId,
                 Message = dto.Message,
-                SentAt = DateTime.UtcNow
+                SentAt = DateTime.UtcNow,
+                HumanResourcesId =HR.HumanResourceId
             };
 
             _context.ChatMessages.Add(message);
             await _context.SaveChangesAsync();
 
             return Ok(new { Message = "Message sent successfully!", MessageId = message.Id });
+        }
+
+        [HttpGet("notifications/{applicantId}")]
+        public async Task<IActionResult> NotificationList(string applicantId)
+        {
+            var notifications = await _context.ChatMessages
+                .Where(m => m.ReceiverId == applicantId)
+                .GroupBy(m => m.SenderId) // group by sender
+                .Select(g => g
+                    .OrderByDescending(m => m.SentAt) // latest message first
+                    .Select(m => new ChatMessageDtos
+                    {
+                        Id = m.Id,
+                        SenderId = m.SenderId,
+                        ReceiverId = m.ReceiverId,
+                        Message = m.Message,
+                        SentAt = m.SentAt,
+                        ApplicantName = m.Applicant.Firstname+" "+m.Applicant.Surname
+                    })
+                    .FirstOrDefault() // take only one per sender
+                )
+                .ToListAsync();
+
+            return Ok(notifications);
         }
 
     }
