@@ -20,13 +20,17 @@
                     Manage and track all your job openings
                 </MudText>
             </MudStack>
-            <MudButton OnClick="AddPost" 
-                       Variant="Variant.Filled" 
-                       StartIcon="@Icons.Material.Filled.Add"
-                       Size="Size.Large"
-                       Style="background-color: white; color: var(--mud-palette-primary); box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                Add New Job Post
-            </MudButton>
+            @if (role == "HR")
+            {
+                <MudButton OnClick="AddPost"
+                           Variant="Variant.Filled"
+                           StartIcon="@Icons.Material.Filled.Add"
+                           Size="Size.Large"
+                           Style="background-color: white; color: var(--mud-palette-primary); box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    Add New Job Post
+                </MudButton>
+            }
+
         </MudStack>
     </MudPaper>
 
@@ -335,10 +339,10 @@
     }
     private async Task AddPost()
     {
-        var parameters = new DialogParameters
-    {
-        { "JobPost", new JobPostingDtos() }
-    };
+    //     var parameters = new DialogParameters
+    // {
+    //     { "JobPost", new JobPostingDtos() }
+    // };
 
         var options = new DialogOptions
         {
@@ -347,7 +351,7 @@
             FullWidth = true
         };
 
-        await DialogService.ShowAsync<JobPostDialog>("Add Job Post", parameters, options);
+        await DialogService.ShowAsync<JobPostDialog>("Add Job Post", options);//, parameters
     }
 
     private async Task Editpost(JobPostingDtos job)

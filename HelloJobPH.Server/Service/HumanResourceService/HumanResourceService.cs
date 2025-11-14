@@ -20,6 +20,10 @@ namespace HelloJobPH.Server.Service.HumanResource
         }
         public async Task<bool> AddAsync(HumanResourceDtos humanResourceDto)
         {
+            var userId = Utilities.GetUserId();
+
+            var employer = await _context.Employer
+                .FirstOrDefaultAsync(e => e.UserAccountId == userId);
 
             string passwordHash = BCrypt.Net.BCrypt.HashPassword(humanResourceDto.Password);
             var useracc = new UserAccount
@@ -40,6 +44,7 @@ namespace HelloJobPH.Server.Service.HumanResource
                 ProfilePhotoUrl = humanResourceDto.ProfilePhotoUrl,
                 JobTitle = humanResourceDto.JobTitle,
                 UserAccountId = useracc.UserAccountId,
+                EmployerId = employer.EmployerId,
                 //Email = useracc.Email,
             };
 

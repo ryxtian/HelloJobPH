@@ -154,19 +154,21 @@
         <MudNavMenu>
             <MudNavLink Href="/dashboard/dashboard" Icon="@Icons.Material.Filled.Dashboard">Dashboard</MudNavLink>
             <MudNavLink Href="/jobpost/JobPost" Icon="@Icons.Material.Filled.AddBox">Job Post</MudNavLink>
-            <MudNavLink Href="/Candidate/Candidate" Icon="@Icons.Material.Filled.PersonSearch">Candidates</MudNavLink>
-            <MudNavLink Href="/Candidate/AcceptedCandidates" Icon="@Icons.Material.Filled.HowToReg">Accepted Candidates</MudNavLink>
+              @if (userRole == "HR")
+            {
+                <MudNavLink Href="/Candidate/Candidate" Icon="@Icons.Material.Filled.PersonSearch">Candidates</MudNavLink>
+                <MudNavLink Href="/Candidate/AcceptedCandidates" Icon="@Icons.Material.Filled.HowToReg">Accepted Candidates</MudNavLink>
 
-            <div class="nav-divider"></div>
+                <div class="nav-divider"></div>
 
             <MudNavLink Href="/interview/initial" Icon="@Icons.Material.Filled.EventNote">Interviews</MudNavLink>
+            }
             <MudNavLink Href="/audit/auditlog" Icon="@Icons.Material.Filled.History">Audit Log</MudNavLink>
 
-            @if (isEmployer)
+            @if (userRole == "Employer")
             {
-                <div class="nav-divider"></div>
                 <MudNavLink Href="/HumanResource/Recruiter" Icon="@Icons.Material.Filled.People">HR Management</MudNavLink>
-                <div class="nav-divider"></div>
+         
                 <MudNavLink Href="/jobpost/audit" Icon="@Icons.Material.Filled.Description">Job Audit</MudNavLink>
             }
         </MudNavMenu>
@@ -404,7 +406,7 @@
             senderId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
             fullName = user.FindFirst("name")?.Value ?? user.Identity?.Name ?? "";
             userRole = user.FindFirst(ClaimTypes.Role)?.Value ?? "";
-
+            
             // fetch notifications for the logged-in user
             try
             {

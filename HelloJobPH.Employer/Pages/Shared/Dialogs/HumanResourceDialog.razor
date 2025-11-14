@@ -2,17 +2,8 @@
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 
-@if (_loading)
-{
-    <MudPaper Class="pa-8" Elevation="2">
-        <MudStack AlignItems="AlignItems.Center" Spacing="3">
-            <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
-            <MudText Typo="Typo.body1" Color="Color.Secondary">Loading data...</MudText>
-        </MudStack>
-    </MudPaper>
-}
-else
-{
+
+
     <MudPaper Elevation="2" Class="pa-6 rounded-lg">
         <MudForm @ref="_form" OnValidSubmit="HandleValidSubmit">
             <MudStack Spacing="4">
@@ -96,7 +87,7 @@ else
                                       AdornmentIcon="@Icons.Material.Filled.WorkOutline"
                                       HelperText="Current position" />
                     </MudItem>
-                    <MudItem xs="12" sm="6">
+    @*                 <MudItem xs="12" sm="6">
                         <MudTextField @bind-Value="humanResource.ProfilePhotoUrl"
                                       Label="Profile Photo URL"
                                       For="@(() => humanResource.ProfilePhotoUrl)"
@@ -104,7 +95,7 @@ else
                                       Adornment="Adornment.Start"
                                       AdornmentIcon="@Icons.Material.Filled.Image"
                                       HelperText="Optional profile image" />
-                    </MudItem>
+                    </MudItem> *@
                 </MudGrid>
 
                 <!-- Security Section -->
@@ -119,6 +110,7 @@ else
                 <MudTextField @bind-Value="humanResource.Password"
                               Label="Password"
                               For="@(() => humanResource.Password)"
+                              Required ="true"
                               InputType="@(isPasswordVisible? InputType.Text: InputType.Password)"
                               Variant="Variant.Outlined"
                               Adornment="Adornment.End"
@@ -141,13 +133,11 @@ else
             </MudStack>
         </MudForm>
     </MudPaper>
-}
 
 @code {
     private HumanResourceDtos humanResource = new();
     private bool isPasswordVisible;
     private MudForm _form;
-    private bool _loading = true;
     [CascadingParameter]
     IMudDialogInstance MudDialog { get; set; } = default!;
 

@@ -12,7 +12,7 @@ namespace HelloJobPH.Employer.Services.HumanResource
         {
             _http = http;
         }
-        public async Task<HumanResourceDtos> AddAsync(HumanResourceDtos entity)
+        public async Task<bool> AddAsync(HumanResourceDtos entity)
         {
             var response = await _http.PostAsJsonAsync("api/HumanResource/create", entity);
 
@@ -21,24 +21,30 @@ namespace HelloJobPH.Employer.Services.HumanResource
                 var error = await response.Content.ReadAsStringAsync();
                 throw new HttpRequestException($"Error posting HumanResource: {response.StatusCode} - {error}");
             }
-
-            return await response.Content.ReadFromJsonAsync<HumanResourceDtos>();
+            return true;
         }
 
-        public async Task<HumanResourceDtos> GetSingle(int id)
+        public async Task<HumanResourceDtos?> GetSingle(int id)
         {
             var response = await _http.GetAsync($"{BaseUrl}/{id}");
+
             if (response.IsSuccessStatusCode)
             {
-                var jobPost = await response.Content.ReadFromJsonAsync<HumanResourceDtos>();
-                return jobPost;
+                var humanResource = await response.Content.ReadFromJsonAsync<HumanResourceDtos>();
+                return humanResource;
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                return null; // HR not found
             }
             else
             {
-                // Handle not found or error, maybe return null or throw
-                return null;
+                // Other errors
+                var error = await response.Content.ReadAsStringAsync();
+                throw new HttpRequestException($"Error fetching HR: {response.StatusCode}, {error}");
             }
         }
+
 
         public async Task<List<HumanResourceDtos>> RetrieveAllAsync()
         {

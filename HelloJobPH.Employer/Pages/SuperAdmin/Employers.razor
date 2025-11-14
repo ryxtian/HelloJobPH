@@ -70,7 +70,7 @@
     <!-- Search and Filters -->
     <MudPaper Elevation="2" Class="pa-4 mb-4" Style="border-radius: 12px;">
         <MudGrid Spacing="3" AlignItems="Center">
-          @*   <MudItem xs="12" md="6">
+             <MudItem xs="12" md="6">
                 <MudTextField @bind-Value="searchQuery"
                               Placeholder="Search employers by name, email, or industry..."
                               Variant="Variant.Outlined"
@@ -79,19 +79,7 @@
                               Class="search-bar"
                               Immediate="true"
                               OnKeyUp="FilterEmployers" />
-            </MudItem> *@
-
-            <MudItem xs="12" sm="6" md="3">
-                <MudSelect @bind-Value="sortOption" 
-                           Label="Sort By" 
-                           Variant="Variant.Outlined"
-                           OnClick="FilterEmployers">
-                    <MudSelectItem Value="@("name")">Company Name</MudSelectItem>
-                    <MudSelectItem Value="@("date-new")">Newest First</MudSelectItem>
-                    <MudSelectItem Value="@("date-old")">Oldest First</MudSelectItem>
-                    <MudSelectItem Value="@("jobs")">Most Jobs</MudSelectItem>
-                </MudSelect>
-            </MudItem>
+            </MudItem> 
         </MudGrid>
     </MudPaper>
 

@@ -22,14 +22,13 @@
                     Manage your recruitment team members
                 </MudText>
             </MudStack>
-            <MudButton 
-                OnClick="AddNewRecruiter" 
-                Variant="Variant.Filled" 
-                Color="Color.Primary" 
-                Size="Size.Large"
-                StartIcon="@Icons.Material.Filled.PersonAdd">
-                Add New Recruiter
-            </MudButton>
+                    <MudButton OnClick="AddNewRecruiter"
+                               Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               Size="Size.Large"
+                               StartIcon="@Icons.Material.Filled.PersonAdd">
+                        Add New Recruiter
+                    </MudButton>
         </MudStack>
     </MudPaper>
 
@@ -105,8 +104,8 @@
                         <MudCardActions Class="pa-3">
                             <MudStack Row="true" Spacing="2" Style="width: 100%;" Justify="Justify.Center">
                                 <MudButton 
-                                    Variant="Variant.Filled" 
-                                    OnClick="@(() => OnEdit(@hr.HumanResourceId))" 
+                                    Variant="Variant.Filled"
+                                    OnClick="@(()=>EditHr(hr.HumanResourceId))"
                                     Color="Color.Primary"
                                     StartIcon="@Icons.Material.Filled.Edit"
                                     Size="Size.Small">
@@ -156,12 +155,10 @@
             || (element.JobTitle?.Contains(searchString1, StringComparison.OrdinalIgnoreCase) ?? false);
     }
 
-    public async void AddNewRecruiter()
+
+    private async Task AddNewRecruiter()
     {
-        var parameters = new DialogParameters
-    {
-        { "JobPost", new HumanResourceDtos() }
-    };
+
 
         var options = new DialogOptions
         {
@@ -170,16 +167,20 @@
             FullWidth = true
         };
 
-        await DialogService.ShowAsync<HumanResourceDialog>("Add Recruiter", parameters, options);
-    }
-
-    public void OnEdit(int id)
-    {
-        NavigationManager.NavigateTo($"/humanresource/addHumanResource/{id}");
+        await DialogService.ShowAsync<HumanResourceDialog>("Add Recruiter", options);
     }
 
     public async Task OnDelete(int id)
     {
+        bool? confirm = await DialogService.ShowMessageBox(
+            "Confirm Delete",
+            "Are you sure you want to delete this personnel?",
+            yesText: "Yes",
+            cancelText: "No"
+        );
+
+        if (confirm != true) return; // User canceled
+
         isDeleting = true;
         try
         {
@@ -204,6 +205,20 @@
         {
             isDeleting = false;
         }
+    }
+
+
+    private async Task EditHr(int id)
+    {
+        var parameters = new DialogParameters { ["ExistingHR"] = id };
+        var options = new DialogOptions
+        {
+            CloseButton = true,
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true
+        };
+
+        await DialogService.ShowAsync<EditHumanResourceDialog>("Edit Human Resource", parameters, options);
     }
 
     protected override async Task OnInitializedAsync()

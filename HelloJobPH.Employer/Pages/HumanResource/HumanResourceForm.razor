@@ -115,19 +115,12 @@
                                           Label="Job Title"
                                           For="@(() => humanResource.JobTitle)"
                                           Variant="Variant.Outlined"
+                                          Required=true
                                           Adornment="Adornment.Start"
                                           AdornmentIcon="@Icons.Material.Filled.WorkOutline"
                                           HelperText="Current position" />
                         </MudItem>
-                        <MudItem xs="12" sm="6">
-                            <MudTextField @bind-Value="humanResource.ProfilePhotoUrl"
-                                          Label="Profile Photo URL"
-                                          For="@(() => humanResource.ProfilePhotoUrl)"
-                                          Variant="Variant.Outlined"
-                                          Adornment="Adornment.Start"
-                                          AdornmentIcon="@Icons.Material.Filled.Image"
-                                          HelperText="Optional profile image" />
-                        </MudItem>
+
                     </MudGrid>
 
                     <!-- Security Section -->

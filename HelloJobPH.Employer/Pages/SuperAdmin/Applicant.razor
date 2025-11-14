@@ -172,29 +172,6 @@
                               OnDebounceIntervalElapsed="FilterApplicants"
                               DebounceInterval="300" />
             </MudItem>
-            <MudItem xs="12" md="6">
-                <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Style="flex-wrap: wrap;">
-                    <MudText Typo="Typo.body2" Style="white-space: nowrap;">Filter by:</MudText>
-                    <MudChip T="string"
-                             Text="All"
-                             Variant="@(selectedFilter == "All" ? Variant.Filled : Variant.Outlined)"
-                             Color="Color.Primary"
-                             OnClick="@(() => ApplyFilter("All"))"
-                             Class="filter-chip" />
-                    <MudChip T="string"
-                             Text="Active"
-                             Variant="@(selectedFilter == "Active" ? Variant.Filled : Variant.Outlined)"
-                             Color="Color.Success"
-                             OnClick="@(() => ApplyFilter("Active"))"
-                             Class="filter-chip" />
-                    <MudChip T="string"
-                             Text="Blocked"
-                             Variant="@(selectedFilter == "Blocked" ? Variant.Filled : Variant.Outlined)"
-                             Color="Color.Error"
-                             OnClick="@(() => ApplyFilter("Blocked"))"
-                             Class="filter-chip" />
-                </MudStack>
-            </MudItem>
         </MudGrid>
     </MudPaper>
 

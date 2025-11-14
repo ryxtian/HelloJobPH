@@ -40,13 +40,9 @@ namespace HelloJobPH.Server.Controllers
         [HttpPost("create")]
         public async Task<ActionResult<bool>> Create(HumanResourceDtos hr)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
+    
             var createdJobPost = await _humanService.AddAsync(hr);
-            return true;
+            return Ok(createdJobPost);
         }
         [HttpGet("{id}")]
         public async Task<ActionResult<HumanResourceDtos>> GetById(int id)
