@@ -37,6 +37,8 @@ namespace HelloJobPH.Server.Controllers
 
             var HR = await _context.HumanResource.FirstOrDefaultAsync(i => i.UserAccountId == userId);
 
+            var employer = await _context.Employer.FirstOrDefaultAsync(i => i.UserAccountId == userId);
+
 
 
             // Map DTO to Entity
@@ -46,8 +48,8 @@ namespace HelloJobPH.Server.Controllers
                 ReceiverId = dto.ReceiverId,
                 Message = dto.Message,
                 SentAt = DateTime.UtcNow,
-                HumanResourcesId =HR.HumanResourceId,
-                
+                HumanResourcesId =HR?.HumanResourceId,
+                EmployerId = employer?.EmployerId
             };
 
             _context.ChatMessages.Add(message);
@@ -71,7 +73,9 @@ namespace HelloJobPH.Server.Controllers
                         ReceiverId = m.ReceiverId,
                         Message = m.Message,
                         SentAt = m.SentAt,
+                        CompanyName = m.Employer.CompanyName,
                         ApplicantName = m.Applicant.Firstname+" "+m.Applicant.Surname
+                        
                     })
                     .FirstOrDefault() // take only one per sender
                 )

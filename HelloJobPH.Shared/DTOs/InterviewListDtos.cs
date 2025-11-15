@@ -10,6 +10,7 @@ namespace HelloJobPH.Shared.DTOs
     public class InterviewListDtos
     {
       public int ApplicationId { get; set; }
+        public int ApplicantId { get; set; }
         public DateTime DateApplied { get; set; }
         public string? Email { get; set; }
         public DateTime? DateInterview { get; set; }
@@ -22,6 +23,6 @@ namespace HelloJobPH.Shared.DTOs
         public string? Lastname { get; set; }
         public ApplicationStatus? Status { get; set; }
         public byte? MarkAsCompleted { get; set; }
-        public string? UserAccountId { get; set; }
+        public int UserAccountId { get; set; }
     }
 }

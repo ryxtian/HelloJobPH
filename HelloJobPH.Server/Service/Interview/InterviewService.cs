@@ -91,6 +91,7 @@ namespace HelloJobPH.Server.Service.Interview
                     .Select(a => new InterviewListDtos
                     {
                         ApplicationId = a.ApplicationId,
+                        ApplicantId = a.ApplicantId,
                         Firstname = a.Applicant.Firstname,
                         Lastname = a.Applicant.Surname,
                         Email = a.Applicant.UserAccount.Email,
@@ -102,7 +103,7 @@ namespace HelloJobPH.Server.Service.Interview
                         DateInterview = a.Interview != null ? a.Interview.ScheduledDate : null,
                         Status = a.ApplicationStatus,
                         MarkAsCompleted = a.MarkAsCompleted,
-                        UserAccountId = a.Applicant.UserAccountId.ToString()
+                        UserAccountId = a.Applicant.UserAccountId
                     })
                     .ToListAsync();
 

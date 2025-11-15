@@ -14,76 +14,6 @@
 
 
 
-<style>
-    .chat-container {
-        position: fixed;
-        bottom: 1rem;
-        width: 320px;
-        height: 400px;
-        display: flex;
-        flex-direction: column;
-        background-color: white;
-        border: 1px solid #e5e7eb;
-        border-radius: 0.75rem;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-        overflow: hidden;
-        z-index: 200;
-        margin-right: 1rem;
-    }
-
-    .chat-header {
-        background-color: #f9fafb;
-        padding: 0.5rem 1rem;
-        border-bottom: 1px solid #e5e7eb;
-    }
-
-    .chat-body {
-        flex-grow: 1;
-        overflow-y: auto;
-        padding: 0.75rem;
-    }
-
-    .chat-message {
-        display: flex;
-        margin-bottom: 0.5rem;
-    }
-
-        .chat-message.sent {
-            justify-content: flex-end;
-        }
-
-        .chat-message.received {
-            justify-content: flex-start;
-        }
-
-    .chat-bubble {
-        background-color: #f3f4f6;
-        border-radius: 12px;
-        padding: 0.5rem 0.75rem;
-        max-width: 75%;
-    }
-
-    .chat-message.sent .chat-bubble {
-        background-color: #e3f2fd;
-    }
-
-    .animate-fade-in {
-        animation: fadeIn 0.25s ease-in-out;
-    }
-
-    @@keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(10px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-</style>
-
 <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-4">
     <MudPaper Elevation="2" Class="pa-6">
         <MudStack Spacing="4">
@@ -210,10 +140,7 @@
                             <MudDivider />
                             <MudMenuItem IconColor="Color.Error"  OnClick="@(() => Delete(context.ApplicationId))" Icon="@Icons.Material.Filled.Delete">Delete</MudMenuItem>
                             <MudMenuItem IconColor="Color.Tertiary"Icon="@Icons.Material.Filled.Visibility" OnClick="@(() => NavigateToOverview(context.ApplicationId))">Overview</MudMenuItem>
-                            <MudMenuItem IconColor="Color.Primary" Icon="@Icons.Material.Filled.ChatBubble"
-                                         OnClick="@(() => OpenChat(context))">
-                                Chat
-                            </MudMenuItem>
+                            <MudMenuItem Variant="Variant.Text" Icon="@Icons.Material.Filled.Chat" OnClick="() => OpenChat(context.UserAccountId, context.Firstname)">Chat</MudMenuItem>
                             <MudMenuItem IconColor="Color.Success" Icon="@Icons.Material.Filled.MarkChatRead" OnClick="@(() => MarkAsCompleted(context.ApplicationId))">Mark As Completed</MudMenuItem>
                         </MudMenu>
                     </MudTd>
@@ -252,43 +179,148 @@
 
 
 
+<!-- Floating Chat Boxes -->
 <MudContainer>
     @foreach (var chat in openChats)
     {
         <MudPaper Elevation="10" Class="chat-container animate-fade-in" style="@($"right:{chat.OffsetRight}px")">
+
             <!-- Header -->
             <MudStack Row AlignItems="AlignItems.Center" JustifyContent="SpaceBetween" Class="chat-header">
-                <MudText Typo="Typo.subtitle2">@chat.CandidateName</MudText>
+                <MudText Typo="Typo.subtitle2">@chat.ApplicantName</MudText>
                 <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" OnClick="@(() => CloseChat(chat))" />
             </MudStack>
 
             <!-- Messages -->
             <MudContainer Class="chat-body">
-                <MudList T="string">
-                    @foreach (var msg in messages)
-                    {
-                        <MudListItem>
-                            <b>@(msg.User == senderId ? "You" : msg.User):</b> @msg.Text
-                        </MudListItem>
-                    }
-                </MudList>
+                @foreach (var msg in chat.Messages)
+                {
+                    <div class="message-row @(msg.User == senderId ? "sent" : "received")">
+                        <div class="message-bubble @(msg.User == senderId ? "bubble-sent" : "bubble-received")">
+                            @msg.Text
+                        </div>
+                    </div>
+                }
             </MudContainer>
 
             <MudDivider />
 
             <!-- Input -->
-            <MudStack Row AlignItems="AlignItems.Center" Spacing="1" Class="p-2">
-                <MudTextField @bind-Value="message"
+            <MudStack Row AlignItems="AlignItems.Center" Spacing="1" Class="p-2 bg-white">
+                <MudTextField @bind-Value="chat.NewMessage"
                               Placeholder="Type a message..."
                               Variant="Variant.Outlined"
-                              Class="flex-grow"
+                              Class="flex-grow rounded-full"
                               OnKeyDown="@(e => HandleKeyPress(e, chat))" />
-                <MudButton OnClick="SendMessage" Color="Color.Primary" Variant="Variant.Filled" Class="mt-2">Send</MudButton>
-
+                <MudIconButton Icon="@Icons.Material.Filled.Send"
+                               Color="Color.Primary"
+                               Size="Size.Medium"
+                               OnClick="@(() => SendMessage(chat))" />
             </MudStack>
+
         </MudPaper>
     }
 </MudContainer>
+
+<style>
+    /* Chat container */
+    .chat-container {
+        position: fixed;
+        bottom: 10px;
+        width: 320px;
+        border-radius: 16px;
+        margin: 10px;
+        background-color: white;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0px 4px 12px rgba(0,0,0,0.15);
+        animation: fadeIn 0.3s ease-in-out;
+    }
+
+    /* Header */
+    .chat-header {
+        background-color: #1976d2;
+        color: white;
+        padding: 10px;
+        font-weight: 600;
+        border-radius: 16px 16px 0 0;
+    }
+
+    /* Body */
+    .chat-body {
+        padding: 10px;
+        max-height: 350px;
+        overflow-y: auto;
+        background-color: #f5f5f5;
+        display: flex;
+        flex-direction: column;
+        height: 400px;
+    }
+
+    /* Message rows */
+    .message-row {
+        display: flex;
+        margin-bottom: 8px;
+    }
+
+        /* Sent (right side) */
+        .message-row.sent {
+            justify-content: flex-end;
+        }
+
+        /* Received (left side) */
+        .message-row.received {
+            justify-content: flex-start;
+        }
+
+    /* Message bubble */
+    .message-bubble {
+        max-width: 70%;
+        padding: 10px 14px;
+        border-radius: 18px;
+        font-size: 0.9rem;
+        line-height: 1.3;
+        word-wrap: break-word;
+    }
+
+    /* Sender bubble */
+    .bubble-sent {
+        background-color: #1976d2;
+        color: white;
+        border-bottom-right-radius: 4px;
+    }
+
+    /* Receiver bubble */
+    .bubble-received {
+        background-color: #e0e0e0;
+        color: #000;
+        border-bottom-left-radius: 4px;
+    }
+
+    /* Input field */
+    .mud-text-field {
+        border-radius: 20px;
+    }
+
+    /* Fade animation */
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .mud-badge.mud-badge-top.right {
+        FONT-WEIGHT: 500;
+        FONT-WEIGHT: 500;
+        inset: auto auto calc(50% - 4px) calc(60% - 4px) !important
+    }
+</style>
 
 @code {
 
@@ -305,9 +337,10 @@
 
     public class ChatSession
     {
-        public int CandidateId { get; set; }
-        public string CandidateName { get; set; } = string.Empty;
-        //public List<ChatMessageDtos> Messages { get; set; } = new();
+        public int ApplicantId { get; set; }
+        public string ApplicantName { get; set; } = string.Empty;
+        // store senderId + text; keep types explicit for readability
+        public List<(string User, string Text)> Messages { get; set; } = new();
         public string NewMessage { get; set; } = string.Empty;
         public int OffsetRight { get; set; }
     }
@@ -359,7 +392,8 @@
     {
         if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(chat.NewMessage))
         {
-            _ = SendMessage();
+            // fire and forget; method handles clearing
+            _ = SendMessage(chat);
         }
     }
 
@@ -369,30 +403,66 @@
     }
 
 
-    private async void OpenChat(InterviewListDtos candidate)
+    private async Task OpenChat(int ApplicantId, string Firstname)
     {
-        receiverId = candidate.UserAccountId.ToString();
-        if (openChats.Any(c => c.CandidateId == candidate.ApplicationId))
+        receiverId = ApplicantId.ToString();
+        if (string.IsNullOrEmpty(receiverId))
             return;
 
-        var offset = 20 + (openChats.Count * 340);
-        openChats.Add(new ChatSession
+        // check if already open
+        var existing = openChats.FirstOrDefault(c => c.ApplicantId == ApplicantId);
+        if (existing == null)
         {
-            CandidateId = candidate.ApplicationId,
-            CandidateName = $"{candidate.Firstname} {candidate.Lastname}",
-            OffsetRight = offset
-        });
-        await LoadChatHistory(senderId, receiverId);
-    }
-    private async Task SendMessage()
-    {
-        if (!string.IsNullOrWhiteSpace(message) && !string.IsNullOrEmpty(senderId))
-        {
-            await ChatService.SendMessage(receiverId, message, senderId);
+            int offset = 20 + (openChats.Count * 340);
 
-            // Add the message immediately to UI
-            messages.Add((senderId, message));
-            message = "";
+            var newChat = new ChatSession
+            {
+                ApplicantId = ApplicantId,      
+                ApplicantName = Firstname,
+                OffsetRight = offset
+            };
+
+            openChats.Add(newChat);
+
+            // load history (sender = you, receiver = applicant)
+            await LoadChatHistory(senderId, receiverId, newChat);
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task LoadChatHistory(string senderId, string receiverId, ChatSession chat)
+    {
+        try
+        {
+            var history = await ChatService.ChatHistory(receiverId, senderId);
+            chat.Messages = history?.Select(m => (m.SenderId, m.Message)).ToList() ?? new();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading chat history: {ex.Message}");
+        }
+    }
+    private async Task SendMessage(ChatSession chat)
+    {
+        if (chat == null || string.IsNullOrWhiteSpace(chat.NewMessage))
+            return;
+            
+        var targetId = chat.ApplicantId.ToString();
+        try
+        {
+            // Ensure ChatService.SendMessage has this signature (remoteId, message, senderId)
+            await ChatService.SendMessage(targetId, chat.NewMessage, senderId);
+
+            // append locally and clear input
+            chat.Messages.Add((senderId, chat.NewMessage));
+            chat.NewMessage = string.Empty;
+
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"SendMessage error: {ex.Message}");
         }
     }
 

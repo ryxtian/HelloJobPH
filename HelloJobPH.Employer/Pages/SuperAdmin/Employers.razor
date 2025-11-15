@@ -8,6 +8,7 @@
 @inject IDialogService DialogService
 @inject IClientSuperAdminService _service
 @inject ChatService ChatService
+@inject AuthenticationStateProvider AuthProvider
 
 <style>
     .page-header {
@@ -156,9 +157,10 @@
                                        OnClick="@(() => Approved(context.EmployerId))" />
                         <MudIconButton Icon="@Icons.Material.Filled.Chat"
                                        Size="Size.Small"
-                                       Color="Color.Primary"
+                                       Color="Color.Tertiary"
                                        Title="Chat"
-                                       OnClick="@(() => OpenChat(context.EmployerId, context.CompanyName))" />
+                                       OnClick="@(() => OpenChat(context.UserAccountId, context.CompanyName))" />
+                       
 
                        
                         <MudIconButton Icon="@Icons.Material.Filled.DisabledVisible" 
@@ -351,7 +353,7 @@
     private string statusFilter = "All";
     private string sortOption = "name";
     private bool isLoading = false;
-
+    public List<(string User, string Text)> Messages { get; set; } = new();
 
     private int unreadCount => notifications?.Count ?? 0;
     private string receiverId = string.Empty;
@@ -379,6 +381,25 @@
 
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            senderId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        }
+
+
+        // Initialize SignalR
+        await ChatService.InitializeAsync();
+
+        // Subscribe to incoming messages
+        ChatService.OnMessageReceived += (user, msg) =>
+        {
+            Messages.Add((user, msg));
+            InvokeAsync(StateHasChanged);
+        };
+
         await LoadEmployers();
     }
 

@@ -42,6 +42,7 @@ namespace HelloJobPH.Shared.Model
         public List<AuditLog>? AuditLogs { get; set; }
         public List<JobPostAudit>? JobPostAudits { get; set; }
         public List<Application>? Applications { get; set; }
+        public List<ChatMessage>? ChatMessages { get; set; }
         public UserAccount? UserAccount { get; set; }
         public DateTime DateRegistered { get; set; } = DateTime.UtcNow;
 

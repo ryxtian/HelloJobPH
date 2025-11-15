@@ -68,7 +68,7 @@
                                                 <MudIcon Icon="@Icons.Material.Filled.Chat" Size="Size.Small" />
                                             </MudAvatar>
                                             <div class="flex-grow-1">
-                                                <MudText Typo="Typo.body2">@note.ApplicantName</MudText>
+                                                <MudText Typo="Typo.body2">@note.CompanyName</MudText>
                                                 <MudText Typo="Typo.body2">@note.Message</MudText>
                                                 <MudText Typo="Typo.caption" Color="Color.Tertiary">
                                                     @note.SentAt.ToLocalTime().ToString("g")
@@ -205,7 +205,7 @@
 
             <!-- Header -->
             <MudStack Row AlignItems="AlignItems.Center" JustifyContent="SpaceBetween" Class="chat-header">
-                <MudText Typo="Typo.subtitle2">@chat.ApplicantName</MudText>
+                <MudText Typo="Typo.subtitle2">@chat.CompanyName</MudText>
                 <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" OnClick="@(() => CloseChat(chat))" />
             </MudStack>
 
@@ -359,7 +359,7 @@
     private string? fullName;
     private string? userRole;
     private bool _drawerOpen = true;
-    private bool isEmployer;
+
     private bool isAuthenticated;
     private int unreadCount => notifications?.Count ?? 0;
     private string receiverId = string.Empty;
@@ -386,8 +386,8 @@
 
     public class ChatSession
     {
-        public int ApplicantId { get; set; }
-        public string ApplicantName { get; set; } = string.Empty;
+        public int EmployerId { get; set; }
+        public string CompanyName { get; set; } = string.Empty;
         // store senderId + text; keep types explicit for readability
         public List<(string User, string Text)> Messages { get; set; } = new();
         public string NewMessage { get; set; } = string.Empty;
@@ -428,7 +428,7 @@
             // ChatService.OnMessageReceived += OnChatMessageReceived;
             ChatService.OnMessageReceived += (user, msg) =>
        {
-           var chat = openChats.FirstOrDefault(c => c.ApplicantId.ToString() == user);
+           var chat = openChats.FirstOrDefault(c => c.EmployerId.ToString() == user);
            if (chat != null)
            {
                chat.Messages.Add((user, msg));
@@ -446,7 +446,7 @@
     {
         try
         {
-            var chat = openChats.FirstOrDefault(c => c.ApplicantId.ToString() == fromUserId);
+            var chat = openChats.FirstOrDefault(c => c.EmployerId.ToString() == fromUserId);
             if (chat != null)
             {
                 chat.Messages.Add((fromUserId, message));
@@ -518,14 +518,14 @@
         if (string.IsNullOrEmpty(receiverId))
             return;
 
-        var existing = openChats.FirstOrDefault(c => c.ApplicantId.ToString() == receiverId);
+        var existing = openChats.FirstOrDefault(c => c.EmployerId.ToString() == receiverId);
         if (existing == null)
         {
             int offset = 20 + (openChats.Count * 340);
             var newChat = new ChatSession
             {
-                ApplicantId = int.Parse(receiverId),
-                ApplicantName = string.IsNullOrEmpty(note.ApplicantName) ? note.HRName ?? "Applicant" : note.ApplicantName,
+                EmployerId = int.Parse(receiverId),
+                CompanyName = string.IsNullOrEmpty(note.CompanyName) ? "CompanyName" : note.CompanyName,
                 OffsetRight = offset
             };
             openChats.Add(newChat);
@@ -567,7 +567,7 @@
         if (chat == null || string.IsNullOrWhiteSpace(chat.NewMessage))
             return;
 
-        var targetId = chat.ApplicantId.ToString();
+        var targetId = chat.EmployerId.ToString();
         try
         {
             // Ensure ChatService.SendMessage has this signature (remoteId, message, senderId)

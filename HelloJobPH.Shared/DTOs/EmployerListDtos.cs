@@ -20,6 +20,7 @@ namespace HelloJobPH.Shared.DTOs
         public string ContactEmail { get; set; } = string.Empty;
         public string ContactNumber { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
+        public int UserAccountId { get; set; }
         public int JobPostsCount { get; set; }
     }
 }

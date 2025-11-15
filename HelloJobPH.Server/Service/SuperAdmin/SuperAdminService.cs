@@ -36,7 +36,8 @@ namespace HelloJobPH.Server.Service.SuperAdmin
                     Province = e.Province,
                     ContactEmail = e.ContactEmail,
                     ContactNumber = e.ContactNumber,
-                    JobPostsCount =e.JobPost.Count
+                    JobPostsCount =e.JobPost.Count,
+                    UserAccountId =e.UserAccountId,
                 })
                 .ToListAsync();
 
