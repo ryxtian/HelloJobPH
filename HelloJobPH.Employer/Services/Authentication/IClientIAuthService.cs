@@ -5,7 +5,8 @@ namespace HelloJobPH.Employer.Services.Authentication
     public interface IClientIAuthService
     {
         Task<bool> LoginAsync(LoginDtos user);
-       // Task<IEnumerable<ClaimsDtos>> GetClaims();
+        Task<bool> LoginAdminAsync(LoginDtos user);
+        // Task<IEnumerable<ClaimsDtos>> GetClaims();
     }
 
 

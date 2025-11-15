@@ -93,14 +93,9 @@
 
                 <!-- User Avatar + Role -->
                 <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
-                    <MudAvatar Color="Color.Primary" Size="Size.Medium">
-                        @GetInitials(fullName)
-                    </MudAvatar>
+   
 
                     <MudStack Spacing="0" Class="mr-2">
-                        <MudText Typo="Typo.body2" Class="white-text">
-                            <b>@fullName</b>
-                        </MudText>
 
                         @if (!string.IsNullOrEmpty(userRole))
                         {
@@ -409,7 +404,7 @@
         if (isAuthenticated)
         {
             senderId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
-            fullName = user.FindFirst("name")?.Value ?? user.Identity?.Name ?? "";
+          
             userRole = user.FindFirst(ClaimTypes.Role)?.Value ?? "";
 
             // fetch notifications for the logged-in user

@@ -32,6 +32,21 @@ namespace HelloJobPH.Employer.Services.Authentication
             _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", result.Token);
             return true;
         }
+        public async Task<bool> LoginAdminAsync(LoginDtos user)
+        {
+            var response = await _http.PostAsJsonAsync("api/auth/loginadmin", user);
+
+            if (!response.IsSuccessStatusCode)
+                return false;
+
+            var result = await response.Content.ReadFromJsonAsync<TokenResponse>();
+            if (string.IsNullOrEmpty(result?.Token))
+                return false;
+
+            await _authStateProvider.MarkUserAsAuthenticated(result.Token);
+            _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", result.Token);
+            return true;
+        }
 
         //public async Task Logout()
         //{

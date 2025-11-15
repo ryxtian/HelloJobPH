@@ -18,6 +18,7 @@ namespace HelloJobPH.Shared.DTOs
         public EmploymentType? Type { get; set; }
         public string? ResumeUrl { get; set; }
         public string? Firstname { get; set; }
+        public string? AssignTo { get; set; }
         public string? Lastname { get; set; }
         public ApplicationStatus? Status { get; set; }
         public byte? MarkAsCompleted { get; set; }

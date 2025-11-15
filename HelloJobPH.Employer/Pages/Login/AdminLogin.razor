@@ -1,12 +1,9 @@
-﻿@page "/"
+﻿@using HelloJobPH.Employer.Services.Authentication
 @layout LandingLayout
-@using HelloJobPH.Employer.Services.Authentication
-@using HelloJobPH.Shared.DTOs
 @inject IClientIAuthService AuthService
 @inject ISnackbar Snackbar
 @inject NavigationManager Nav
-@inject AuthenticationStateProvider AuthProvider
-
+@page "/adminlogin"
 
 <MudContainer MaxWidth="MaxWidth.ExtraSmall" Class="mt-12">
     <MudPaper Elevation="8" Class="pa-8 rounded-lg">
@@ -17,7 +14,7 @@
                     <MudIcon Icon="@Icons.Material.Filled.AdminPanelSettings" Size="Size.Large" />
                 </MudAvatar>
                 <MudText Typo="Typo.h4" Align="Align.Center" Class="fw-bold">
-                    Welcome
+                    Welcome Admin
                 </MudText>
                 <MudText Typo="Typo.body2" Align="Align.Center" Color="Color.Secondary">
                     Sign in to access your dashboard
@@ -61,20 +58,25 @@
         </MudStack>
     </MudPaper>
 
+    <!-- Footer Text -->
+    <MudText Typo="Typo.caption" Align="Align.Center" Color="Color.Secondary" Class="mt-4">
+        Protected admin access only
+    </MudText>
 </MudContainer>
+@code{
+    private LoginDtos model = new();
 
-@code {
-
-    private ClaimsPrincipal? user;
-
-     protected override async Task OnInitializedAsync()
+    private async Task HandleLogin()
     {
-        var authState = await AuthProvider.GetAuthenticationStateAsync();
-        user = authState.User;
+        var success = await AuthService.LoginAdminAsync(model);
 
-        if (user.Identity != null && user.Identity.IsAuthenticated)
+        if (success)
         {
-            Nav.NavigateTo("/dashboard/dashboard", true);
+            Nav.NavigateTo("/superadmin/dashboard");
+        }
+        else
+        {
+            Snackbar.Add("Invalid email or password.", Severity.Error);
         }
     }
 }

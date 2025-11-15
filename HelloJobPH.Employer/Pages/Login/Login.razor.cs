@@ -13,7 +13,6 @@ namespace HelloJobPH.Employer.Pages.Login
 
             if (success)
             {
-                Snackbar.Add("Login successful!", Severity.Success);
                 Nav.NavigateTo("/dashboard/dashboard");
             }
             else

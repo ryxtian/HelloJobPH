@@ -46,7 +46,8 @@ namespace HelloJobPH.Server.Controllers
                 ReceiverId = dto.ReceiverId,
                 Message = dto.Message,
                 SentAt = DateTime.UtcNow,
-                HumanResourcesId =HR.HumanResourceId
+                HumanResourcesId =HR.HumanResourceId,
+                
             };
 
             _context.ChatMessages.Add(message);

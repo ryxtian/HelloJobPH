@@ -94,6 +94,7 @@ namespace HelloJobPH.Server.Service.Interview
                         Firstname = a.Applicant.Firstname,
                         Lastname = a.Applicant.Surname,
                         Email = a.Applicant.UserAccount.Email,
+                        AssignTo = a.Interview.AssignTo,
                         JobTitle = a.JobPosting.Title,
                         Type = a.JobPosting.EmploymentType,
                         DateApplied = a.DateApply,

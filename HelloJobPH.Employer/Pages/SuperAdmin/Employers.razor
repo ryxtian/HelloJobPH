@@ -154,12 +154,12 @@
                                        Color="Color.Tertiary"
                                        Title="Approved"
                                        OnClick="@(() => Approved(context.EmployerId))" />
-
                         <MudIconButton Icon="@Icons.Material.Filled.Chat"
                                        Size="Size.Small"
                                        Color="Color.Primary"
-                                       Title="Disable"
-                                       OnClick="@(() => OpenChat(context.EmployerId))" />
+                                       Title="Chat"
+                                       OnClick="@(() => OpenChat(context.EmployerId, context.CompanyName))" />
+
                        
                         <MudIconButton Icon="@Icons.Material.Filled.DisabledVisible" 
                                        Size="Size.Small" 
@@ -195,7 +195,7 @@
 
             <!-- Header -->
             <MudStack Row AlignItems="AlignItems.Center" JustifyContent="SpaceBetween" Class="chat-header">
-                <MudText Typo="Typo.subtitle2">@chat.ApplicantName</MudText>
+                <MudText Typo="Typo.subtitle2">@chat.CompanyName</MudText>
                 <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" OnClick="@(() => CloseChat(chat))" />
             </MudStack>
 
@@ -369,8 +369,8 @@
 
     public class ChatSession
     {
-        public int ApplicantId { get; set; }
-        public string ApplicantName { get; set; } = string.Empty;
+        public int EmployerId { get; set; }
+        public string CompanyName { get; set; } = string.Empty;
         // store senderId + text; keep types explicit for readability
         public List<(string User, string Text)> Messages { get; set; } = new();
         public string NewMessage { get; set; } = string.Empty;
@@ -382,10 +382,48 @@
         await LoadEmployers();
     }
 
-    private async Task OpenChat(int id)
+    private async Task OpenChat(int employerId, string companyName)
     {
-        
+        receiverId = employerId.ToString();
+        if (string.IsNullOrEmpty(receiverId))
+            return;
+
+        // check if already open
+        var existing = openChats.FirstOrDefault(c => c.EmployerId == employerId);
+        if (existing == null)
+        {
+            int offset = 20 + (openChats.Count * 340);
+
+            var newChat = new ChatSession
+            {
+                EmployerId = employerId,      // this is now EmployerId
+                CompanyName = companyName,   // display company name in header
+                OffsetRight = offset
+            };
+
+            openChats.Add(newChat);
+
+            // load history (sender = you, receiver = employer)
+            await LoadChatHistory(senderId, receiverId, newChat);
+        }
+
+        StateHasChanged();
     }
+
+
+    private async Task LoadChatHistory(string senderId, string receiverId, ChatSession chat)
+    {
+        try
+        {
+            var history = await ChatService.ChatHistory(receiverId, senderId);
+            chat.Messages = history?.Select(m => (m.SenderId, m.Message)).ToList() ?? new();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading chat history: {ex.Message}");
+        }
+    }
+
 
     private void HandleKeyPress(KeyboardEventArgs e, ChatSession chat)
     {
@@ -400,7 +438,7 @@
         if (chat == null || string.IsNullOrWhiteSpace(chat.NewMessage))
             return;
 
-        var targetId = chat.ApplicantId.ToString();
+        var targetId = chat.EmployerId.ToString();
         try
         {
             // Ensure ChatService.SendMessage has this signature (remoteId, message, senderId)
@@ -442,7 +480,7 @@
     {
         try
         {
-            var chat = openChats.FirstOrDefault(c => c.ApplicantId.ToString() == fromUserId);
+            var chat = openChats.FirstOrDefault(c => c.EmployerId.ToString() == fromUserId);
             if (chat != null)
             {
                 chat.Messages.Add((fromUserId, message));

@@ -135,6 +135,7 @@
                     <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Resume</strong></MudText></MudTh>
                     <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Interview Date</strong></MudText></MudTh>
                     <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Time</strong></MudText></MudTh>
+                    <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Interview by</strong></MudText></MudTh>
                     <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Type</strong></MudText></MudTh>
                     <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Actions</strong></MudText></MudTh>
                 </HeaderContent>
@@ -185,6 +186,12 @@
                             <MudText Typo="Typo.body2">@context.TimeInterview</MudText>
                         </MudStack>
                     </MudTd>
+                    <MudTd DataLabel="Time">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                            <MudIcon Icon="@Icons.Material.Filled.Person3" Size="Size.Small" Color="Color.Secondary" />
+                            <MudText Typo="Typo.body2">@context.AssignTo</MudText>
+                        </MudStack>
+                    </MudTd>
                     <MudTd DataLabel="Type">
                         <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@context.Type</MudChip>
                     </MudTd>
@@ -196,6 +203,7 @@
                             <MudMenuItem IconColor="Color.Info" Icon="@Icons.Material.Filled.Schedule" OnClick="@(() => Reschedule(context))">Reschedule</MudMenuItem>
                             <MudMenuItem IconColor="Color.Error" Icon="@Icons.Material.Filled.PersonOff" OnClick="@(() => NoAppearance(context.ApplicationId))">No Appearance</MudMenuItem>
                             <MudDivider />
+                            @* <MudMenuItem OnClick="@(() => OpenSendEmailDialog(context))">Send Email</MudMenuItem> *@
                             <MudMenuItem IconColor="Color.Secondary" Icon="@Icons.Material.Filled.Build" OnClick="@(() => ForTechnical(context))">Technical</MudMenuItem>
                             <MudMenuItem IconColor="Color.Warning" Icon="@Icons.Material.Filled.EmojiEvents" OnClick="@(() => ForFinal(context))">Final</MudMenuItem>
                             <MudMenuItem IconColor="Color.Error" Icon="@Icons.Material.Filled.Cancel" OnClick="@(() => Failed(context.ApplicationId))" >Failed</MudMenuItem>
@@ -567,7 +575,17 @@
         }
     }
 
+    private async Task OpenSendEmailDialog(ApplicationListDtos candidate)
+    {
+        var parameters = new DialogParameters
+        {
+            { "Candidate", candidate }
+        };
 
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Medium, FullWidth = true };
+
+        await DialogService.ShowAsync<SendEmailDialog>("Send Interview Invitation", parameters, options);
+    }
      private async Task ViewResume(int applicationId)
     {
 

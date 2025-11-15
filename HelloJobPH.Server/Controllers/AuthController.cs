@@ -56,5 +56,30 @@ namespace HelloJobPH.Server.Controllers
                 return BadRequest(new { error = ex.Message });
             }
         }
+
+        [HttpPost("loginadmin")]
+        public async Task<IActionResult> Loginadmin([FromBody] LoginRequest request)
+        {
+            try
+            {
+                var token = await _authService.LoginAdminAsync(request.Email, request.Password);
+
+                var cookieOptions = new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true, // Only for HTTPS
+                    SameSite = SameSiteMode.Strict,
+                    Expires = DateTime.UtcNow.AddHours(1)
+                };
+
+                Response.Cookies.Append("jwtToken", token, cookieOptions);
+
+                return Ok(new { message = "Login successful", token });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
     }
 }
