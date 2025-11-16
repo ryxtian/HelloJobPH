@@ -65,6 +65,10 @@ namespace HelloJobPH.Server.Service.Interview
         }
         public async Task<List<InterviewListDtos>> InitialList()
             {
+            var datetoday = DateTime.Now;
+
+
+
             var userId = Utilities.GetUserId();
 
             // Try to find HR or Employer linked to this user
@@ -87,7 +91,8 @@ namespace HelloJobPH.Server.Service.Interview
                 var result = await _context.Application
                     .Where(a => validStatuses.Contains(a.ApplicationStatus)
                                 && a.IsDeleted == 0
-                                && a.HumanResourcesId == employerId)
+                                && a.HumanResourcesId == employerId
+                                && a.Interview.ScheduledDate >= datetoday)
                     .Select(a => new InterviewListDtos
                     {
                         ApplicationId = a.ApplicationId,
