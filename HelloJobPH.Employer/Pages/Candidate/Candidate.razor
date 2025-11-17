@@ -1,4 +1,4 @@
-﻿@page "/candidate/candidate"
+﻿@* @page "/candidate/candidate"
 @using Microsoft.AspNetCore.Http
 @inject IClientCandidateService CandidateService
 @inject IDialogService DialogService
@@ -196,5 +196,235 @@ cancelText: "Cancel");
 
         var dialog = DialogService.Show<ResumeDialog>("Resume Viewer", parameters, options);
         var result = await dialog.Result;
+    }
+} *@
+
+
+
+@page "/candidate/candidate"
+@using Microsoft.AspNetCore.Http
+@inject IClientCandidateService CandidateService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject IJSRuntime JSRuntime
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-4">
+    <MudPaper Elevation="2" Class="pa-6">
+        <MudStack Spacing="4">
+
+            <!-- Header Section -->
+            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                <MudStack Spacing="1">
+                    <MudText Typo="Typo.h5" Color="Color.Primary">
+                        <MudIcon Icon="@Icons.Material.Filled.PersonSearch" Class="mr-2" />
+                        Candidate Applications
+                    </MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        Review and manage candidate applications
+                    </MudText>
+                </MudStack>
+
+                <MudChip T="string" Icon="@Icons.Material.Filled.People" Color="Color.Info" Variant="Variant.Filled">
+                    @candidates.Count Candidate@(candidates.Count != 1 ? "s" : "")
+                </MudChip>
+            </MudStack>
+
+            <MudDivider />
+
+            <!-- DataGrid Section -->
+            <MudDataGrid T="ApplicationListDtos"
+                         Items="@candidates"
+                         Hover="true"
+                         Striped="true"
+                         Dense="false"
+                         Elevation="0"
+                         Bordered="false"
+                         Breakpoint="Breakpoint.Sm"
+                         Filterable="true"
+                         SortMode="SortMode.Multiple">
+
+                <Columns>
+
+                    <!-- Candidate -->
+                    <PropertyColumn Property="x => x.Firstname" Title="Candidate">
+                        <CellTemplate>
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                <MudAvatar Color="Color.Primary" Size="Size.Small">
+                                    @context.Item.Firstname?[0]@context.Item.Lastname?[0]
+                                </MudAvatar>
+                                <MudText Typo="Typo.body2">
+                                    <strong>@context.Item.Firstname @context.Item.Lastname</strong>
+                                </MudText>
+                            </MudStack>
+                        </CellTemplate>
+                    </PropertyColumn>
+
+                    <!-- Position -->
+                    <PropertyColumn Property="x => x.JobTitle" Title="Position">
+                        <CellTemplate>
+                            <MudText Typo="Typo.body2">@context.Item.JobTitle</MudText>
+                        </CellTemplate>
+                    </PropertyColumn>
+
+                    <!-- Status -->
+                    <PropertyColumn Property="x => x.Status" Title="Status">
+                        <CellTemplate>
+                            <MudChip T="string" Size="Size.Small" Variant="Variant.Filled" Color="Color.Info">
+                                @context.Item.Status
+                            </MudChip>
+                        </CellTemplate>
+                    </PropertyColumn>
+
+                    <!-- Resume -->
+                    <TemplateColumn Title="Resume" Sortable="false" Filterable="false">
+                        <CellTemplate>
+                            <MudButton StartIcon="@Icons.Material.Filled.Description"
+                                       Size="Size.Small"
+                                       Variant="Variant.Text"
+                                       Color="Color.Primary"
+                                       OnClick="@(() => ViewResume(context.Item.ApplicationId))">
+                                View Resume
+                            </MudButton>
+                        </CellTemplate>
+                    </TemplateColumn>
+
+                    <!-- Date Applied -->
+                    <PropertyColumn Property="x => x.DateApplied" Title="Date Applied">
+                        <CellTemplate>
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Size="Size.Small" Color="Color.Secondary" />
+                                <MudText Typo="Typo.body2">@context.Item.DateApplied.ToString("dd MMM yyyy")</MudText>
+                            </MudStack>
+                        </CellTemplate>
+                    </PropertyColumn>
+
+                    <!-- Type -->
+                    <PropertyColumn Property="x => x.Type" Title="Type">
+                        <CellTemplate>
+                            <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@context.Item.Type</MudChip>
+                        </CellTemplate>
+                    </PropertyColumn>
+
+                    <!-- Actions -->
+                    <TemplateColumn Title="Actions" Sortable="false" Filterable="false">
+                        <CellTemplate>
+                            <MudMenu Icon="@Icons.Material.Filled.MoreVert"
+                                     Size="Size.Small"
+                                     Dense="true"
+                                     AnchorOrigin="Origin.BottomLeft">
+                                <MudMenuItem Icon="@Icons.Material.Filled.Psychology"
+                                             OnClick="@(() => OverViewByAI(context.Item.ApplicationId))">
+                                    AI Overview
+                                </MudMenuItem>
+
+                                <MudMenuItem Icon="@Icons.Material.Filled.CheckCircle"
+                                             OnClick="@(() => Accept(context.Item.ApplicationId))">
+                                    Accept
+                                </MudMenuItem>
+
+                                <MudMenuItem Icon="@Icons.Material.Filled.Cancel"
+                                             Class="mud-error-text"
+                                             OnClick="@(() => Reject(context.Item.ApplicationId))">
+                                    Reject
+                                </MudMenuItem>
+                            </MudMenu>
+                        </CellTemplate>
+                    </TemplateColumn>
+
+                </Columns>
+
+                <!-- No records -->
+                <NoRecordsContent>
+                    <MudStack AlignItems="AlignItems.Center" Spacing="3" Class="pa-8">
+                        <MudIcon Icon="@Icons.Material.Filled.PersonOff" Size="Size.Large" Color="Color.Secondary" />
+                        <MudText Typo="Typo.h6" Color="Color.Secondary">No Candidates Found</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                            There are no candidate applications at this time.
+                        </MudText>
+                    </MudStack>
+                </NoRecordsContent>
+
+                <!-- Pagination -->
+                <PagerContent>
+                    <MudDataGridPager PageSizeOptions="new int[] { 10, 25, 50, 100 }" />
+                </PagerContent>
+
+            </MudDataGrid>
+
+        </MudStack>
+    </MudPaper>
+</MudContainer>
+
+
+@code {
+    private List<ApplicationListDtos> candidates = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        candidates = await CandidateService.RetrieveAllCandidate();
+    }
+
+    public async Task Accept(int id)
+    {
+        bool? confirm = await DialogService.ShowMessageBox(
+            "Confirm",
+            "Are you sure you want to accept this candidate?",
+            yesText: "Confirm",
+            cancelText: "Cancel");
+
+        if (confirm == true)
+        {
+            await CandidateService.CandidateAcceptAsync(id);
+            candidates = await CandidateService.RetrieveAllCandidate();
+            await JSRuntime.InvokeVoidAsync("location.reload");
+        }
+    }
+
+    public async Task Reject(int id)
+    {
+        bool? confirm = await DialogService.ShowMessageBox(
+            "Confirm",
+            "Are you sure you want to reject this candidate?",
+            yesText: "Confirm",
+            cancelText: "Cancel");
+
+        if (confirm == true)
+        {
+            await CandidateService.CandidateRejectAsync(id);
+            candidates = await CandidateService.RetrieveAllCandidate();
+            StateHasChanged();
+        }
+    }
+
+    private async Task OverViewByAI(int applicationId)
+    {
+        var parameters = new DialogParameters { ["ApplicationId"] = applicationId };
+
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true,
+            CloseButton = true,
+        };
+
+        await DialogService.ShowAsync<AIOverviewDialog>("AI Overview", parameters, options);
+    }
+
+    private async Task ViewResume(int applicationId)
+    {
+        await CandidateService.ViewResumeStatusAsync(applicationId);
+
+        var parameters = new DialogParameters { ["ApplicationId"] = applicationId };
+
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Large,
+            FullWidth = true,
+            FullScreen = true,
+            CloseButton = true,
+            CloseOnEscapeKey = true
+        };
+
+        await DialogService.ShowAsync<ResumeDialog>("Resume Viewer", parameters, options);
     }
 }
