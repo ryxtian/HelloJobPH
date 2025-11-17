@@ -40,8 +40,8 @@ namespace HelloJobPH.Server.Service.Dashboard
                         a.ApplicationStatus == ApplicationStatus.Initial ||
                         a.ApplicationStatus == ApplicationStatus.Technical ||
                         a.ApplicationStatus == ApplicationStatus.Final ||
-                        a.ApplicationStatus == ApplicationStatus.JobOffer ||
-                        a.ApplicationStatus == ApplicationStatus.Reschedule
+                        a.ApplicationStatus == ApplicationStatus.JobOffer
+                       // a.ApplicationStatus == ApplicationStatus.Reschedule
                     ));
             }
             catch (Exception)

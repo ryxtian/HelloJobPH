@@ -130,11 +130,16 @@
 </MudContainer>
     </Authorized>
 
-        <NotAuthorized>
-            <MudText Typo="Typo.h6" Color="Color.Error">
-                You are not authorized to view this page.
-            </MudText>
-        </NotAuthorized>
+    <NotAuthorized>
+        @if (true)  // Always executes when unauthorized
+        {
+            NavigationManager.NavigateTo("/unauthorized", true);
+        }
+
+        <MudText Typo="Typo.h6" Color="Color.Error">
+            You are not authorized to view this page.
+        </MudText>
+    </NotAuthorized>
 </AuthorizeView>
 
 @code{

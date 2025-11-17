@@ -4,7 +4,7 @@
 @inject IClientInterviewService Interview
 @inject IDialogService DialogService
 @inject IJSRuntime JS
-
+@inject NavigationManager NavigationManager
 <MudDialog>
     <DialogContent>
         <MudForm @ref="_form" Model="@_emailModel">
@@ -39,18 +39,29 @@
             </MudSelect>
 
             <!-- Assign To -->
-            <MudTextField Label="Assign To"
-                          @bind-Value="_emailModel.AssignTo"
-                          Required="true"
-                          Variant="Variant.Outlined"
-                          Class="mb-2" />
+            <MudSelect Label="Assign to"
+                       @bind-Value="_emailModel.InterviewBy"
+                       Required="true"
+                       Class="mb-2"
+                       Dense="true"
+                       Variant="Variant.Outlined">
+
+                @if (interviewers != null)
+                {
+                    @foreach (var interviewer in interviewers)
+                    {
+                        <MudSelectItem Value="@interviewer.InterviewerId">@interviewer.Name</MudSelectItem>
+                    }
+                }
+
+
+            </MudSelect>
 
             <!-- Location -->
             <MudTextField Label="Location"
                           @bind-Value="_emailModel.Location"
                           Lines="3"
                           Variant="Variant.Outlined"
-                          Required="true"
                           Class="mb-3" />
 
             <!-- Buttons -->
@@ -79,6 +90,7 @@
 
     private MudForm _form = default!;
     private EmailModel _emailModel = new();
+    private List<InterviewerDtos> interviewers = new List<InterviewerDtos>();
 
     private readonly string[] _modes =
     [
@@ -86,8 +98,10 @@
         "Online Interview"
     ];
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
+        interviewers = await Interview.RetrieveAllInterviewer();
+
         _emailModel.InterviewDate = DateTime.Now.AddDays(1);
         _emailModel.InterviewTime = TimeSpan.FromHours(9);
     }
@@ -119,7 +133,7 @@
             Time = _emailModel.InterviewTime!.Value.ToString(@"hh\:mm"),
             Location = _emailModel.Location,
             Mode = _emailModel.Mode,
-            InterviewBy = _emailModel.AssignTo ?? string.Empty
+            InterviewerId = _emailModel.InterviewBy
         };
 
         bool success = await Interview.ForTechnical(dto);
@@ -128,7 +142,7 @@
         {
             Snackbar.Add("Interview scheduled for technical stage successfully.", Severity.Success);
             MudDialog.Close(DialogResult.Ok(true));
-            await JS.InvokeVoidAsync("location.reload");
+            NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
         }
         else
         {
@@ -140,7 +154,7 @@
     {
         public DateTime? InterviewDate { get; set; }
         public TimeSpan? InterviewTime { get; set; }
-        public string? AssignTo { get; set; }
+        public int InterviewBy { get; set; }
         public string? Location { get; set; }
         public string? Mode { get; set; }
     }

@@ -91,7 +91,8 @@ namespace HelloJobPH.Server.Service.Interview
                 var result = await _context.Application
                     .Where(a => validStatuses.Contains(a.ApplicationStatus)
                                 && a.IsDeleted == 0
-                                && a.HumanResourcesId == employerId
+                                && a.EmployerId == employerId
+                                && a.HumanResourcesId == hr.HumanResourceId
                                 && a.Interview.ScheduledDate >= datetoday)
                     .Select(a => new InterviewListDtos
                     {
@@ -100,7 +101,7 @@ namespace HelloJobPH.Server.Service.Interview
                         Firstname = a.Applicant.Firstname,
                         Lastname = a.Applicant.Surname,
                         Email = a.Applicant.UserAccount.Email,
-                        AssignTo = a.Interview.AssignTo,
+                        AssignTo = a.Interview.Interviewer.Name,
                         JobTitle = a.JobPosting.Title,
                         Type = a.JobPosting.EmploymentType,
                         DateApplied = a.DateApply,
@@ -166,6 +167,9 @@ namespace HelloJobPH.Server.Service.Interview
         }
         public async Task<GeneralResponse<bool>> Reschedule(SetScheduleDto dto)
         {
+
+
+
             var application = await _context.Application
                 .Include(a => a.Applicant)
                     .ThenInclude(a => a.UserAccount)
@@ -178,10 +182,7 @@ namespace HelloJobPH.Server.Service.Interview
             if (application == null || string.IsNullOrEmpty(application.Applicant?.UserAccount?.Email))
                 return GeneralResponse<bool>.Fail("Application not found or missing candidate email.");
 
-            // 2️⃣ Update application status
-            application.MarkAsCompleted = 0;
-            _context.Application.Update(application);
-           await _context.SaveChangesAsync();
+
 
             var hr = application.HumanResources;
             if (hr == null)
@@ -196,13 +197,29 @@ namespace HelloJobPH.Server.Service.Interview
             if (!TimeSpan.TryParse(dto.Time, out var parsedTime))
                 return GeneralResponse<bool>.Fail("Invalid format");
 
+            var interviewer = await _context.Interviewer
+    .FirstOrDefaultAsync(i => i.InterviewerId == dto.InterviewerId);
+            bool slotTaken = await _context.Interview
+                .Where(i => i.InterviewerId == interviewer.InterviewerId)
+                .AnyAsync(d => d.ScheduledDate == parsedDate && d.ScheduledTime == parsedTime);
+
+            if (slotTaken)
+                return GeneralResponse<bool>.Fail("The selected interview slot is already taken.");
+
+
+            // 2️⃣ Update application status
+            application.MarkAsCompleted = 0;
+            _context.Application.Update(application);
+            await _context.SaveChangesAsync();
+
+
             // 3️⃣ Update interview
             var interview = await _context.Interview.FirstOrDefaultAsync(i => i.ApplicationId == dto.ApplicationId);
             if (interview != null)
             {
                 interview.ScheduledDate = parsedDate;
                 interview.ScheduledTime = parsedTime;
-                interview.AssignTo = dto.InterviewBy;
+                interview.InterviewerId = dto.InterviewerId;
                 interview.Mode = dto.Mode;
 
                 _context.Interview.Update(interview);
@@ -228,7 +245,7 @@ namespace HelloJobPH.Server.Service.Interview
 
             var history = new InterviewHistory
             {
-                InterviewBy = dto.InterviewBy,
+                InterviewerId = dto.InterviewerId,
                 Status = "Reschedule Interview",
                 ApplicationId = application.ApplicationId,
                 CandidateName = application.Applicant.Firstname + " " + application.Applicant.Surname,
@@ -249,7 +266,7 @@ We would like to inform you that your interview for the **{application.JobPostin
 📅 **New Interview Details**
 - **Date:** {parsedDate:yyyy-MM-dd}
 - **Time:** {parsedTime}
-- **Location/Platform:** {dto.Location}
+- **Location/Platform:** {dto.Location ?? dto.Mode}
 
 We apologize for any inconvenience this change may cause and appreciate your understanding.
 
@@ -319,6 +336,24 @@ Best regards,
                 .Include(a => a.HumanResources) // Include HR for audit
                 .FirstOrDefaultAsync(a => a.ApplicationId == dto.ApplicationId);
 
+
+            if (!DateTime.TryParse(dto.Date, out var parsedDate))
+                return GeneralResponse<bool>.Fail("Invalid format");
+
+            if (!TimeSpan.TryParse(dto.Time, out var parsedTime))
+                return GeneralResponse<bool>.Fail("Invalid format");
+
+
+            var interviewer = await _context.Interviewer
+  .FirstOrDefaultAsync(i => i.InterviewerId == dto.InterviewerId);
+            bool slotTaken = await _context.Interview
+                .Where(i => i.InterviewerId == interviewer.InterviewerId)
+                .AnyAsync(d => d.ScheduledDate == parsedDate && d.ScheduledTime == parsedTime);
+
+            if (slotTaken)
+                return GeneralResponse<bool>.Fail("The selected interview slot is already taken.");
+
+
             if (application == null || string.IsNullOrEmpty(application.Applicant?.UserAccount?.Email))
                 return GeneralResponse<bool>.Fail("no application found");
 
@@ -347,7 +382,7 @@ We are pleased to invite you to a **Technical Interview** to further assess your
 📅 **Interview Details**
 - **Date:** {dto.Date}
 - **Time:** {dto.Time}
-- **Location/Platform:** {dto.Location}
+- **Location/Platform:** {dto.Location ?? dto.Mode}
 
 Please confirm your availability by replying to this email at your earliest convenience.
 
@@ -361,7 +396,7 @@ Best regards,
             var result = _emailService.SendEmailAsync(candidate.Email, subject, body);
 
 
-            // 2️⃣ Update application status
+            
             application.ApplicationStatus = ApplicationStatus.Technical;
             application.MarkAsCompleted = 0;
             _context.Application.Update(application);
@@ -370,14 +405,11 @@ Best regards,
             // 3️⃣ Update interview schedule
             var interview = await _context.Interview.FirstOrDefaultAsync(i => i.ApplicationId == dto.ApplicationId);
 
-                if (!DateTime.TryParse(dto.Date, out var parsedDate))
-                return GeneralResponse<bool>.Fail("Invalid format");
 
-            if (!TimeSpan.TryParse(dto.Time, out var parsedTime))
-                return GeneralResponse<bool>.Fail("Invalid format");
-
+            interview.InterviewerId = dto.InterviewerId;
             interview.ScheduledDate = parsedDate;
                 interview.ScheduledTime = parsedTime;
+            interview.Mode = dto.Mode;
 
                 _context.Interview.Update(interview);
                 await _context.SaveChangesAsync();
@@ -401,7 +433,7 @@ Best regards,
 
             var history = new InterviewHistory
             {
-                InterviewBy = dto.InterviewBy,
+                InterviewerId = dto.InterviewerId,
                 Status = "Schedule for Technical interview",
                 ApplicationId = application.ApplicationId,
                 CandidateName = application.Applicant.Firstname + " " + application.Applicant.Surname,
@@ -429,6 +461,29 @@ Best regards,
             if (application == null || string.IsNullOrEmpty(application.Applicant?.UserAccount?.Email))
                 return GeneralResponse<bool>.Fail("applicaiton not found");
 
+
+
+
+
+
+            if (!DateTime.TryParse(dto.Date, out var parsedDate))
+                return GeneralResponse<bool>.Fail("Invalid format");
+
+            if (!TimeSpan.TryParse(dto.Time, out var parsedTime))
+                return GeneralResponse<bool>.Fail("Invalid format");
+
+
+            var interviewer = await _context.Interviewer
+  .FirstOrDefaultAsync(i => i.InterviewerId == dto.InterviewerId);
+            bool slotTaken = await _context.Interview
+                .Where(i => i.InterviewerId == interviewer.InterviewerId)
+                .AnyAsync(d => d.ScheduledDate == parsedDate && d.ScheduledTime == parsedTime);
+
+            if (slotTaken)
+                return GeneralResponse<bool>.Fail("The selected interview slot is already taken.");
+
+
+
             var hr = application.HumanResources;
 
             var employer = await _context.Employer
@@ -452,18 +507,15 @@ Best regards,
             // 3️⃣ Update interview schedule
             var interview = await _context.Interview.FirstOrDefaultAsync(i => i.ApplicationId == dto.ApplicationId);
 
-            
-                if (!DateTime.TryParse(dto.Date, out var parsedDate))
-                    return GeneralResponse<bool>.Fail("Invalid format");
 
-                if (!TimeSpan.TryParse(dto.Time, out var parsedTime))
-                    return GeneralResponse<bool>.Fail("Invalid format");
 
+            interview.InterviewerId = dto.InterviewerId;
             interview.ScheduledDate = parsedDate;
-                interview.ScheduledTime = parsedTime;
+            interview.ScheduledTime = parsedTime;
+            interview.Mode = dto.Mode;
 
-                //interview.Location = location;
-                _context.Interview.Update(interview);
+            //interview.Location = location;
+            _context.Interview.Update(interview);
                 await _context.SaveChangesAsync();
             
 
@@ -479,7 +531,7 @@ We are pleased to invite you to meet with our hiring panel to discuss your poten
 📅 **Interview Details**
 - **Date:** {dto.Date}
 - **Time:** {dto.Time}
-- **Location/Platform:** {dto.Location}
+- **Location/Platform:** {dto.Location ?? dto.Mode}
 
 Please confirm your attendance by replying to this email at your earliest convenience.
 
@@ -511,7 +563,7 @@ Best regards,
 
             var history = new InterviewHistory
             {
-                InterviewBy = dto.InterviewBy,
+                InterviewerId = dto.InterviewerId,
                 Status = "Schedule for Final interview",
                 ApplicationId = application.ApplicationId,
                 CandidateName = application.Applicant.Firstname + " " + application.Applicant.Surname,
@@ -540,6 +592,9 @@ Best regards,
                 return GeneralResponse<bool>.Fail("applicaiton not found");
 
             var hr = application.HumanResources;
+
+            var employer = await _context.Employer
+              .FirstOrDefaultAsync(i => i.EmployerId == hr.EmployerId);
 
             var candidate = new CandidateEmailDto
             {
@@ -570,12 +625,13 @@ Best regards,
             await _context.AuditLog.AddAsync(auditLog);
             await _context.SaveChangesAsync();
 
+
             // 4️⃣ Send rejection email
             var subject = $"Application Update – {candidate.JobTitle} Position";
 
             var body = $@"Dear {candidate.Firstname},
 
-Thank you very much for your interest in the **{candidate.JobTitle}** position at [Company Name].
+Thank you very much for your interest in the **{candidate.JobTitle}** position at {employer.CompanyName}.
 
 After careful consideration, we regret to inform you that you have not been selected to proceed to the next stage of our hiring process.
 
@@ -584,9 +640,9 @@ We sincerely appreciate the time and effort you invested in your application and
 We wish you the very best in your career endeavors.
 
 Best regards,  
-[Your Name]  
-[Your Position]  
-[Company Name]";
+{hr.Firstname}  
+{hr.JobTitle}
+{employer.CompanyName}";
 
             var result = _emailService.SendEmailAsync(candidate.Email, subject, body);
 
@@ -666,6 +722,19 @@ Best regards,
             return GeneralResponse<bool>.Ok("Successfully mark as completed");
         }
 
+        public async Task<List<InterviewerDtos>> InterviewerList()
+        {
+            var interviewers = await  _context.Interviewer
+                //.Where(i => i.IsDeleted == 0)
+                .Select(i => new InterviewerDtos
+                {
+                    InterviewerId = i.InterviewerId,
+                    Name = i.Name,
+                   
+                })
+                .ToListAsync();
+            return interviewers;
+        }
 
         public class CandidateEmailDto
         {

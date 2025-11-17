@@ -16,5 +16,7 @@ namespace HelloJobPH.Server.Service.Interview
         Task<GeneralResponse<bool>> Failed(int id);
          Task<GeneralResponse<bool>> DeleteApplication(int id);
         Task<GeneralResponse<bool>> MarkAsCompleted(int id);
+
+        Task<List<InterviewerDtos>> InterviewerList();
     }
 }

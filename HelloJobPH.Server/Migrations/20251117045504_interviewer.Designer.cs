@@ -4,6 +4,7 @@ using HelloJobPH.Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HelloJobPH.Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251117045504_interviewer")]
+    partial class interviewer
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -390,6 +393,9 @@ namespace HelloJobPH.Server.Migrations
                     b.Property<int?>("ApplicationId")
                         .HasColumnType("int");
 
+                    b.Property<string>("AssignTo")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int?>("HumanResourceId")
                         .HasColumnType("int");
 
@@ -413,7 +419,9 @@ namespace HelloJobPH.Server.Migrations
 
                     b.HasIndex("HumanResourceId");
 
-                    b.HasIndex("InterviewerId");
+                    b.HasIndex("InterviewerId")
+                        .IsUnique()
+                        .HasFilter("[InterviewerId] IS NOT NULL");
 
                     b.ToTable("Interview");
                 });
@@ -436,8 +444,9 @@ namespace HelloJobPH.Server.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("InterviewerId")
-                        .HasColumnType("int");
+                    b.Property<string>("InterviewBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("ScheduledDate")
                         .HasColumnType("datetime2");
@@ -453,8 +462,6 @@ namespace HelloJobPH.Server.Migrations
                     b.HasKey("InterviewHistoryId");
 
                     b.HasIndex("ApplicationId");
-
-                    b.HasIndex("InterviewerId");
 
                     b.ToTable("InterviewHistory");
                 });
@@ -881,8 +888,8 @@ namespace HelloJobPH.Server.Migrations
                         .HasForeignKey("HumanResourceId");
 
                     b.HasOne("HelloJobPH.Shared.Model.Interviewer", "Interviewer")
-                        .WithMany("Interviews")
-                        .HasForeignKey("InterviewerId");
+                        .WithOne("Interview")
+                        .HasForeignKey("HelloJobPH.Shared.Model.Interview", "InterviewerId");
 
                     b.Navigation("Application");
 
@@ -897,13 +904,7 @@ namespace HelloJobPH.Server.Migrations
                         .WithMany("InterviewHistorys")
                         .HasForeignKey("ApplicationId");
 
-                    b.HasOne("HelloJobPH.Shared.Model.Interviewer", "Interviewer")
-                        .WithMany()
-                        .HasForeignKey("InterviewerId");
-
                     b.Navigation("Application");
-
-                    b.Navigation("Interviewer");
                 });
 
             modelBuilder.Entity("HelloJobPH.Shared.Model.JobPostAudit", b =>
@@ -1020,7 +1021,8 @@ namespace HelloJobPH.Server.Migrations
 
             modelBuilder.Entity("HelloJobPH.Shared.Model.Interviewer", b =>
                 {
-                    b.Navigation("Interviews");
+                    b.Navigation("Interview")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("HelloJobPH.Shared.Model.JobPosting", b =>

@@ -70,6 +70,7 @@ namespace HelloJobPH.Server.Service.SuperAdmin
             if (employer == null)
                 return false;
 
+            employer.IsActive = true;
             employer.Status = "Active";
             _context.Employer.Update(employer);
             await _context.SaveChangesAsync();

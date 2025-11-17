@@ -63,7 +63,7 @@ namespace HelloJobPH.Server.Service.AuditLog
                     CandidateName = h.CandidateName,
                     Stage = h.Stage,
                     Status = h.Status,
-                    InterviewBy = h.InterviewBy,
+                    InterviewBy = h.Interviewer.Name,
                     ScheduledDate = h.ScheduledDate,
                     CreatedAt = h.CreatedAt
                 })

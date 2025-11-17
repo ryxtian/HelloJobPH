@@ -123,5 +123,6 @@ namespace HelloJobPH.Employer.Services.Candidate
 
             return false;
         }
+
     }
 }

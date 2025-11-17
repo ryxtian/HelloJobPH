@@ -1,7 +1,7 @@
 ﻿@inject IHumanResource _humanService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
-
+@inject NavigationManager NavigationManager
 
 
     <MudPaper Elevation="2" Class="pa-6 rounded-lg">
@@ -62,6 +62,7 @@
                                       Label="Phone Number"
                                       For="@(() => humanResource.PhoneNumber)"
                                       Variant="Variant.Outlined"
+                                      InputType="InputType.Telephone"
                                       Adornment="Adornment.Start"
                                       AdornmentIcon="@Icons.Material.Filled.Phone"
                                       HelperText="Contact number" />
@@ -155,6 +156,7 @@
             {
                 await _humanService.AddAsync(humanResource);
                 Snackbar.Add("Successfully created!", Severity.Success);
+                NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
             }
             catch (HttpRequestException ex)
             {

@@ -41,7 +41,7 @@ namespace HelloJobPH.Server.Service.HumanResource
                 Lastname = humanResourceDto.Lastname,
                 PhoneNumber = humanResourceDto.PhoneNumber,
                 IsDeleted = humanResourceDto.IsDeleted,
-                ProfilePhotoUrl = humanResourceDto.ProfilePhotoUrl,
+                //ProfilePhotoUrl = humanResourceDto.ProfilePhotoUrl,
                 JobTitle = humanResourceDto.JobTitle,
                 UserAccountId = useracc.UserAccountId,
                 EmployerId = employer.EmployerId,
@@ -89,7 +89,7 @@ namespace HelloJobPH.Server.Service.HumanResource
                 Email = entity.UserAccount.Email,
                 PhoneNumber = entity.PhoneNumber,
                 IsDeleted = entity.IsDeleted,
-                ProfilePhotoUrl = entity.ProfilePhotoUrl,
+                //ProfilePhotoUrl = entity.ProfilePhotoUrl,
                 JobTitle = entity.JobTitle
             };
 
@@ -99,11 +99,13 @@ namespace HelloJobPH.Server.Service.HumanResource
         {
             var userId = Utilities.GetUserId();
 
+            var employerid = await _context.Employer
+                .FirstOrDefaultAsync(i=>i.UserAccountId == userId);
             
             try
             {
                 var response = await _context.HumanResource
-                    .Where(hr => hr.IsDeleted == 0 && hr.EmployerId == userId)
+                    .Where(hr => hr.IsDeleted == 0 && hr.EmployerId == employerid.EmployerId)
                     .Select(hr => new HumanResourceDtos
                     {
                         HumanResourceId = hr.HumanResourceId,
@@ -111,7 +113,7 @@ namespace HelloJobPH.Server.Service.HumanResource
                         Lastname = hr.Lastname,
                         PhoneNumber = hr.PhoneNumber,
                         IsDeleted = hr.IsDeleted,
-                        ProfilePhotoUrl = hr.ProfilePhotoUrl,
+                        //ProfilePhotoUrl = hr.ProfilePhotoUrl,
                         JobTitle = hr.JobTitle,
 
                         Email = hr.UserAccount.Email,
@@ -158,7 +160,7 @@ namespace HelloJobPH.Server.Service.HumanResource
             //existing.Email = humanResourceDto.Email;
             existing.PhoneNumber = humanResourceDto.PhoneNumber;
             existing.IsDeleted = humanResourceDto.IsDeleted;
-            existing.ProfilePhotoUrl = humanResourceDto.ProfilePhotoUrl;
+            //existing.ProfilePhotoUrl = humanResourceDto.ProfilePhotoUrl;
             existing.JobTitle = humanResourceDto.JobTitle;
             existing.UserAccountId = useracc.UserAccountId;
 

@@ -62,7 +62,7 @@ namespace HelloJobPH.Employer.Services.Interview
         }
         public async Task<int> Failed(int id)
         {
-            var response = await _http.GetAsync($"api/Interview/Failed{id}");
+            var response = await _http.GetAsync($"api/Interview/Failed/{id}");
             if (response.IsSuccessStatusCode)
             {
                 var result = await response.Content.ReadFromJsonAsync<int>();
@@ -92,6 +92,27 @@ namespace HelloJobPH.Employer.Services.Interview
             }
 
             return 0;
+        }
+        public async Task<List<InterviewerDtos>> RetrieveAllInterviewer()
+        {
+            try
+            {
+                var response = await _http.GetAsync("api/Interview/interviewer-list");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine($"⚠️ Failed to fetch candidates: {response.StatusCode}");
+                    return new List<InterviewerDtos>();
+                }
+
+                var data = await response.Content.ReadFromJsonAsync<List<InterviewerDtos>>();
+                return data ?? new List<InterviewerDtos>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Error retrieving candidates: {ex.Message}");
+                return new List<InterviewerDtos>();
+            }
         }
     }
 }

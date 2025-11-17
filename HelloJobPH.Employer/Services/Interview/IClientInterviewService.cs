@@ -15,5 +15,7 @@ namespace HelloJobPH.Employer.Services.Interview
         Task<int> Failed(int id);
         Task<int> Delete(int id);
         Task<int> MarkAsCompleted(int id);
+
+        Task<List<InterviewerDtos>> RetrieveAllInterviewer();
     }
 }

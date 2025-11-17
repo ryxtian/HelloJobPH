@@ -206,6 +206,8 @@ namespace HelloJobPH.Server.Service.Candidate
                 return GeneralResponse<bool>.Fail("Invalid or missing user ID in claims.");
             }
 
+
+
             var hr = await _context.HumanResource
                 .FirstOrDefaultAsync(i=>i.UserAccountId == userId);
 
@@ -221,8 +223,13 @@ namespace HelloJobPH.Server.Service.Candidate
                     return GeneralResponse<bool>.Fail("Invalid time format.");
 
                 // Check if interview slot is already taken
+
+                var interviewer = await _context.Interviewer
+    .FirstOrDefaultAsync(i => i.InterviewerId == dto.InterviewerId);
+
+
                 bool slotTaken = await _context.Interview
-                    .Where(i=>i.HumanResourceId == hr.HumanResourceId)
+                    .Where(i=>i.InterviewerId == interviewer.InterviewerId)
                     .AnyAsync(d => d.ScheduledDate == parseDate && d.ScheduledTime == parseTime);
 
                 if (slotTaken)
@@ -252,12 +259,12 @@ namespace HelloJobPH.Server.Service.Candidate
 Thank you for applying for the {candidate.JobTitle} position at {employer.CompanyName}.
 You are invited to attend an Initial Interview on {dto.Date} at {dto.Time}.
 
-Location/Platform: {dto.Location}
+Location/Platform: {dto.Location ?? dto.Mode}
 
 Please confirm your availability by replying to this email.
 
 Best regards,
-[Your Name]
+{hr.Firstname}
 {hr.JobTitle}
 {employer.CompanyName}";
 
@@ -270,7 +277,7 @@ Best regards,
                 {
                     ScheduledDate = parseDate,
                     ScheduledTime = parseTime,
-                    AssignTo = dto.InterviewBy,
+                    InterviewerId = dto.InterviewerId,
                     Mode = dto.Mode,
                     ApplicationId = dto.ApplicationId,
                     HumanResourceId = hr.HumanResourceId,
@@ -286,7 +293,7 @@ Best regards,
 
                 var history = new InterviewHistory
                 {
-                    InterviewBy = dto.InterviewBy,
+                    InterviewerId = dto.InterviewerId,
                     Status = "Scheduled For Initial Interview" , 
                     ApplicationId = application.ApplicationId, 
                     CandidateName = application.Applicant.Firstname+" "+application.Applicant.Surname,

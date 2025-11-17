@@ -77,5 +77,11 @@ namespace HelloJobPH.Server.Controllers
             var request = await _service.MarkAsCompleted(id);
             return Ok(GeneralResponse<bool>.Ok("Application marked as completed.", true));
         }
+        [HttpGet("interviewer-List")]
+        public async Task<IActionResult> Interviewerlist()
+        {
+            var request = await _service.InterviewerList();
+            return Ok(request);
+        }
     }
 }

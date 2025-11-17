@@ -19,9 +19,8 @@ namespace HelloJobPH.Shared.DTOs
         [Required(ErrorMessage = "Title is required.")]
         public string PhoneNumber { get; set; }
         public byte IsDeleted { get; set; } = 0;
-        public string ProfilePhotoUrl { get; set; }
         [Required(ErrorMessage = "Title is required.")]
-        public string JobTitle { get; set; }
+        public string? JobTitle { get; set; }
         public string? Password { get; set; }
     }
 }

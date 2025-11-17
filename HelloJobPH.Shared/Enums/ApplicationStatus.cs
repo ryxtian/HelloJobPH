@@ -17,11 +17,11 @@ namespace HelloJobPH.Shared.Enums
         JobOffer,
         Hired,
         Withdrawn,
-        OfferDeclined,
-        Reschedule,
+        //OfferDeclined,
+        //Reschedule,
         Rejected,
         Failed,
         NoAppearance,
-        DeclinedInterview,
+       //DeclinedInterview,
     }
 }

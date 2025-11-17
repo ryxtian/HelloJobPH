@@ -15,11 +15,12 @@ namespace HelloJobPH.Shared.Model
         public DateTime ScheduledDate { get; set; }
         public TimeSpan ScheduledTime { get; set; }
         public string? Mode { get; set; }
-        public string? AssignTo { get; set; }
         public int? ApplicationId { get; set; }
         public int? HumanResourceId { get; set; }
+        public int? InterviewerId { get; set; }
         public Application? Application { get; set; }
         public HumanResources? HumanResource { get; set; }
-       
+        public Interviewer? Interviewer { get; set; }
+
     }
 }

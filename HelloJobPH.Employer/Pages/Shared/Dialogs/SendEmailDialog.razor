@@ -3,6 +3,7 @@
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
 @inject IClientCandidateService Service
+@inject IClientInterviewService _interview
 @inject NavigationManager NavigationManager
 <MudDialog>
     <DialogContent>
@@ -27,16 +28,28 @@
                 }
             </MudSelect>
 
-            <MudTextField Label="Assign to"
-                          @bind-Value="_emailModel.AssignTo"
-                          Required="true"
-                          Class="mb-2" />
+            <MudSelect Label="Assign to"
+                       @bind-Value="_emailModel.InterviewBy"
+                       Required="true"
+                       Class="mb-2"
+                       Dense="true"
+                       Variant="Variant.Outlined">
+                
+                @if (interviewers != null)
+                {
+                    @foreach (var interviewer in interviewers)
+                    {
+                        <MudSelectItem Value="@interviewer.InterviewerId">@interviewer.Name</MudSelectItem>
+                    }
+                }
+                
+
+            </MudSelect>
 
             <MudTextField Label="Location"
                           @bind-Value="_emailModel.Location"
                           Lines="3"
                           Variant="Variant.Outlined"
-                          Required="true"
                           Class="mb-3" />
 
             <MudStack Row="true" Spacing="2">
@@ -64,9 +77,12 @@
 
     private MudForm _form = default!;
     private EmailModel _emailModel = new();
+    private List<InterviewerDtos> interviewers = new List<InterviewerDtos>();
 
-    protected override void OnInitialized()
+
+    protected override async Task OnInitializedAsync()
     {
+        interviewers = await _interview.RetrieveAllInterviewer();
         _emailModel.InterviewDate = DateTime.Now.AddDays(1);
         _emailModel.InterviewTime = TimeSpan.FromHours(9);
     }
@@ -109,7 +125,7 @@
             Time = _emailModel.InterviewTime!.Value.ToString(@"hh\:mm"),
             Location = _emailModel.Location,
             Mode = _emailModel.Mode,
-            InterviewBy = _emailModel.AssignTo ?? string.Empty
+            InterviewerId = _emailModel.InterviewBy
         };
 
         var success = await Service.ForInitial(dto);
@@ -131,7 +147,7 @@
     {
         public DateTime? InterviewDate { get; set; }
         public TimeSpan? InterviewTime { get; set; }
-        public string? AssignTo { get; set; }
+        public int InterviewBy { get; set; }
         public string? Location { get; set; }
         public string? Mode { get; set; }
     }

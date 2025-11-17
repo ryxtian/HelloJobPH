@@ -6,7 +6,7 @@
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject IJSRuntime JS
-@inject NavigationManager NavigationManger
+@inject NavigationManager NavigationManager
 @inject HttpClient Http
 @using System.Net.Http.Json
 @inject ChatService ChatService
@@ -559,7 +559,7 @@
             if (response > 0)
             {
                 Snackbar.Add("Candidate marked as 'No Appearance'.", Severity.Success);
-                await JS.InvokeVoidAsync("location.reload");
+                NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
             }
             else
             {
@@ -584,7 +584,7 @@
             if (response > 0)
             {
                 Snackbar.Add("Candidate marked as 'Failed'.", Severity.Success);
-                await JS.InvokeVoidAsync("location.reload");
+                NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
             }
             else
             {
@@ -609,7 +609,7 @@
             if (response > 0)
             {
                 Snackbar.Add("Candidate marked as 'Delete'.", Severity.Success);
-                await JS.InvokeVoidAsync("location.reload");
+                NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
             }
             else
             {
@@ -635,7 +635,7 @@
             if (response > 0)
             {
                 Snackbar.Add("Candidate marked as 'Complete'.", Severity.Success);
-                await JS.InvokeVoidAsync("location.reload");
+                NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
                 
             }
             else

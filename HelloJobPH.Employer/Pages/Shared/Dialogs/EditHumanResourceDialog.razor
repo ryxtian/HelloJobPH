@@ -1,6 +1,7 @@
 ﻿@inject IHumanResource _humanService
 @inject ISnackbar Snackbar
 @inject IDialogService DialogService
+@inject NavigationManager NavigationManager
 
 @if (_loading)
 {
@@ -62,6 +63,7 @@ else
                                       Label="Phone Number"
                                       Variant="Variant.Outlined"
                                       Adornment="Adornment.Start"
+                                      InputType="InputType.Telephone"
                                       AdornmentIcon="@Icons.Material.Filled.Phone"
                                       HelperText="Contact number" />
                     </MudItem>
@@ -159,6 +161,7 @@ else
                 await _humanService.UpdateAsync(humanResource);
                 Snackbar.Add("Successfully updated!", Severity.Success);
                 MudDialog.Close(DialogResult.Ok(true));
+                NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
             }
             catch (Exception ex)
             {
