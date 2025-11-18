@@ -90,7 +90,8 @@ namespace HelloJobPH.Server.Service.Interview
                 {
             ApplicationStatus.Initial,
             ApplicationStatus.Technical,
-            ApplicationStatus.Final
+            ApplicationStatus.Final,
+            ApplicationStatus.Hired
         };
 
                 var result = await _context.Application
@@ -298,7 +299,7 @@ Best regards,
         }
 
 
-        public async Task<GeneralResponse<int>> NoAppearance(int applicationId)
+        public async Task<GeneralResponse<bool>> NoAppearance(int applicationId)
         {
             // 1️⃣ Get application with related entities
             var application = await _context.Application
@@ -308,7 +309,7 @@ Best regards,
                 .FirstOrDefaultAsync(a => a.ApplicationId == applicationId);
 
             if (application == null)
-                return GeneralResponse<int>.Fail("No application found");
+                return GeneralResponse<bool>.Fail("No application found");
 
             // 2️⃣ Update application status
             application.ApplicationStatus = ApplicationStatus.NoAppearance;
@@ -334,7 +335,7 @@ Best regards,
             await _context.AuditLog.AddAsync(auditLog);
             await _context.SaveChangesAsync();
 
-            return GeneralResponse<int>.Ok("Mark as No appearance");
+            return GeneralResponse<bool>.Ok("Mark as No appearance");
         }
 
 

@@ -40,11 +40,12 @@ namespace HelloJobPH.Server.Controllers
             var request = await _service.Reschedule(dto);
             return Ok(GeneralResponse<bool>.Ok("Application rescheduled successfully.", true));
         }
-        [HttpGet("NoAppearance{id}")]
-        public async Task<ActionResult<GeneralResponse<int>>> NoAppearance(int id)
+        [HttpPut("NoAppearance/{id}")]
+        public async Task<ActionResult<GeneralResponse<bool>>> NoAppearance(int id)
         {
             var result = await _service.NoAppearance(id);
-            return Ok(GeneralResponse<int>.Ok("No appearance count retrieved successfully."+ result));
+            // Assuming the service returns a boolean indicating success
+            return GeneralResponse<bool>.Ok("No appearance processed successfully."+ result);
         }
 
         [HttpPost("ForTechnical")]

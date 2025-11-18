@@ -66,18 +66,29 @@ namespace HelloJobPH.Employer.Services.Interview
             };
         }
 
-
         public async Task<GeneralResponse<bool>> NoAppearance(int id)
         {
-            var response = await _http.GetAsync($"api/Interview/NoAppearance/{id}");
-
-            if (response.IsSuccessStatusCode)
+            try
             {
-                var result = await response.Content.ReadFromJsonAsync<bool>();
-                return new GeneralResponse<bool> { Success = true, Data = result };
-            }
+                var response = await _http.PutAsync($"api/Interview/NoAppearance/{id}", null);
 
-            return new GeneralResponse<bool> { Success = false, Data = false };
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<GeneralResponse<bool>>();
+                    return result!;
+                }
+                else
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"API Error: {content}");
+                    return new GeneralResponse<bool> { Success = false, Data = false };
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception in NoAppearance: {ex.Message}");
+                return new GeneralResponse<bool> { Success = false, Data = false };
+            }
         }
         public async Task<GeneralResponse<bool>> ForTechnical(SetScheduleDto dto)
         {

@@ -52,18 +52,24 @@ else
                 <MudGrid Spacing="3">
                     <MudItem xs="12" sm="6">
                         <MudTextField @bind-Value="humanResource.Email"
-                                      Label="Email Address" Required="true"
+                                      Label="Email Address"
+                                      Required="true"
                                       Variant="Variant.Outlined"
                                       Adornment="Adornment.Start"
                                       AdornmentIcon="@Icons.Material.Filled.Email"
-                                      HelperText="Work email address" />
+                                      HelperText="Work email address"
+                                      Immediate="true"
+                                      For="@(() => humanResource.Email)"
+                                      Error="@(!IsValidEmail(humanResource.Email))"
+                                      ErrorText="Invalid email address" />
+
                     </MudItem>
                     <MudItem xs="12" sm="6">
                         <MudTextField @bind-Value="humanResource.PhoneNumber"
                                       Label="Phone Number"
                                       Variant="Variant.Outlined"
                                       Adornment="Adornment.Start"
-                                      InputType="InputType.Telephone"
+                                      InputType="InputType.Number"
                                       AdornmentIcon="@Icons.Material.Filled.Phone"
                                       HelperText="Contact number" />
                     </MudItem>
@@ -149,6 +155,22 @@ else
     private void TogglePasswordVisibility()
     {
         isPasswordVisible = !isPasswordVisible;
+    }
+
+    private bool IsValidEmail(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+            return false;
+
+        try
+        {
+            var addr = new System.Net.Mail.MailAddress(email);
+            return addr.Address == email;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     private async Task SubmitForm()

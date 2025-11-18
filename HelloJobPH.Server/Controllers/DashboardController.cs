@@ -61,5 +61,12 @@ namespace HelloJobPH.Server.Controllers
             }
 
         }
+
+        [HttpGet("GetMonthlyApplicantsAsync")]
+        public async Task<IActionResult> GetMonthlyApplicantsAsync()
+        {
+            var result = await _dashboardService.GetMonthlyApplicantsAsync();
+            return Ok(result);
+        }
     }
 }

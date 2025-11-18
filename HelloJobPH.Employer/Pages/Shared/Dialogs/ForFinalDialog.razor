@@ -148,6 +148,8 @@
         {
             Snackbar.Add("Failed to update interview status.", Severity.Error);
         }
+        NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+        NavigationManager.NavigateTo("/Interview/initial");
 
     }
 

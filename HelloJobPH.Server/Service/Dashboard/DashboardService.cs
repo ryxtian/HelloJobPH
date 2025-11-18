@@ -74,6 +74,29 @@ namespace HelloJobPH.Server.Service.Dashboard
             }
         }
 
+        public async Task<List<int>> GetMonthlyApplicantsAsync()
+        {
+            var monthlyCounts = new List<int>(new int[12]);
+            var currentYear = DateTime.Now.Year;  // FIXED
+
+            var applications = await _context.Application
+                .Where(a => a.DateApply.Year == currentYear)
+                .ToListAsync();
+
+            var grouped = applications
+                .GroupBy(a => a.DateApply.Month)
+                .Select(g => new { Month = g.Key, Count = g.Count() });
+
+            foreach (var g in grouped)
+            {
+                monthlyCounts[g.Month - 1] = g.Count;
+            }
+
+            return monthlyCounts;
+        }
+
+
+
         public async Task<int> GetTotalJobPostAsync()
         {
             var userId = Utilities.GetUserId();

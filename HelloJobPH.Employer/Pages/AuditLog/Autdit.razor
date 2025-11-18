@@ -221,13 +221,26 @@
     }
 
 
-
     private async Task ViewResume(int applicationId)
     {
-        // Implement resume viewing logic
-        Snackbar.Add("Opening resume...", Severity.Info);
-    }
 
+        var parameters = new DialogParameters
+        {
+            ["ApplicationId"] = applicationId
+        };
+
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Large,
+            FullWidth = true,
+            FullScreen = true,
+            CloseButton = true,
+            CloseOnEscapeKey = true
+        };
+
+        var dialog = DialogService.Show<ResumeDialog>("Resume Viewer", parameters, options);
+        var result = await dialog.Result;
+    }
 
     private async Task ViewApplicationHistory(int applicationId)
     {

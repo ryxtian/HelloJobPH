@@ -147,7 +147,8 @@
         {
             Snackbar.Add("Failed to reschedule interview.", Severity.Error);
         }
-
+        NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+        NavigationManager.NavigateTo("/Interview/initial");
     }
 
     private class EmailModel

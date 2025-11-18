@@ -44,8 +44,17 @@ namespace HelloJobPH.Server.Controllers
         [HttpPost("SendEmail")]
         public async Task<ActionResult<GeneralResponse<bool>>> SendEmail([FromBody] SetScheduleDto dto)
         {
-            var success = await _candidateService.SendInitialEmail(dto);
-            return Ok(GeneralResponse<bool>.Ok("Email sent successfully.", true));
+            try
+            {
+                var success = await _candidateService.SendInitialEmail(dto);
+                return Ok(GeneralResponse<bool>.Ok("Email sent successfully.", true));
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+       
         }
 
         [HttpPut("Viewresume/{id}")]

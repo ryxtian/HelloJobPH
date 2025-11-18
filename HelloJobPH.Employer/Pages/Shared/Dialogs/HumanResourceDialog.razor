@@ -48,21 +48,24 @@
 
                 <MudGrid Spacing="3">
                     <MudItem xs="12" sm="6">
-                        <MudTextField @bind-Value="humanResource.Email"
-                                      Label="Email Address"
-                                      Required="true"
-                                      For="@(() => humanResource.Email)"
-                                      Variant="Variant.Outlined"
-                                      Adornment="Adornment.Start"
-                                      AdornmentIcon="@Icons.Material.Filled.Email"
-                                      HelperText="Work email address" />
+                    <MudTextField @bind-Value="humanResource.Email"
+                                  Label="Email Address"
+                                  Required="true"
+                                  Variant="Variant.Outlined"
+                                  Adornment="Adornment.Start"
+                                  AdornmentIcon="@Icons.Material.Filled.Email"
+                                  HelperText="Work email address"
+                                  Immediate="true"
+                                  For="@(() => humanResource.Email)"
+                                  Error="@(!IsValidEmail(humanResource.Email))"
+                                  ErrorText="Invalid email address" />
                     </MudItem>
                     <MudItem xs="12" sm="6">
                         <MudTextField @bind-Value="humanResource.PhoneNumber"
                                       Label="Phone Number"
                                       For="@(() => humanResource.PhoneNumber)"
                                       Variant="Variant.Outlined"
-                                      InputType="InputType.Telephone"
+                                      InputType="InputType.Number"
                                       Adornment="Adornment.Start"
                                       AdornmentIcon="@Icons.Material.Filled.Phone"
                                       HelperText="Contact number" />
@@ -146,7 +149,21 @@
     {
         isPasswordVisible = !isPasswordVisible;
     }
+    private bool IsValidEmail(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+            return false;
 
+        try
+        {
+            var addr = new System.Net.Mail.MailAddress(email);
+            return addr.Address == email;
+        }
+        catch
+        {
+            return false;
+        }
+    }
     private async Task SubmitForm()
     {
         await _form.Validate();

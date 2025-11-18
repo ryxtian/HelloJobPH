@@ -12,7 +12,10 @@
 @inject ChatService ChatService
 @inject AuthenticationStateProvider AuthProvider
 
+@attribute [Authorize(Roles = "HR")]
 
+<AuthorizeView Roles="HR">
+    <Authorized>
 
 <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-4">
     <MudPaper Elevation="2" Class="pa-6">
@@ -70,82 +73,82 @@
                     <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Actions</strong></MudText></MudTh>
                 </HeaderContent>
 
-                <RowTemplate>
-                    <MudTd DataLabel="Candidate">
-                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
-                            <MudAvatar Color="Color.Primary" Size="Size.Small">
-                                @context.Firstname?.Substring(0, 1)@context.Lastname?.Substring(0, 1)
-                            </MudAvatar>
-                            <MudText Typo="Typo.body2">
-                                <strong>@context.Firstname @context.Lastname</strong>
-                            </MudText>
-                        </MudStack>
-                    </MudTd>
-                    <MudTd DataLabel="Position">
-                        <MudText Typo="Typo.body2">@context.JobTitle</MudText>
-                    </MudTd>
-                    <MudTd DataLabel="Status">
-                        <MudChip T="string" Size="Size.Small" Variant="Variant.Filled" Color="Color.Info">
-                            @context.Status
-                        </MudChip>
-                        @if (context.MarkAsCompleted == 1)
-                        {
-                            <span class="badge bg-success ms-2 px-2 py-1" style="font-size: 0.75rem; font-weight: 600;">
-                                <i class="bi bi-check-circle-fill me-1"></i> Completed
-                            </span>
-                        }
-                    </MudTd>
-                    <MudTd DataLabel="Resume">
-                        <MudButton StartIcon="@Icons.Material.Filled.Description"
-                                   Size="Size.Small"
-                                   Variant="Variant.Text"
-                                   Color="Color.Primary"
-                                   OnClick="@(() => ViewResume(context.ApplicationId))">
-                            View Resume
-                        </MudButton>
-                    </MudTd>
-                    <MudTd DataLabel="Interview Date">
-                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
-                            <MudIcon Icon="@Icons.Material.Filled.Event" Size="Size.Small" Color="Color.Secondary" />
-                            <MudText Typo="Typo.body2">@context.DateInterview?.ToString("dd MMM yyyy")</MudText>
-                        </MudStack>
-                    </MudTd>
-                    <MudTd DataLabel="Time">
-                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
-                            <MudIcon Icon="@Icons.Material.Filled.AccessTime" Size="Size.Small" Color="Color.Secondary" />
-                            <MudText Typo="Typo.body2">@context.TimeInterview</MudText>
-                        </MudStack>
-                    </MudTd>
-                    <MudTd DataLabel="Time">
-                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
-                            <MudIcon Icon="@Icons.Material.Filled.Person3" Size="Size.Small" Color="Color.Secondary" />
-                            <MudText Typo="Typo.body2">@context.AssignTo</MudText>
-                        </MudStack>
-                    </MudTd>
-                    <MudTd DataLabel="Type">
-                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@context.Type</MudChip>
-                    </MudTd>
-                    <MudTd DataLabel="Actions">
-                        <MudMenu Icon="@Icons.Material.Filled.MoreVert"
-                                 Size="Size.Small"
-                                 Dense="true"
-                                 AnchorOrigin="Origin.BottomLeft">
-                            <MudMenuItem IconColor="Color.Info" Icon="@Icons.Material.Filled.Schedule" OnClick="@(() => Reschedule(context))">Reschedule</MudMenuItem>
-                            <MudMenuItem IconColor="Color.Error" Icon="@Icons.Material.Filled.PersonOff" OnClick="@(() => NoAppearance(context.ApplicationId))">No Appearance</MudMenuItem>
-                            <MudDivider />
-                            @* <MudMenuItem OnClick="@(() => OpenSendEmailDialog(context))">Send Email</MudMenuItem> *@
-                            <MudMenuItem IconColor="Color.Secondary" Icon="@Icons.Material.Filled.Build" OnClick="@(() => ForTechnical(context))">Technical</MudMenuItem>
-                            <MudMenuItem IconColor="Color.Warning" Icon="@Icons.Material.Filled.EmojiEvents" OnClick="@(() => ForFinal(context))">Final</MudMenuItem>
-                            <MudMenuItem IconColor="Color.Error" Icon="@Icons.Material.Filled.Cancel" OnClick="@(() => Failed(context.ApplicationId))" >Failed</MudMenuItem>
-                            <MudDivider />
-                            <MudMenuItem IconColor="Color.Error"  OnClick="@(() => Delete(context.ApplicationId))" Icon="@Icons.Material.Filled.Delete">Delete</MudMenuItem>
-                            <MudMenuItem IconColor="Color.Tertiary"Icon="@Icons.Material.Filled.Visibility" OnClick="@(() => NavigateToOverview(context.ApplicationId))">Overview</MudMenuItem>
-                            <MudMenuItem Variant="Variant.Text" Icon="@Icons.Material.Filled.Chat" OnClick="() => OpenChat(context.UserAccountId, context.Firstname)">Chat</MudMenuItem>
-                            <MudMenuItem IconColor="Color.Success" Icon="@Icons.Material.Filled.MarkChatRead" OnClick="@(() => MarkAsCompleted(context.ApplicationId))">Mark As Completed</MudMenuItem>
-                            <MudMenuItem IconColor="Color.Success" Icon="@Icons.Material.Filled.MarkChatRead" OnClick="@(() => Hired(context.ApplicationId))">Hired</MudMenuItem>
-                        </MudMenu>
-                    </MudTd>
-                </RowTemplate>
+                        <RowTemplate Context="row">
+                            <MudTd DataLabel="Candidate">
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                    <MudAvatar Color="Color.Primary" Size="Size.Small">
+                                        @row.Firstname?.Substring(0, 1)@row.Lastname?.Substring(0, 1)
+                                    </MudAvatar>
+                                    <MudText Typo="Typo.body2">
+                                        <strong>@row.Firstname @row.Lastname</strong>
+                                    </MudText>
+                                </MudStack>
+                            </MudTd>
+                            <MudTd DataLabel="Position">
+                                <MudText Typo="Typo.body2">@row.JobTitle</MudText>
+                            </MudTd>
+                            <MudTd DataLabel="Status">
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Filled" Color="Color.Info">
+                                    @row.Status
+                                </MudChip>
+                                @if (row.MarkAsCompleted == 1)
+                                {
+                                    <span class="badge bg-success ms-2 px-2 py-1" style="font-size: 0.75rem; font-weight: 600;">
+                                        <i class="bi bi-check-circle-fill me-1"></i> Completed
+                                    </span>
+                                }
+                            </MudTd>
+                            <MudTd DataLabel="Resume">
+                                <MudButton StartIcon="@Icons.Material.Filled.Description"
+                                           Size="Size.Small"
+                                           Variant="Variant.Text"
+                                           Color="Color.Primary"
+                                           OnClick="@(() => ViewResume(row.ApplicationId))">
+                                    View Resume
+                                </MudButton>
+                            </MudTd>
+                            <MudTd DataLabel="Interview Date">
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                    <MudIcon Icon="@Icons.Material.Filled.Event" Size="Size.Small" Color="Color.Secondary" />
+                                    <MudText Typo="Typo.body2">@row.DateInterview?.ToString("dd MMM yyyy")</MudText>
+                                </MudStack>
+                            </MudTd>
+                            <MudTd DataLabel="Time">
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                    <MudIcon Icon="@Icons.Material.Filled.AccessTime" Size="Size.Small" Color="Color.Secondary" />
+                                    <MudText Typo="Typo.body2">@row.TimeInterview</MudText>
+                                </MudStack>
+                            </MudTd>
+                            <MudTd DataLabel="Assigned To">
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                    <MudIcon Icon="@Icons.Material.Filled.Person3" Size="Size.Small" Color="Color.Secondary" />
+                                    <MudText Typo="Typo.body2">@row.AssignTo</MudText>
+                                </MudStack>
+                            </MudTd>
+                            <MudTd DataLabel="Type">
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@row.Type</MudChip>
+                            </MudTd>
+                            <MudTd DataLabel="Actions">
+                                <MudMenu Icon="@Icons.Material.Filled.MoreVert"
+                                         Size="Size.Small"
+                                         Dense="true"
+                                         AnchorOrigin="Origin.BottomLeft">
+                                    <MudMenuItem IconColor="Color.Info" Icon="@Icons.Material.Filled.Schedule" OnClick="@(() => Reschedule(row))">Reschedule</MudMenuItem>
+                                    <MudMenuItem IconColor="Color.Error" Icon="@Icons.Material.Filled.PersonOff" OnClick="@(() => NoAppearance(row.ApplicationId))">No Appearance</MudMenuItem>
+                                    <MudDivider />
+                                    <MudMenuItem IconColor="Color.Secondary" Icon="@Icons.Material.Filled.Build" OnClick="@(() => ForTechnical(row))">Technical</MudMenuItem>
+                                    <MudMenuItem IconColor="Color.Warning" Icon="@Icons.Material.Filled.EmojiEvents" OnClick="@(() => ForFinal(row))">Final</MudMenuItem>
+                                    <MudMenuItem IconColor="Color.Error" Icon="@Icons.Material.Filled.Cancel" OnClick="@(() => Failed(row.ApplicationId))">Failed</MudMenuItem>
+                                    <MudDivider />
+                                    <MudMenuItem IconColor="Color.Error" Icon="@Icons.Material.Filled.Delete" OnClick="@(() => Delete(row.ApplicationId))">Delete</MudMenuItem>
+                                    <MudMenuItem IconColor="Color.Tertiary" Icon="@Icons.Material.Filled.Visibility" OnClick="@(() => NavigateToOverview(row.ApplicationId))">Overview</MudMenuItem>
+                                    <MudMenuItem Variant="Variant.Text" Icon="@Icons.Material.Filled.Chat" OnClick="@(() => OpenChat(row.UserAccountId, row.Firstname))">Chat</MudMenuItem>
+                                    <MudMenuItem IconColor="Color.Success" Icon="@Icons.Material.Filled.MarkChatRead" OnClick="@(() => MarkAsCompleted(row.ApplicationId))">Mark As Completed</MudMenuItem>
+                                    <MudMenuItem IconColor="Color.Success" Icon="@Icons.Material.Filled.Check" OnClick="@(() => Hired(row.ApplicationId))">Hired</MudMenuItem>
+                                </MudMenu>
+                            </MudTd>
+                        </RowTemplate>
+
 
                 <NoRecordsContent>
                     <MudStack AlignItems="AlignItems.Center" Spacing="3" Class="pa-8">
@@ -160,6 +163,20 @@
         </MudStack>
     </MudPaper>
 </MudContainer>
+
+   </Authorized>
+
+    <NotAuthorized>
+        @if (true)  // Always executes when unauthorized
+        {
+            NavigationManager.NavigateTo("/unauthorized", true);
+        }
+
+        <MudText Typo="Typo.h6" Color="Color.Error">
+            You are not authorized to view this page.
+        </MudText>
+    </NotAuthorized>
+</AuthorizeView>
 
 @code {
     private string _searchString = string.Empty;
@@ -353,14 +370,14 @@
 
         if (!response.Success)
         {
-            Snackbar.Add(response.Message ?? "Failed to load initial interviews.", Severity.Error);
+           // Snackbar.Add(response.Message ?? "Failed to load initial interviews.", Severity.Error);
         }
 
 
         // Optional: check success
         if (!response.Success)
         {
-            Snackbar.Add(response.Message ?? "Failed to fetch initial list.", Severity.Error);
+          //  Snackbar.Add(response.Message ?? "Failed to fetch initial list.", Severity.Error);
         }
 
         var authState = await AuthProvider.GetAuthenticationStateAsync();
@@ -382,7 +399,7 @@
         };
 
 
- 
+
     }
     private async Task LoadChatHistory(string senderId, string receiverId)
     {
@@ -461,7 +478,7 @@
     {
         if (chat == null || string.IsNullOrWhiteSpace(chat.NewMessage))
             return;
-            
+
         var targetId = chat.ApplicantId.ToString();
         try
         {
@@ -571,14 +588,17 @@
 
             if (response.Success && response.Data)
             {
-                Snackbar.Add("Candidate marked as 'No Appearance'.", Severity.Success);
                 NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+                NavigationManager.NavigateTo("/Interview/initial");
             }
             else
             {
-                Snackbar.Add("Failed to update candidate status.", Severity.Error);
+  
             }
+    
         }
+        NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+        NavigationManager.NavigateTo("/Interview/initial");
     }
     private async Task Failed(int id)
     {
@@ -627,6 +647,7 @@
                 Snackbar.Add("Failed to update candidate status.", Severity.Error);
             }
         }
+        NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
     }
 
     private async Task MarkAsCompleted(int id)
@@ -644,6 +665,7 @@
             await CandidateService.MarkAsCompleted(id);
             NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
         }
+        NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
     }
     private async Task Hired(int id)
     {

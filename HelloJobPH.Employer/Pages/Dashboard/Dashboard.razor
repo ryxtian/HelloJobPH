@@ -3,7 +3,7 @@
 @inject AuthenticationStateProvider AuthProvider
 @inject NavigationManager Navigation
 @inject IClientDashboardService DashboardService
-@attribute [Authorize(Roles = "Admin")]
+@attribute [Authorize(Roles = "HR,Employer")]
 
 @if (isLoading)
 {
@@ -14,7 +14,11 @@
 }
 else
 {
+    <AuthorizeView Roles="HR,Employer">
+    <Authorized>
+       
     <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-6">
+
         <MudPaper Class="pa-6 mb-4">
             <MudText Typo="Typo.h4" Color="Color.Primary" GutterBottom="true">
                 Dashboard Overview
@@ -65,57 +69,91 @@ else
                 </MudCard>
             </MudItem>
         </MudGrid>
+
+        <!-- Monthly Applicants Bar Chart -->
+        <MudPaper Class="pa-6">
+            <MudText Typo="Typo.h5" Color="Color.Primary" Class="mb-4">
+                Monthly Applicants
+            </MudText>
+
+            <MudChart ChartType="ChartType.Bar"
+                      Labels="@monthLabels"
+                      Datasets="@monthlyApplicantDataset"
+                      Height="250px" />
+        </MudPaper>
+
+
+
     </MudContainer>
+        </Authorized>
+
+        <NotAuthorized>
+            @if (true)  // Always executes when unauthorized
+            {
+                Navigation.NavigateTo("/unauthorized", true);
+            }
+
+            <MudText Typo="Typo.h6" Color="Color.Error">
+                You are not authorized to view this page.
+            </MudText>
+        </NotAuthorized>
+    </AuthorizeView>
 }
 
 @code {
     private ClaimsPrincipal? user;
-    private string? fullName;
-    private string? email;
-    private string? role;
-    private string? userId;
-
-    // Live dashboard data
     public int totalJobPosts;
     public int activeApplications;
     public int approvedHires;
     private bool isLoading = true;
+    
+
+    private string[] monthLabels =
+    {
+        "Jan","Feb","Mar","Apr","May","Jun",
+        "Jul","Aug","Sep","Oct","Nov","Dec"
+    };
+    private IEnumerable<ChartSeries> monthlyApplicantDataset = new List<ChartSeries>();
 
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthProvider.GetAuthenticationStateAsync();
+        user = authState.User;
+
+        // Redirect unauthenticated users
+        if (!user.Identity?.IsAuthenticated ?? true)
+        {
+            Navigation.NavigateTo("/", true);
+            return;
+        }
+
+        // Redirect unauthorized users (not HR or Employer)
+        if (!(user.IsInRole("HR") || user.IsInRole("Employer")))
+        {
+            Navigation.NavigateTo("/unauthorized", true);
+            return;
+        }
+
         try
         {
-            var authState = await AuthProvider.GetAuthenticationStateAsync();
-            user = authState.User;
-
-            if (user.Identity != null && user.Identity.IsAuthenticated)
-            {
-                // Extract values from claims safely
-                var firstName = user.FindFirst(c => c.Type == ClaimTypes.Name)?.Value ?? "";
-                var lastName = user.FindFirst(c => c.Type == ClaimTypes.Surname)?.Value ?? "";
-                fullName = $"{firstName} {lastName}";
-                email = user.FindFirst(c => c.Type == ClaimTypes.Email)?.Value ?? "";
-                role = user.FindFirst(c => c.Type == ClaimTypes.Role)?.Value ?? "";
-                userId = user.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value ?? "";
-            }
-            else
-            {
-                Navigation.NavigateTo("/", true);
-                return;
-            }
-
             // Load dashboard data
             totalJobPosts = await DashboardService.GetTotalJobPostAsync();
             activeApplications = await DashboardService.GetActiveApplicationAsync();
             approvedHires = await DashboardService.GetApprovedHiredAsync();
-        }
-        catch
-        {
-            // Handle errors (optional)
+
+            var monthlyApplicants = await DashboardService.GetMonthlyApplicantsAsync();
+            monthlyApplicantDataset = new List<ChartSeries>
+            {
+                new ChartSeries
+                {
+                    Name = "Applicants",
+                    Data = monthlyApplicants.Select(x => (double)x).ToArray()
+                }
+            };
         }
         finally
         {
-            isLoading = false; // ✅ stop loading spinner
+            isLoading = false;
         }
     }
 

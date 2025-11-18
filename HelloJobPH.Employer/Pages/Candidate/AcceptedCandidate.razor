@@ -1,11 +1,14 @@
 ﻿@page "/Candidate/AcceptedCandidates"
+
 @using HelloJobPH.Employer.Pages.Shared.Dialogs
 @inject IClientCandidateService CandidateService
 @inject IDialogService DialogService
-@attribute [Authorize(Roles ="Admin")]
-<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-4">
-    <MudPaper Elevation="2" Class="pa-6">
-        <MudStack Spacing="4">
+@inject NavigationManager NavigationManager
+
+        <!-- YOUR PAGE CONTENT (UNCHANGED) -->
+        <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="mt-4">
+            <MudPaper Elevation="2" Class="pa-6">
+                <MudStack Spacing="4">
             <!-- Header Section -->
             <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
                 <MudStack Spacing="1">
@@ -41,53 +44,60 @@
                     <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Type</strong></MudText></MudTh>
                     <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Actions</strong></MudText></MudTh>
                 </HeaderContent>
-                <RowTemplate>
-                    <MudTd DataLabel="Candidate">
-                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
-                            <MudAvatar Color="Color.Primary" Size="Size.Small">
-                                @context.Firstname?.Substring(0, 1)@context.Lastname?.Substring(0, 1)
-                            </MudAvatar>
-                            <MudText Typo="Typo.body2">
-                                <strong>@context.Firstname @context.Lastname</strong>
-                            </MudText>
-                        </MudStack>
-                    </MudTd>
-                    <MudTd DataLabel="Position">
-                        <MudText Typo="Typo.body2">@context.JobTitle</MudText>
-                    </MudTd>
-                    <MudTd DataLabel="Status">
-                        <MudChip T="string" Size="Size.Small" Variant="Variant.Filled" Color="Color.Info">
-                            @context.Status
-                        </MudChip>
-                    </MudTd>
-                    <MudTd DataLabel="Resume">
-                        <MudButton StartIcon="@Icons.Material.Filled.Description"
-                                   Size="Size.Small"
-                                   Variant="Variant.Text"
-                                   Color="Color.Primary"
-                                   OnClick="@(() => ViewResume(context.ApplicationId))">
-                            View Resume
-                        </MudButton>
-                    </MudTd>
-                    <MudTd DataLabel="Date Applied">
-                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
-                            <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Size="Size.Small" Color="Color.Secondary" />
-                            <MudText Typo="Typo.body2">@context.DateApplied.ToString("dd MMM yyyy")</MudText>
-                        </MudStack>
-                    </MudTd>
-                    <MudTd DataLabel="Type">
-                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@context.Type</MudChip>
-                    </MudTd>
-                    <MudTd DataLabel="Actions">
-                        <MudMenu Icon="@Icons.Material.Filled.MoreVert"
-                                 Size="Size.Small"
-                                 Dense="true"
-                                 AnchorOrigin="Origin.BottomLeft">
-                            <MudMenuItem OnClick="@(() => OpenSendEmailDialog(context))">Send Email</MudMenuItem>
-                            <MudMenuItem>Delete</MudMenuItem>
-                        </MudMenu>
-                    </MudTd>
-                </RowTemplate>
+                        <RowTemplate Context="c">
+                            <MudTd DataLabel="Candidate">
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                    <MudAvatar Color="Color.Primary" Size="Size.Small">
+                                        @c.Firstname?.Substring(0, 1)@c.Lastname?.Substring(0, 1)
+                                    </MudAvatar>
+                                    <MudText Typo="Typo.body2">
+                                        <strong>@c.Firstname @c.Lastname</strong>
+                                    </MudText>
+                                </MudStack>
+                            </MudTd>
+
+                            <MudTd DataLabel="Position">
+                                <MudText Typo="Typo.body2">@c.JobTitle</MudText>
+                            </MudTd>
+
+                            <MudTd DataLabel="Status">
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Filled" Color="Color.Info">
+                                    @c.Status
+                                </MudChip>
+                            </MudTd>
+
+                            <MudTd DataLabel="Resume">
+                                <MudButton StartIcon="@Icons.Material.Filled.Description"
+                                           Size="Size.Small"
+                                           Variant="Variant.Text"
+                                           Color="Color.Primary"
+                                           OnClick="@(() => ViewResume(c.ApplicationId))">
+                                    View Resume
+                                </MudButton>
+                            </MudTd>
+
+                            <MudTd DataLabel="Date Applied">
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                    <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Size="Size.Small" Color="Color.Secondary" />
+                                    <MudText Typo="Typo.body2">@c.DateApplied.ToString("dd MMM yyyy")</MudText>
+                                </MudStack>
+                            </MudTd>
+
+                            <MudTd DataLabel="Type">
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@c.Type</MudChip>
+                            </MudTd>
+
+                            <MudTd DataLabel="Actions">
+                                <MudMenu Icon="@Icons.Material.Filled.MoreVert"
+                                         Size="Size.Small"
+                                         Dense="true"
+                                         AnchorOrigin="Origin.BottomLeft">
+                                    <MudMenuItem OnClick="@(() => OpenSendEmailDialog(c))">Send Email</MudMenuItem>
+                                    <MudMenuItem>Delete</MudMenuItem>
+                                </MudMenu>
+                            </MudTd>
+                        </RowTemplate>
+
                 <NoRecordsContent>
                     <MudStack AlignItems="AlignItems.Center" Spacing="3" Class="pa-8">
                         <MudIcon Icon="@Icons.Material.Filled.PersonOff" Size="Size.Large" Color="Color.Secondary" />
@@ -101,6 +111,7 @@
         </MudStack>
     </MudPaper>
 </MudContainer>
+
 
 @code {
     private List<ApplicationListDtos> candidates = new();

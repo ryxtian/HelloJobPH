@@ -14,7 +14,7 @@ namespace HelloJobPH.Shared.DTOs
         public string Firstname { get; set; }
         [Required(ErrorMessage = "Title is required.")]
         public string Lastname { get; set; }
-        [Required(ErrorMessage = "Title is required.")]
+        [Required(ErrorMessage = "Email is required.")]
         public string Email { get; set; }
         [Required(ErrorMessage = "Title is required.")]
         public string PhoneNumber { get; set; }

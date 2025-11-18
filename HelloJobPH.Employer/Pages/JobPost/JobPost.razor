@@ -120,6 +120,9 @@
                             </MudPaper>
 
                             <!-- Action Buttons -->
+@if (role == "HR")
+        {
+
                             <MudStack Row="true" Spacing="2">
                                 <MudButton Variant="Variant.Filled"
                                            OnClick="@(() => Editpost(job))"
@@ -160,6 +163,7 @@
                                     Remove
                                 </MudButton>
                             </MudStack>
+                            }
                         </MudCardContent>
                     </MudCard>
                 </MudItem>

@@ -23,5 +23,11 @@ namespace HelloJobPH.Employer.Services.Dashboard
         {
             return await _http.GetFromJsonAsync<int>("api/dashboard/ApprovedHired");
         }
+
+        public async Task<List<int>> GetMonthlyApplicantsAsync()
+        {
+            return await _http.GetFromJsonAsync<List<int>>("api/dashboard/GetMonthlyApplicantsAsync");
+        }
+
     }
 }
