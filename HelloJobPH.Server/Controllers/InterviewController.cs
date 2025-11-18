@@ -19,8 +19,17 @@ namespace HelloJobPH.Server.Controllers
         [HttpGet("initial")]
         public async Task<ActionResult<GeneralResponse<List<InterviewListDtos>>>> InitialList()
         {
-            var request = await _service.InitialList();
-            return Ok(request);
+            try
+            {
+                var request = await _service.InitialList();
+                return Ok(request);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+            
         }
         //[HttpGet("technical")]
         //public async Task<IActionResult> TechnicalList()
@@ -66,19 +75,19 @@ namespace HelloJobPH.Server.Controllers
             var request = await _service.Failed(id);
             return Ok(GeneralResponse<bool>.Ok("Application marked as failed.", true));
         }
-        [HttpGet("Delete/{id}")]
+        [HttpPut("Delete/{id}")]
         public async Task<ActionResult<GeneralResponse<bool>>> Delete(int id)
         {
             var request = await _service.DeleteApplication(id);
             return Ok(GeneralResponse<bool>.Ok("Application deleted successfully.", true));
         }
-        [HttpGet("MarkAsCompleted/{id}")]
+        [HttpPut("MarkAsCompleted/{id}")]
         public async Task<ActionResult<GeneralResponse<bool>>> MarkAsCompleted(int id)
         {
             var request = await _service.MarkAsCompleted(id);
             return Ok(GeneralResponse<bool>.Ok("Application marked as completed.", true));
         }
-        [HttpGet("hired/{id}")]
+        [HttpPut("hired/{id}")]
         public async Task<ActionResult<GeneralResponse<bool>>> Hired(int id)
         {
             var request = await _service.Hired(id);

@@ -126,36 +126,44 @@ namespace HelloJobPH.Employer.Services.Interview
         }
         public async Task<GeneralResponse<bool>> Delete(int id)
         {
-            var response = await _http.GetAsync($"api/Interview/Delete/{id}");
+            var content = new StringContent(string.Empty);
+
+            var response = await _http.PutAsync($"api/Interview/Delete/{id}", content);
 
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<bool>();
-                return new GeneralResponse<bool> { Success = true, Data = result};
+
+                var apiResponse = await response.Content.ReadFromJsonAsync<GeneralResponse<bool>>();
+                return apiResponse ?? new GeneralResponse<bool> { Success = false, Data = false };
             }
 
             return new GeneralResponse<bool> { Success = false, Data = false };
         }
         public async Task<GeneralResponse<bool>> MarkAsCompleted(int id)
         {
-            var response = await _http.GetAsync($"api/Interview/MarkAsCompleted/{id}");
+            var content = new StringContent(string.Empty);
+
+            var response = await _http.PutAsync($"api/Interview/MarkAsCompleted/{id}", content);
 
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<bool>();
-                return new GeneralResponse<bool> { Success = true, Data = result };
+   
+                var apiResponse = await response.Content.ReadFromJsonAsync<GeneralResponse<bool>>();
+                return apiResponse ?? new GeneralResponse<bool> { Success = false, Data = false };
             }
 
             return new GeneralResponse<bool> { Success = false, Data = false };
         }
         public async Task<GeneralResponse<bool>> Hired(int id)
         {
-            var response = await _http.GetAsync($"api/Interview/hired/{id}");
+            var content = new StringContent(string.Empty);
+
+            var response = await _http.PutAsync($"api/Interview/hired/{id}", content);
 
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<bool>();
-                return new GeneralResponse<bool> { Success = true, Data = result };
+                var apiResponse = await response.Content.ReadFromJsonAsync<GeneralResponse<bool>>();
+                return apiResponse ?? new GeneralResponse<bool> { Success = false, Data = false };
             }
 
             return new GeneralResponse<bool> { Success = false, Data = false };

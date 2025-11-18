@@ -76,11 +76,21 @@ namespace HelloJobPH.Server.Service.Dashboard
 
         public async Task<List<int>> GetMonthlyApplicantsAsync()
         {
+
+            var userId = Utilities.GetUserId();
+
+            var hr = await _context.HumanResource.FirstOrDefaultAsync(i => i.UserAccountId == userId);
+            var employer = await _context.Employer.FirstOrDefaultAsync(i => i.UserAccountId == userId);
+
+            var employerId = hr?.EmployerId ?? employer?.EmployerId;
+
+
+
             var monthlyCounts = new List<int>(new int[12]);
             var currentYear = DateTime.Now.Year;  // FIXED
 
             var applications = await _context.Application
-                .Where(a => a.DateApply.Year == currentYear)
+                .Where(a => a.DateApply.Year == currentYear && a.EmployerId == employerId)
                 .ToListAsync();
 
             var grouped = applications

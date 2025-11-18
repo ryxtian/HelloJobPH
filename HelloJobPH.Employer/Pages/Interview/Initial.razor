@@ -88,16 +88,32 @@
                                 <MudText Typo="Typo.body2">@row.JobTitle</MudText>
                             </MudTd>
                             <MudTd DataLabel="Status">
-                                <MudChip T="string" Size="Size.Small" Variant="Variant.Filled" Color="Color.Info">
-                                    @row.Status
-                                </MudChip>
-                                @if (row.MarkAsCompleted == 1)
-                                {
-                                    <span class="badge bg-success ms-2 px-2 py-1" style="font-size: 0.75rem; font-weight: 600;">
-                                        <i class="bi bi-check-circle-fill me-1"></i> Completed
-                                    </span>
-                                }
+                                <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+
+                                    <!-- Main Status -->
+                                    <MudChip T="string"
+                                             Size="Size.Small"
+                                             Variant="Variant.Filled"
+                                             Color="Color.Info"
+                                             Style="font-weight:600;">
+                                        @row.Status
+                                    </MudChip>
+
+                                    <!-- Completed Indicator -->
+                                    @if (row.MarkAsCompleted == 1)
+                                    {
+                                        <MudChip T="string"
+                                                 Size="Size.Small"
+                                                 Color="Color.Success"
+                                                 Icon="@Icons.Material.Filled.CheckCircle"
+                                                 Style="font-weight:600;">
+                                         
+                                        </MudChip>
+                                    }
+
+                                </MudStack>
                             </MudTd>
+
                             <MudTd DataLabel="Resume">
                                 <MudButton StartIcon="@Icons.Material.Filled.Description"
                                            Size="Size.Small"
@@ -623,9 +639,12 @@
                 Snackbar.Add("Failed to update candidate status.", Severity.Error);
             }
         }
+        NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+        NavigationManager.NavigateTo("/Interview/initial");
     }
     private async Task Delete(int id)
     {
+        // Show confirmation dialog
         bool? result = await DialogService.ShowMessageBox(
             "Confirm Action",
             "Are you sure you want to delete?",
@@ -639,15 +658,17 @@
 
             if (response.Success && response.Data)
             {
+  
                 Snackbar.Add($"{response.Message}", Severity.Success);
                 NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
             }
             else
             {
-                Snackbar.Add("Failed to update candidate status.", Severity.Error);
+            
+                Snackbar.Add($"Failed to delete candidate. {response.Message ?? ""}", Severity.Error);
             }
         }
-        NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+  
     }
 
     private async Task MarkAsCompleted(int id)
@@ -657,30 +678,52 @@
             "Are you sure you want to mark this candidate as 'Complete?'?",
             cancelText: "Cancel",
             yesText: "Yes"
-
         );
 
         if (result == true)
         {
-            await CandidateService.MarkAsCompleted(id);
-            NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+            var apiResponse = await CandidateService.MarkAsCompleted(id);
+
+            if (apiResponse.Success)
+            {
+
+                NavigationManager.NavigateTo("/Interview/initial", forceLoad: true);
+            }
+            else
+            {
+                await DialogService.ShowMessageBox(
+                    "Error",
+                    "Failed to mark candidate as complete. Please try again. (Check Network/API)",
+                    yesText: "OK"
+                );
+            }
         }
-        NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
     }
     private async Task Hired(int id)
     {
+
         bool? result = await DialogService.ShowMessageBox(
             "Confirm",
             "Are you sure you want to mark this candidate as 'Hired?'?",
             cancelText: "Cancel",
             yesText: "Yes"
-
         );
 
         if (result == true)
         {
-            await CandidateService.Hired(id);
-            NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+            var apiResponse = await CandidateService.Hired(id);
+            if (apiResponse.Success)
+            {
+                NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+            }
+            else
+            {
+                await DialogService.ShowMessageBox(
+                    "Error",
+                    "Failed to mark candidate as Hired. Please try again.",
+                    yesText: "OK"
+                );
+            }
         }
     }
 

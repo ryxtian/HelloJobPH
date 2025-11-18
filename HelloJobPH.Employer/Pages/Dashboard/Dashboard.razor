@@ -3,6 +3,7 @@
 @inject AuthenticationStateProvider AuthProvider
 @inject NavigationManager Navigation
 @inject IClientDashboardService DashboardService
+
 @attribute [Authorize(Roles = "HR,Employer")]
 
 @if (isLoading)
@@ -15,84 +16,87 @@
 else
 {
     <AuthorizeView Roles="HR,Employer">
-    <Authorized>
-       
-    <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-6">
+        <Authorized>
 
-        <MudPaper Class="pa-6 mb-4">
-            <MudText Typo="Typo.h4" Color="Color.Primary" GutterBottom="true">
-                Dashboard Overview
-            </MudText>
-        </MudPaper>
+            <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-6">
 
-        <!-- Summary Cards -->
-        <MudGrid Spacing="3" Class="mb-6">
-            <MudItem xs="12" sm="6" md="4">
-                <MudCard Class="pa-4">
-                    <MudCardContent>
-                        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Start">
-                            <MudStack Spacing="1">
-                                <MudText Typo="Typo.body2" Color="Color.Secondary">Total Job Posts</MudText>
-                                <MudText Typo="Typo.h4">@totalJobPosts</MudText>
-                            </MudStack>
-                            <MudIcon Icon="@Icons.Material.Filled.Work" Color="Color.Primary" Size="Size.Large" />
-                        </MudStack>
-                    </MudCardContent>
-                </MudCard>
-            </MudItem>
+                <!-- Header -->
+                <MudPaper Class="pa-6 mb-4">
+                    <MudText Typo="Typo.h4" Color="Color.Primary" GutterBottom="true">
+                        Dashboard Overview
+                    </MudText>
+                </MudPaper>
 
-            <MudItem xs="12" sm="6" md="4">
-                <MudCard Class="pa-4">
-                    <MudCardContent>
-                        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Start">
-                            <MudStack Spacing="1">
-                                <MudText Typo="Typo.body2" Color="Color.Secondary">Active Applications</MudText>
-                                <MudText Typo="Typo.h4">@activeApplications</MudText>
-                            </MudStack>
-                            <MudIcon Icon="@Icons.Material.Filled.Description" Color="Color.Success" Size="Size.Large" />
-                        </MudStack>
-                    </MudCardContent>
-                </MudCard>
-            </MudItem>
+                <!-- Summary Cards -->
+                <MudGrid Spacing="3" Class="mb-6">
 
-            <MudItem xs="12" sm="6" md="4">
-                <MudCard Class="pa-4">
-                    <MudCardContent>
-                        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Start">
-                            <MudStack Spacing="1">
-                                <MudText Typo="Typo.body2" Color="Color.Secondary">Approved Hires</MudText>
-                                <MudText Typo="Typo.h4">@approvedHires</MudText>
-                            </MudStack>
-                            <MudIcon Icon="@Icons.Material.Filled.VerifiedUser" Color="Color.Info" Size="Size.Large" />
-                        </MudStack>
-                    </MudCardContent>
-                </MudCard>
-            </MudItem>
-        </MudGrid>
+                    <!-- Total Job Posts -->
+                    <MudItem xs="12" sm="6" md="4">
+                        <MudCard Class="pa-4">
+                            <MudCardContent>
+                                <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Start">
+                                    <MudStack Spacing="1">
+                                        <MudText Typo="Typo.body2" Color="Color.Secondary">Total Job Posts</MudText>
+                                        <MudText Typo="Typo.h4">@totalJobPosts</MudText>
+                                    </MudStack>
+                                    <MudIcon Icon="@Icons.Material.Filled.Work" Color="Color.Primary" Size="Size.Large" />
+                                </MudStack>
+                            </MudCardContent>
+                        </MudCard>
+                    </MudItem>
 
-        <!-- Monthly Applicants Bar Chart -->
-        <MudPaper Class="pa-6">
-            <MudText Typo="Typo.h5" Color="Color.Primary" Class="mb-4">
-                Monthly Applicants
-            </MudText>
+                    <!-- Active Applications -->
+                    <MudItem xs="12" sm="6" md="4">
+                        <MudCard Class="pa-4">
+                            <MudCardContent>
+                                <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Start">
+                                    <MudStack Spacing="1">
+                                        <MudText Typo="Typo.body2" Color="Color.Secondary">Active Applications</MudText>
+                                        <MudText Typo="Typo.h4">@activeApplications</MudText>
+                                    </MudStack>
+                                    <MudIcon Icon="@Icons.Material.Filled.Description" Color="Color.Success" Size="Size.Large" />
+                                </MudStack>
+                            </MudCardContent>
+                        </MudCard>
+                    </MudItem>
 
-            <MudChart ChartType="ChartType.Bar"
-                      Labels="@monthLabels"
-                      Datasets="@monthlyApplicantDataset"
-                      Height="250px" />
-        </MudPaper>
+                    <!-- Approved Hires -->
+                    <MudItem xs="12" sm="6" md="4">
+                        <MudCard Class="pa-4">
+                            <MudCardContent>
+                                <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Start">
+                                    <MudStack Spacing="1">
+                                        <MudText Typo="Typo.body2" Color="Color.Secondary">Approved Hires</MudText>
+                                        <MudText Typo="Typo.h4">@approvedHires</MudText>
+                                    </MudStack>
+                                    <MudIcon Icon="@Icons.Material.Filled.VerifiedUser" Color="Color.Info" Size="Size.Large" />
+                                </MudStack>
+                            </MudCardContent>
+                        </MudCard>
+                    </MudItem>
 
+                </MudGrid>
 
+                <!-- Monthly Applicants Chart -->
+                <MudPaper Class="pa-6">
+                    <MudText Typo="Typo.h5" Color="Color.Primary" Class="mb-4">
+                        Monthly Applicants
+                    </MudText>
 
-    </MudContainer>
+                    <MudChart ChartType="ChartType.Bar"
+                              ChartSeries="@monthlyApplicantDataset"
+                              XAxisLabels="@monthLabels"
+                              Width="100%"
+                              Height="350px"
+                              ChartOptions="@chartOptions" />
+                </MudPaper>
+
+            </MudContainer>
+
         </Authorized>
 
         <NotAuthorized>
-            @if (true)  // Always executes when unauthorized
-            {
-                Navigation.NavigateTo("/unauthorized", true);
-            }
-
+            Navigation.NavigateTo("/unauthorized", true)
             <MudText Typo="Typo.h6" Color="Color.Error">
                 You are not authorized to view this page.
             </MudText>
@@ -102,32 +106,34 @@ else
 
 @code {
     private ClaimsPrincipal? user;
-    public int totalJobPosts;
-    public int activeApplications;
-    public int approvedHires;
-    private bool isLoading = true;
-    
 
-    private string[] monthLabels =
+    private int totalJobPosts;
+    private int activeApplications;
+    private int approvedHires;
+
+    private bool isLoading = true;
+
+    private readonly string[] monthLabels =
     {
         "Jan","Feb","Mar","Apr","May","Jun",
         "Jul","Aug","Sep","Oct","Nov","Dec"
     };
-    private IEnumerable<ChartSeries> monthlyApplicantDataset = new List<ChartSeries>();
+
+    private List<ChartSeries> monthlyApplicantDataset = new();
+    private ChartOptions chartOptions = new();
 
     protected override async Task OnInitializedAsync()
     {
-        var authState = await AuthProvider.GetAuthenticationStateAsync();
-        user = authState.User;
+        user = (await AuthProvider.GetAuthenticationStateAsync()).User;
 
-        // Redirect unauthenticated users
-        if (!user.Identity?.IsAuthenticated ?? true)
+        // Unauthenticated redirect
+        if (!(user?.Identity?.IsAuthenticated ?? false))
         {
             Navigation.NavigateTo("/", true);
             return;
         }
 
-        // Redirect unauthorized users (not HR or Employer)
+        // Unauthorized redirect
         if (!(user.IsInRole("HR") || user.IsInRole("Employer")))
         {
             Navigation.NavigateTo("/unauthorized", true);
@@ -136,18 +142,27 @@ else
 
         try
         {
-            // Load dashboard data
+            // Load dashboard counters
             totalJobPosts = await DashboardService.GetTotalJobPostAsync();
             activeApplications = await DashboardService.GetActiveApplicationAsync();
             approvedHires = await DashboardService.GetApprovedHiredAsync();
 
+            // Load monthly applicants
             var monthlyApplicants = await DashboardService.GetMonthlyApplicantsAsync();
+
+            // Ensure fixed 12 months
+            monthlyApplicants ??= new List<int>();
+            if (monthlyApplicants.Count != 12)
+                monthlyApplicants = monthlyApplicants.Concat(Enumerable.Repeat(0, 12)).Take(12).ToList();
+
+            // Chart dataset (adds color fix so bars are visible)
             monthlyApplicantDataset = new List<ChartSeries>
             {
                 new ChartSeries
                 {
                     Name = "Applicants",
-                    Data = monthlyApplicants.Select(x => (double)x).ToArray()
+                    Data = monthlyApplicants.Select(x => (double)x).ToArray(),
+                  
                 }
             };
         }
@@ -156,6 +171,7 @@ else
             isLoading = false;
         }
     }
+
 
     private async Task Logout()
     {

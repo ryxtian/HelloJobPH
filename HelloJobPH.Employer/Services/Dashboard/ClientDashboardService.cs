@@ -26,8 +26,11 @@ namespace HelloJobPH.Employer.Services.Dashboard
 
         public async Task<List<int>> GetMonthlyApplicantsAsync()
         {
-            return await _http.GetFromJsonAsync<List<int>>("api/dashboard/GetMonthlyApplicantsAsync");
-        }
+            // Ensure you handle the possibility of a null response gracefully
+            var result = await _http.GetFromJsonAsync<List<int>>("api/dashboard/GetMonthlyApplicantsAsync");
 
+            // Return the result, or an empty list if the API returned null
+            return result ?? new List<int>();
+        }
     }
 }
