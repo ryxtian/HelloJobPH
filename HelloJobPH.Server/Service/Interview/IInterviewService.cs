@@ -6,9 +6,9 @@ namespace HelloJobPH.Server.Service.Interview
 {
     public interface IInterviewService
     {
-        Task<List<InterviewListDtos>> InitialList();
-        Task<List<InterviewListDtos>> TechnicalList();
-        Task<List<InterviewListDtos>> FinalList();
+        Task<GeneralResponse<List<InterviewListDtos>>> InitialList();
+        //Task<List<InterviewListDtos>> TechnicalList();
+        //Task<List<InterviewListDtos>> FinalList();
         Task<GeneralResponse<bool>> Reschedule(SetScheduleDto dto);
         Task<GeneralResponse<int>> NoAppearance(int id);
         Task<GeneralResponse<bool>> ForTechnical(SetScheduleDto dto);
@@ -16,7 +16,7 @@ namespace HelloJobPH.Server.Service.Interview
         Task<GeneralResponse<bool>> Failed(int id);
          Task<GeneralResponse<bool>> DeleteApplication(int id);
         Task<GeneralResponse<bool>> MarkAsCompleted(int id);
-
+        Task<GeneralResponse<bool>> Hired(int id);
         Task<List<InterviewerDtos>> InterviewerList();
     }
 }

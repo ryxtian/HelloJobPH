@@ -142,6 +142,7 @@
                             <MudMenuItem IconColor="Color.Tertiary"Icon="@Icons.Material.Filled.Visibility" OnClick="@(() => NavigateToOverview(context.ApplicationId))">Overview</MudMenuItem>
                             <MudMenuItem Variant="Variant.Text" Icon="@Icons.Material.Filled.Chat" OnClick="() => OpenChat(context.UserAccountId, context.Firstname)">Chat</MudMenuItem>
                             <MudMenuItem IconColor="Color.Success" Icon="@Icons.Material.Filled.MarkChatRead" OnClick="@(() => MarkAsCompleted(context.ApplicationId))">Mark As Completed</MudMenuItem>
+                            <MudMenuItem IconColor="Color.Success" Icon="@Icons.Material.Filled.MarkChatRead" OnClick="@(() => Hired(context.ApplicationId))">Hired</MudMenuItem>
                         </MudMenu>
                     </MudTd>
                 </RowTemplate>
@@ -347,7 +348,20 @@
 
     protected override async Task OnInitializedAsync()
     {
-        initial = await CandidateService.InitialList();
+        var response = await CandidateService.InitialList();
+        initial = response.Data; // assign the actual list
+
+        if (!response.Success)
+        {
+            Snackbar.Add(response.Message ?? "Failed to load initial interviews.", Severity.Error);
+        }
+
+
+        // Optional: check success
+        if (!response.Success)
+        {
+            Snackbar.Add(response.Message ?? "Failed to fetch initial list.", Severity.Error);
+        }
 
         var authState = await AuthProvider.GetAuthenticationStateAsync();
         var user = authState.User;
@@ -549,14 +563,13 @@
             "Are you sure you want to mark this candidate as 'No Appearance'?",
             cancelText: "Cancel",
             yesText: "Yes"
-          
         );
 
         if (result == true)
         {
             var response = await CandidateService.NoAppearance(id);
 
-            if (response > 0)
+            if (response.Success && response.Data)
             {
                 Snackbar.Add("Candidate marked as 'No Appearance'.", Severity.Success);
                 NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
@@ -574,14 +587,13 @@
             "Are you sure you want to mark this candidate as 'Failed'?",
             cancelText: "Cancel",
             yesText: "Yes"
-
         );
 
         if (result == true)
         {
             var response = await CandidateService.Failed(id);
 
-            if (response > 0)
+            if (response.Success && response.Data)
             {
                 Snackbar.Add("Candidate marked as 'Failed'.", Severity.Success);
                 NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
@@ -596,19 +608,18 @@
     {
         bool? result = await DialogService.ShowMessageBox(
             "Confirm Action",
-            "Are you sure you want to mark this candidate as 'Failed'?",
+            "Are you sure you want to delete?",
             cancelText: "Cancel",
             yesText: "Yes"
-
         );
 
         if (result == true)
         {
             var response = await CandidateService.Delete(id);
 
-            if (response > 0)
+            if (response.Success && response.Data)
             {
-                Snackbar.Add("Candidate marked as 'Delete'.", Severity.Success);
+                Snackbar.Add($"{response.Message}", Severity.Success);
                 NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
             }
             else
@@ -630,18 +641,24 @@
 
         if (result == true)
         {
-            var response = await CandidateService.MarkAsCompleted(id);
+            await CandidateService.MarkAsCompleted(id);
+            NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+        }
+    }
+    private async Task Hired(int id)
+    {
+        bool? result = await DialogService.ShowMessageBox(
+            "Confirm",
+            "Are you sure you want to mark this candidate as 'Hired?'?",
+            cancelText: "Cancel",
+            yesText: "Yes"
 
-            if (response > 0)
-            {
-                Snackbar.Add("Candidate marked as 'Complete'.", Severity.Success);
-                NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
-                
-            }
-            else
-            {
-                Snackbar.Add("Failed to update candidate status.", Severity.Error);
-            }
+        );
+
+        if (result == true)
+        {
+            await CandidateService.Hired(id);
+            NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
         }
     }
 

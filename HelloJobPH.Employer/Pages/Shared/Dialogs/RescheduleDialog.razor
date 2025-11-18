@@ -136,18 +136,18 @@
             InterviewerId = _emailModel.InterviewBy
         };
 
-        bool success = await Interview.Reschedule(dto);
+        var response = await Interview.Reschedule(dto);
+        bool success = response.Success && response.Data; // ✅ use both Success and Data
 
         if (success)
         {
-            Snackbar.Add("Interview rescheduled and email sent successfully.", Severity.Success);
-            MudDialog.Close(DialogResult.Ok(true));
-            NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+            Snackbar.Add("Interview rescheduled successfully.", Severity.Success);
         }
         else
         {
-            Snackbar.Add("Failed to reschedule. Candidate not found.", Severity.Error);
+            Snackbar.Add("Failed to reschedule interview.", Severity.Error);
         }
+
     }
 
     private class EmailModel

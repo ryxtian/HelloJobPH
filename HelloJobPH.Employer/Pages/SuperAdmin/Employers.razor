@@ -390,15 +390,15 @@
         }
 
 
-        // Initialize SignalR
-        await ChatService.InitializeAsync();
-
-        // Subscribe to incoming messages
-        ChatService.OnMessageReceived += (user, msg) =>
-        {
-            Messages.Add((user, msg));
-            InvokeAsync(StateHasChanged);
-        };
+ ChatService.OnMessageReceived += (user, msg) =>
+       {
+           var chat = openChats.FirstOrDefault(c => c.EmployerId.ToString() == user);
+           if (chat != null)
+           {
+               chat.Messages.Add((user, msg));
+               InvokeAsync(StateHasChanged);
+           }
+       };
 
         await LoadEmployers();
     }

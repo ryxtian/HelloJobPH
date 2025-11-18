@@ -4,6 +4,7 @@ using HelloJobPH.Server.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HelloJobPH.Server.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251118030906_resetpassword")]
+    partial class resetpassword
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -578,17 +581,25 @@ namespace HelloJobPH.Server.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Email")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("Expiration")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Token")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("UserAccountId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("UserAccountId");
 
                     b.ToTable("PasswordResetTokens");
                 });
@@ -967,6 +978,17 @@ namespace HelloJobPH.Server.Migrations
                     b.Navigation("HumanResource");
                 });
 
+            modelBuilder.Entity("HelloJobPH.Shared.Model.PasswordResetToken", b =>
+                {
+                    b.HasOne("HelloJobPH.Shared.Model.UserAccount", "UserAccount")
+                        .WithMany("PasswordResetTokens")
+                        .HasForeignKey("UserAccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("UserAccount");
+                });
+
             modelBuilder.Entity("HelloJobPH.Shared.Model.Resume", b =>
                 {
                     b.HasOne("HelloJobPH.Shared.Model.Applicant", "Applicant")
@@ -1062,6 +1084,8 @@ namespace HelloJobPH.Server.Migrations
                     b.Navigation("Employer");
 
                     b.Navigation("HumanResource");
+
+                    b.Navigation("PasswordResetTokens");
                 });
 #pragma warning restore 612, 618
         }

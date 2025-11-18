@@ -23,6 +23,7 @@ namespace HelloJobPH.Server.Data
         public DbSet<JobPostAudit> JobPostAudit { get; set; }     
         public DbSet<InterviewHistory> InterviewHistory { get; set; }
         public DbSet<Interviewer> Interviewer { get; set; }
+        public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
         //protected override void OnModelCreating(ModelBuilder modelBuilder)
         //{
         //    base.OnModelCreating(modelBuilder);

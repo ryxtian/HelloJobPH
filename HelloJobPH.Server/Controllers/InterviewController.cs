@@ -17,23 +17,23 @@ namespace HelloJobPH.Server.Controllers
             _service = service;
         }
         [HttpGet("initial")]
-        public async Task<IActionResult> InitialList()
+        public async Task<ActionResult<GeneralResponse<List<InterviewListDtos>>>> InitialList()
         {
             var request = await _service.InitialList();
             return Ok(request);
         }
-        [HttpGet("technical")]
-        public async Task<IActionResult> TechnicalList()
-        {
-            var request = await _service.TechnicalList();
-            return Ok(request);
-        }
-        [HttpGet("final")]
-        public async Task<IActionResult> FinalList()
-        {
-            var request = await _service.FinalList();
-            return Ok(request);
-        }
+        //[HttpGet("technical")]
+        //public async Task<IActionResult> TechnicalList()
+        //{
+        //    var request = await _service.TechnicalList();
+        //    return Ok(request);
+        //}
+        //[HttpGet("final")]
+        //public async Task<IActionResult> FinalList()
+        //{
+        //    var request = await _service.FinalList();
+        //    return Ok(request);
+        //}
         [HttpPost("Reschedule")]
         public async Task<ActionResult<GeneralResponse<bool>>> Reschedule(SetScheduleDto dto)
         {
@@ -77,7 +77,13 @@ namespace HelloJobPH.Server.Controllers
             var request = await _service.MarkAsCompleted(id);
             return Ok(GeneralResponse<bool>.Ok("Application marked as completed.", true));
         }
-        [HttpGet("interviewer-List")]
+        [HttpGet("hired/{id}")]
+        public async Task<ActionResult<GeneralResponse<bool>>> Hired(int id)
+        {
+            var request = await _service.Hired(id);
+            return Ok(GeneralResponse<bool>.Ok("Hire.", true));
+        }
+            [HttpGet("interviewer-List")]
         public async Task<IActionResult> Interviewerlist()
         {
             var request = await _service.InterviewerList();

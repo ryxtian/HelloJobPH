@@ -231,9 +231,18 @@ cancelText: "Cancel");
 
             <MudDivider />
 
+
+            <MudTextField @bind-Value="_searchString"
+                          Placeholder="Search candidates..."
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          Class="mb-4"
+                          Immediate="true"
+                          OnImmediateValueChanged="OnSearchChanged" />
+
             <!-- DataGrid Section -->
             <MudDataGrid T="ApplicationListDtos"
-                         Items="@candidates"
+                         Items="FilteredCandidates"
                          Hover="true"
                          Striped="true"
                          Dense="false"
@@ -426,5 +435,24 @@ cancelText: "Cancel");
         };
 
         await DialogService.ShowAsync<ResumeDialog>("Resume Viewer", parameters, options);
+    }
+
+
+
+    private string _searchString = "";
+    private IEnumerable<ApplicationListDtos> FilteredCandidates =>
+        string.IsNullOrWhiteSpace(_searchString)
+            ? candidates
+            : candidates.Where(c =>
+                (c.Firstname?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (c.Lastname?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (c.JobTitle?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) ?? false)
+               
+            );
+
+    private void OnSearchChanged(string text)
+    {
+        _searchString = text;
+        StateHasChanged();
     }
 }

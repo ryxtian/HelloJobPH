@@ -1,5 +1,7 @@
-﻿using HelloJobPH.Shared.DTOs;
+﻿using HelloJobPH.Employer.GeneralResponse;
+using HelloJobPH.Shared.DTOs;
 using HelloJobPH.Shared.Enums;
+using HelloJobPH.Shared.Model;
 using System.Net.Http;
 using System.Net.Http.Json;
 using static System.Net.WebRequestMethods;
@@ -13,85 +15,139 @@ namespace HelloJobPH.Employer.Services.Interview
         {
             _http = http;
         }
-        public async Task<List<InterviewListDtos>> FinalList()
+        //public async Task<List<InterviewListDtos>> FinalList()
+        //{
+        //    var result = await _http.GetFromJsonAsync<List<InterviewListDtos>>("api/Interview/final");
+        //    return result ?? [];
+        //}
+
+        public async Task<GeneralResponse<List<InterviewListDtos>>> InitialList()
         {
-            var result = await _http.GetFromJsonAsync<List<InterviewListDtos>>("api/Interview/final");
-            return result ?? [];
+            try
+            {
+                // Deserialize the API response directly into GeneralResponse
+                var response = await _http.GetFromJsonAsync<GeneralResponse<List<InterviewListDtos>>>("api/Interview/initial");
+
+                // Ensure it’s not null
+                return response ?? new GeneralResponse<List<InterviewListDtos>>
+                {
+                    Success = false,
+                    Data = new List<InterviewListDtos>(),
+                    Message = "No data received from server."
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GeneralResponse<List<InterviewListDtos>>
+                {
+                    Success = false,
+                    Data = new List<InterviewListDtos>(),
+                    Message = ex.Message
+                };
+            }
         }
 
-        public async Task<List<InterviewListDtos>> InitialList()
-        {
-            var result = await _http.GetFromJsonAsync<List<InterviewListDtos>>("api/Interview/initial");
-            return result ?? [];
-        }
 
-        public async Task<List<InterviewListDtos>> TechnicalList()
-        {
-            var result = await _http.GetFromJsonAsync<List<InterviewListDtos>>("api/Interview/technical");
-            return result ?? [];
-        }
-        public async Task<bool> Reschedule(SetScheduleDto dto)
+
+        //public async Task<List<InterviewListDtos>> TechnicalList()
+        //{
+        //    var result = await _http.GetFromJsonAsync<List<InterviewListDtos>>("api/Interview/technical");
+        //    return result ?? [];
+        //}
+        public async Task<GeneralResponse<bool>> Reschedule(SetScheduleDto dto)
         {
             var url = $"api/interview/Reschedule";
             var response = await _http.PostAsJsonAsync(url, dto);
-            return response.IsSuccessStatusCode;
+
+            return new GeneralResponse<bool>
+            {
+                Success = response.IsSuccessStatusCode,
+                Data = response.IsSuccessStatusCode
+            };
         }
 
-        public async Task<int> NoAppearance(int id)
+
+        public async Task<GeneralResponse<bool>> NoAppearance(int id)
         {
-            var response = await _http.GetAsync($"api/Interview/NoAppearance{id}");
+            var response = await _http.GetAsync($"api/Interview/NoAppearance/{id}");
+
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<int>();
-                return result;
+                var result = await response.Content.ReadFromJsonAsync<bool>();
+                return new GeneralResponse<bool> { Success = true, Data = result };
             }
 
-            return 0;
+            return new GeneralResponse<bool> { Success = false, Data = false };
         }
-        public async Task<bool> ForTechnical(SetScheduleDto dto)
+        public async Task<GeneralResponse<bool>> ForTechnical(SetScheduleDto dto)
         {
             var url = $"api/interview/ForTechnical";
             var response = await _http.PostAsJsonAsync(url, dto);
-            return response.IsSuccessStatusCode;
+
+            return new GeneralResponse<bool>
+            {
+                Success = response.IsSuccessStatusCode,
+                Data = response.IsSuccessStatusCode
+            };
         }
-        public async Task<bool> ForFinal(SetScheduleDto dto)
+        public async Task<GeneralResponse<bool>> ForFinal(SetScheduleDto dto)
         {
             var url = $"api/interview/ForFinal";
             var response = await _http.PostAsJsonAsync(url, dto);
-            return response.IsSuccessStatusCode;
+
+            return new GeneralResponse<bool>
+            {
+                Success = response.IsSuccessStatusCode,
+                Data = response.IsSuccessStatusCode
+            };
         }
-        public async Task<int> Failed(int id)
+        public async Task<GeneralResponse<bool>> Failed(int id)
         {
             var response = await _http.GetAsync($"api/Interview/Failed/{id}");
+
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<int>();
-                return result;
+                var result = await response.Content.ReadFromJsonAsync<bool>();
+                return new GeneralResponse<bool> { Success = true, Data = result };
             }
 
-            return 0;
+            return new GeneralResponse<bool> { Success = false, Data = false };
         }
-        public async Task<int> Delete(int id)
+        public async Task<GeneralResponse<bool>> Delete(int id)
         {
-            var response = await _http.GetAsync($"api/Interview/Delete{id}");
+            var response = await _http.GetAsync($"api/Interview/Delete/{id}");
+
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<int>();
-                return result;
+                var result = await response.Content.ReadFromJsonAsync<bool>();
+                return new GeneralResponse<bool> { Success = true, Data = result};
             }
 
-            return 0;
+            return new GeneralResponse<bool> { Success = false, Data = false };
         }
-        public async Task<int> MarkAsCompleted(int id)
+        public async Task<GeneralResponse<bool>> MarkAsCompleted(int id)
         {
             var response = await _http.GetAsync($"api/Interview/MarkAsCompleted/{id}");
+
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<int>();
-                return result;
+                var result = await response.Content.ReadFromJsonAsync<bool>();
+                return new GeneralResponse<bool> { Success = true, Data = result };
             }
 
-            return 0;
+            return new GeneralResponse<bool> { Success = false, Data = false };
+        }
+        public async Task<GeneralResponse<bool>> Hired(int id)
+        {
+            var response = await _http.GetAsync($"api/Interview/hired/{id}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<bool>();
+                return new GeneralResponse<bool> { Success = true, Data = result };
+            }
+
+            return new GeneralResponse<bool> { Success = false, Data = false };
         }
         public async Task<List<InterviewerDtos>> RetrieveAllInterviewer()
         {

@@ -22,71 +22,76 @@ namespace HelloJobPH.Server.Service.Interview
             _context = context;
             _emailService = emailService;
         }
-        public async Task<List<InterviewListDtos>> FinalList()
+        //public async Task<List<InterviewListDtos>> FinalList()
+        //{
+        //    var userId = Utilities.GetUserId();
+
+        //    if (userId == null)
+        //    {
+        //        throw new Exception("Invalid or missing user ID in claims.");
+        //    }
+        //    var hr = await _context.HumanResource.FirstOrDefaultAsync
+        //    (u => u.UserAccountId == userId);
+
+        //    if (hr == null)
+        //    {
+        //        throw new Exception("Invalid or missing user ID in claims.");
+        //    }
+        //    try
+        //    {
+        //        var result = await _context.Application
+        //            .Where(a => a.ApplicationStatus == ApplicationStatus.Final && a.IsDeleted == 0 && a.HumanResourcesId == hr.HumanResourceId)
+        //            .Select(a => new InterviewListDtos
+        //            {
+        //                ApplicationId = a.ApplicationId,
+        //                Firstname = a.Applicant.Firstname,
+        //                Lastname = a.Applicant.Surname,
+        //                Email = a.Applicant.UserAccount.Email,
+        //                JobTitle = a.JobPosting.Title,
+        //                Type = a.JobPosting.EmploymentType,
+        //                DateApplied = a.DateApply,
+        //                TimeInterview = a.Interview.ScheduledTime,
+        //                DateInterview = a.Interview.ScheduledDate,
+        //                Status = a.ApplicationStatus,
+        //                MarkAsCompleted = a.MarkAsCompleted
+        //            })
+        //            .ToListAsync();
+        //        return result;
+        //    }
+        //    catch (Exception)
+        //    {
+        //        throw;
+        //    }
+        //}
+        public async Task<GeneralResponse<List<InterviewListDtos>>> InitialList()
         {
-            var userId = Utilities.GetUserId();
-
-            if (userId == null)
-            {
-                throw new Exception("Invalid or missing user ID in claims.");
-            }
-            var hr = await _context.HumanResource.FirstOrDefaultAsync
-            (u => u.UserAccountId == userId);
-
-            if (hr == null)
-            {
-                throw new Exception("Invalid or missing user ID in claims.");
-            }
-            try
-            {
-                var result = await _context.Application
-                    .Where(a => a.ApplicationStatus == ApplicationStatus.Final && a.IsDeleted == 0 && a.HumanResourcesId == hr.HumanResourceId)
-                    .Select(a => new InterviewListDtos
-                    {
-                        ApplicationId = a.ApplicationId,
-                        Firstname = a.Applicant.Firstname,
-                        Lastname = a.Applicant.Surname,
-                        Email = a.Applicant.UserAccount.Email,
-                        JobTitle = a.JobPosting.Title,
-                        Type = a.JobPosting.EmploymentType,
-                        DateApplied = a.DateApply,
-                        TimeInterview = a.Interview.ScheduledTime,
-                        DateInterview = a.Interview.ScheduledDate,
-                        Status = a.ApplicationStatus,
-                        MarkAsCompleted = a.MarkAsCompleted
-                    })
-                    .ToListAsync();
-                return result;
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
-        public async Task<List<InterviewListDtos>> InitialList()
-            {
             var datetoday = DateTime.Now;
-
-
-
             var userId = Utilities.GetUserId();
 
-            // Try to find HR or Employer linked to this user
+            // Find HR or Employer linked to this user
             var hr = await _context.HumanResource.FirstOrDefaultAsync(i => i.UserAccountId == userId);
             var employer = await _context.Employer.FirstOrDefaultAsync(i => i.UserAccountId == userId);
 
             var employerId = hr?.EmployerId ?? employer?.EmployerId;
 
             if (employerId == null)
-                throw new Exception("No associated employer found for this user.");
-            try
+            {
+                return new GeneralResponse<List<InterviewListDtos>>
                 {
+                    Success = false,
+                    Data = new List<InterviewListDtos>(),
+                    Message = "No associated employer found for this user."
+                };
+            }
+
+            try
+            {
                 var validStatuses = new[]
                 {
-    ApplicationStatus.Initial,
-    ApplicationStatus.Technical,
-    ApplicationStatus.Final
-};
+            ApplicationStatus.Initial,
+            ApplicationStatus.Technical,
+            ApplicationStatus.Final
+        };
 
                 var result = await _context.Application
                     .Where(a => validStatuses.Contains(a.ApplicationStatus)
@@ -113,58 +118,66 @@ namespace HelloJobPH.Server.Service.Interview
                     })
                     .ToListAsync();
 
-
-                return result;
-                }
-                catch (Exception)
+                return new GeneralResponse<List<InterviewListDtos>>
                 {
-                    throw;
-                }
-
+                    Success = result != null && result.Any(),
+                    Data = result ?? new List<InterviewListDtos>(),
+                    Message = (result == null || !result.Any()) ? "No interviews found." : null
+                };
             }
-
-        public async Task<List<InterviewListDtos>> TechnicalList()
-        {
-            var userId = Utilities.GetUserId();
-
-            if (userId == null)
+            catch (Exception ex)
             {
-                throw new Exception("Invalid or missing user ID in claims.");
-            }
-            var hr = await _context.HumanResource.FirstOrDefaultAsync
-            (u => u.UserAccountId == userId);
-
-            if (hr == null)
-            {
-                throw new Exception("Invalid or missing user ID in claims.");
-            }
-            try
-            {
-                var result = await _context.Application
-                    .Where(a => a.ApplicationStatus == ApplicationStatus.Technical && a.IsDeleted == 0 && a.HumanResourcesId == hr.HumanResourceId)
-                    .Select(a => new InterviewListDtos
-                    {
-                        ApplicationId = a.ApplicationId,
-                        Firstname = a.Applicant.Firstname,
-                        Lastname = a.Applicant.Surname,
-                        Email = a.Applicant.UserAccount.Email,
-                        JobTitle = a.JobPosting.Title,
-                        Type = a.JobPosting.EmploymentType,
-                        DateApplied = a.DateApply,
-                        TimeInterview = a.Interview != null ? a.Interview.ScheduledTime : null,
-                        DateInterview = a.Interview != null ? a.Interview.ScheduledDate : null,
-                        Status = a.ApplicationStatus,
-                        MarkAsCompleted = a.MarkAsCompleted
-                    })
-                    .ToListAsync();
-
-                return result;
-            }
-            catch (Exception)
-            {
-                throw;
+                return new GeneralResponse<List<InterviewListDtos>>
+                {
+                    Success = false,
+                    Data = new List<InterviewListDtos>(),
+                    Message = ex.Message
+                };
             }
         }
+
+        //public async Task<List<InterviewListDtos>> TechnicalList()
+        //{
+        //    var userId = Utilities.GetUserId();
+
+        //    if (userId == null)
+        //    {
+        //        throw new Exception("Invalid or missing user ID in claims.");
+        //    }
+        //    var hr = await _context.HumanResource.FirstOrDefaultAsync
+        //    (u => u.UserAccountId == userId);
+
+        //    if (hr == null)
+        //    {
+        //        throw new Exception("Invalid or missing user ID in claims.");
+        //    }
+        //    try
+        //    {
+        //        var result = await _context.Application
+        //            .Where(a => a.ApplicationStatus == ApplicationStatus.Technical && a.IsDeleted == 0 && a.HumanResourcesId == hr.HumanResourceId)
+        //            .Select(a => new InterviewListDtos
+        //            {
+        //                ApplicationId = a.ApplicationId,
+        //                Firstname = a.Applicant.Firstname,
+        //                Lastname = a.Applicant.Surname,
+        //                Email = a.Applicant.UserAccount.Email,
+        //                JobTitle = a.JobPosting.Title,
+        //                Type = a.JobPosting.EmploymentType,
+        //                DateApplied = a.DateApply,
+        //                TimeInterview = a.Interview != null ? a.Interview.ScheduledTime : null,
+        //                DateInterview = a.Interview != null ? a.Interview.ScheduledDate : null,
+        //                Status = a.ApplicationStatus,
+        //                MarkAsCompleted = a.MarkAsCompleted
+        //            })
+        //            .ToListAsync();
+
+        //        return result;
+        //    }
+        //    catch (Exception)
+        //    {
+        //        throw;
+        //    }
+        //}
         public async Task<GeneralResponse<bool>> Reschedule(SetScheduleDto dto)
         {
 
@@ -734,6 +747,46 @@ Best regards,
                 })
                 .ToListAsync();
             return interviewers;
+        }
+
+        public async Task<GeneralResponse<bool>> Hired(int id)
+        {
+
+            var application = await _context.Application
+                .Include(a => a.Applicant)
+                .Include(a => a.JobPosting)
+                .Include(a => a.HumanResources)
+                .FirstOrDefaultAsync(a => a.ApplicationId == id);
+
+            if (application == null)
+                return GeneralResponse<bool>.Fail("Application not found");
+
+            // 1️⃣ Mark as hired
+            application.ApplicationStatus = ApplicationStatus.Hired; // your enum/value for hired
+            _context.Application.Update(application);
+            await _context.SaveChangesAsync();
+
+            // 2️⃣ Add audit log
+            var hr = application.HumanResources;
+            var auditLog = new Shared.Model.AuditLog
+            {
+                ApplicationId = application.ApplicationId,
+                ApplicantId = application.ApplicantId,
+                JobPostingId = application.JobPostingId,
+                HumanResourcesId = hr?.HumanResourceId,
+                EmployerId = hr?.EmployerId,
+                Action = "Application Hired",
+                Details = $"HR {hr?.Firstname} {hr?.Lastname} marked the application of {application.Applicant?.Firstname} {application.Applicant?.Surname} for {application.JobPosting?.Title} as hired.",
+                Timestamp = DateTime.UtcNow
+            };
+
+            await _context.AuditLog.AddAsync(auditLog);
+            await _context.SaveChangesAsync();
+       
+
+
+
+            return GeneralResponse<bool>.Ok("Application successfully marked as hired");
         }
 
         public class CandidateEmailDto

@@ -136,17 +136,16 @@
             InterviewerId = _emailModel.InterviewBy
         };
 
-        bool success = await Interview.ForTechnical(dto);
+        var response = await Interview.ForTechnical(dto);
+        bool success = response.Success && response.Data; // ✅
 
         if (success)
         {
-            Snackbar.Add("Interview scheduled for technical stage successfully.", Severity.Success);
-            MudDialog.Close(DialogResult.Ok(true));
-            NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+            Snackbar.Add("Interview moved to technical stage.", Severity.Success);
         }
         else
         {
-            Snackbar.Add("Failed to proceed to technical interview. Candidate not found.", Severity.Error);
+            Snackbar.Add("Failed to update interview status.", Severity.Error);
         }
     }
 

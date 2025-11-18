@@ -138,18 +138,17 @@
             Mode = _emailModel.Mode
         };
 
-        bool success = await Interview.ForFinal(dto);
+        var response = await Interview.ForFinal(dto);
 
-        if (success)
+        if (response.Success && response.Data)
         {
-            Snackbar.Add("Final interview scheduled and email sent successfully.", Severity.Success);
-            MudDialog.Close(DialogResult.Ok(true));
-            NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+            Snackbar.Add("Interview moved to final stage.", Severity.Success);
         }
         else
         {
-            Snackbar.Add("Failed to send final interview email. Candidate not found.", Severity.Error);
+            Snackbar.Add("Failed to update interview status.", Severity.Error);
         }
+
     }
 
     private class EmailModel
