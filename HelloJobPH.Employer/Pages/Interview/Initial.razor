@@ -70,6 +70,7 @@
                     <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Time</strong></MudText></MudTh>
                     <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Interview by</strong></MudText></MudTh>
                     <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Type</strong></MudText></MudTh>
+                    <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Mode</strong></MudText></MudTh>
                     <MudTh><MudText Typo="Typo.subtitle2" Color="Color.Primary"><strong>Actions</strong></MudText></MudTh>
                 </HeaderContent>
 
@@ -143,6 +144,9 @@
                             </MudTd>
                             <MudTd DataLabel="Type">
                                 <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@row.Type</MudChip>
+                            </MudTd>
+                            <MudTd DataLabel="Type">
+                                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@row.Mode</MudChip>
                             </MudTd>
                             <MudTd DataLabel="Actions">
                                 <MudMenu Icon="@Icons.Material.Filled.MoreVert"

@@ -54,7 +54,7 @@ namespace HelloJobPH.Server.Services
                     if (Employer == null)
                         throw new Exception("Associated employer not found.");
 
-                    if (Employer.IsDeleted == 1 || Employer.Status == "Disabled" || Employer.IsActive == false)
+                    if (Employer.IsDeleted == 1 || Employer.Status == "Disabled" || Employer.IsActive == false || Employer.Status == "Pending")
                         throw new Exception("Your employer account is disabled. Login not allowed.");
 
 

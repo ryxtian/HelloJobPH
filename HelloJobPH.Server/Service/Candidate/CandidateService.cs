@@ -131,10 +131,14 @@ namespace HelloJobPH.Server.Service.Candidate
         public async Task<List<ApplicationListDtos>> RetrieveAllCandidate()
         {
             var userId = Utilities.GetUserId();
-            var hr = await _context.HumanResource
-                .FirstOrDefaultAsync(i => i.UserAccountId == userId);
 
-            if(hr is null)
+            // Try to find HR or Employer linked to this user
+            var hr = await _context.HumanResource.FirstOrDefaultAsync(i => i.UserAccountId == userId);
+            var employer = await _context.Employer.FirstOrDefaultAsync(i => i.UserAccountId == userId);
+
+            var employerId = hr?.EmployerId ?? employer?.EmployerId;
+
+            if (hr is null)
             {
                 throw new Exception("Human Resource not found.");
             }
@@ -142,7 +146,7 @@ namespace HelloJobPH.Server.Service.Candidate
             try
             {
                 var result = await _context.Application
-                .Where(a => a.ApplicationStatus == ApplicationStatus.Pending || a.ApplicationStatus == ApplicationStatus.Viewed && a.EmployerId ==hr.EmployerId )
+                .Where(a => a.ApplicationStatus == ApplicationStatus.Pending && a.EmployerId == employerId)
                 .Select(a => new ApplicationListDtos
                 {
                     ApplicationId = a.ApplicationId,
